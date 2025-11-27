@@ -1,0 +1,42 @@
+from authentication.models import UserModel
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+import re
+
+
+USER = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    password_confirmed = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = USER
+        fields = ("email", "username", "password", "password_confirmed", "user_type")
+        extra_kwargs = {
+            "password": {"write_only": True},
+        }
+
+    def validate(self, attrs):
+        # Step 1: Password match check FIRST
+        if attrs["password"] != attrs["password_confirmed"]:
+            raise serializers.ValidationError({"password_confirmed": "Passwords do not match."})
+
+        # Step 2: Email uniqueness NEXT
+        if USER.objects.filter(email=attrs["email"]).exists():
+            raise serializers.ValidationError({"email": "Registration failed. Try a different email."})
+
+        return attrs
+
+
+
+    def create(self, validated_data):
+        validated_data.pop("password_confirmed")
+        user = USER(
+            email=validated_data["email"],
+            user_type=validated_data.get('user_type', 'jobseeker')
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
