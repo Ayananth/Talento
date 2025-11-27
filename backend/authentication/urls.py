@@ -17,7 +17,11 @@ urlpatterns = [
     # path(route="pwreset", view=views.PasswordResetView.as_view(), name="pwreset"),
 
     path('sign_in', views.MyTokenObtainPairView.as_view(), name='sign_in'),
+    path('sign_out', views.LogoutView.as_view(), name='sign_out'),
+
+
     path('token/refresh', TokenRefreshView.as_view(), name='jwt_refresh'),
+
 
 
 

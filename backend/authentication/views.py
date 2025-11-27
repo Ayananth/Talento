@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view #for FBV, remove if not used
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
 
 class SignUpView(APIView):
     def post(self, request):
@@ -21,6 +23,21 @@ class SignUpView(APIView):
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+
+
+class LogoutView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"message": "Logout successful"})
+        except Exception:
+            return Response({"error": "Invalid token"}, status=400)
+
 
 
 
