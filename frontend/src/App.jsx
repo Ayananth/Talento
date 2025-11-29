@@ -8,13 +8,12 @@ import Home from './pages/Home'
 import Register from './pages/Register'
 import NotFound from './pages/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
+import PublicRoute from './components/PublicRoute'
 
 function Logout(){
   localStorage.clear()
   return <Navigate to="/login" />
 }
-
-
 
 function RegisterAndLogout(){
   localStorage.clear()
@@ -35,18 +34,31 @@ function App() {
       }  
       />
 
-      <Route path='/login' element={
+    <Route
+      path="/login"
+      element={
+        <PublicRoute>
           <Login />
-      }  
-      />
+        </PublicRoute>
+      }
+    />
 
-      <Route path='/register' element={
-          <RegisterAndLogout />
-      }  
-      />
+    <Route
+      path="/register"
+      element={
+        <PublicRoute>
+          <Register />
+        </PublicRoute>
+      }
+    />
 
       <Route path='*' element={
           <NotFound />
+      }  
+      />
+
+      <Route path='/logout' element={
+          <Logout />
       }  
       />
 
