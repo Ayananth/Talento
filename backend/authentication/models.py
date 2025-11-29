@@ -27,7 +27,7 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
         ('admin', 'Admin'),
     )
 
-    username = models.CharField(max_length=25, unique=True)
+    username = models.CharField(max_length=25)
     email = models.EmailField(unique=True)
     user_type = models.CharField(max_length=20, choices=USER_TYPES, default='jobseeker')
     is_active = models.BooleanField(default=True)

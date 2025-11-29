@@ -22,6 +22,7 @@ class SignUpView(APIView):
         
 
 class MyTokenObtainPairView(TokenObtainPairView):
+    print("Login request received")
     serializer_class = MyTokenObtainPairSerializer
 
 
