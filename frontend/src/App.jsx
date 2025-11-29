@@ -1,75 +1,25 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
-import Home from './pages/Home'
-import Register from './pages/Register'
-import NotFound from './pages/NotFound'
-import ProtectedRoute from './components/ProtectedRoute'
-import PublicRoute from './components/PublicRoute'
+import { AuthProvider } from './auth/AuthContext'
 
-function Logout(){
-  localStorage.clear()
-  return <Navigate to="/login" />
-}
 
-function RegisterAndLogout(){
-  localStorage.clear()
-  return <Register/>
+function Dashboard() {
+  return <div>Protected dashboard (you'll protect this later)</div>;
 }
 
 function App() {
-
   return (
-    <>
     <BrowserRouter>
-
-    <Routes>
-      <Route path='/' element={
-        <ProtectedRoute>
-          <Home />
-        </ProtectedRoute>
-      }  
-      />
-
-    <Route
-      path="/login"
-      element={
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
-      }
-    />
-
-    <Route
-      path="/register"
-      element={
-        <PublicRoute>
-          <Register />
-        </PublicRoute>
-      }
-    />
-
-      <Route path='*' element={
-          <NotFound />
-      }  
-      />
-
-      <Route path='/logout' element={
-          <Logout />
-      }  
-      />
-
-
-    </Routes>
-    
-    
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/" element={<div>Home — <a href="/login">Login</a></div>} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
-
-    </>
-  )
+  );
 }
 
-export default App
+export default App;
