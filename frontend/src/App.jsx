@@ -3,9 +3,15 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import Login from "./pages/Login";
 import RequireAuth from "./routes/RequireAuth";
+import LogoutButton from "./components/LogoutButton";
 
 function Dashboard() {
-  return <h2>Dashboard — Protected Page</h2>;
+  return(
+    <>
+    <h2>Dashboard — Protected Page</h2>;
+    <LogoutButton/>
+    </>
+  ) 
 }
 
 function App() {
