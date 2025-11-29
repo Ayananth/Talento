@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import Login from "./pages/Login";
 import RequireAuth from "./routes/RequireAuth";
+import RedirectIfAuth from "./routes/RedirectIfAuth";
 import LogoutButton from "./components/LogoutButton";
 
 function Dashboard() {
@@ -21,7 +22,15 @@ function App() {
         <Routes>
 
           {/* Public */}
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={
+            
+            <RedirectIfAuth>
+              <Login />
+            </RedirectIfAuth>
+            
+            
+            
+            } />
 
           {/* Protected route */}
           <Route
