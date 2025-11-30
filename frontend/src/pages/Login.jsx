@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../auth/useAuth";
+import { Button } from "flowbite-react";
+
 
 const Login = () => {
   const [email, setemail] = useState("");
@@ -30,6 +32,10 @@ const Login = () => {
   return (
     <div style={{ maxWidth: 400, margin: "30px auto" }}>
       <h2>Login</h2>
+      <div className="text-3xl font-bold text-red-600">Tailwind working!</div>
+      <Button color="blue">Flowbite Button</Button>
+
+
       <form onSubmit={handleSubmit}>
         <div>
           <label>email</label><br />

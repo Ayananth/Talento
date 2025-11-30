@@ -1,0 +1,97 @@
+export default function Login() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="max-w-md w-full">
+
+        {/* Small Welcome */}
+        <h3 className="text-center text-blue-600 font-medium mb-2">
+          Welcome back!
+        </h3>
+
+        {/* Main Heading */}
+        <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">
+          Member Login
+        </h1>
+
+        {/* Subtext */}
+        <p className="text-center text-gray-500 mb-6">
+          Access to all features. No credit card required.
+        </p>
+
+        {/* Google Button */}
+        <button
+          className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition"
+        >
+          <img
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            className="h-5 w-5"
+          />
+          <span className="text-gray-700 font-medium">Sign in with Google</span>
+        </button>
+
+        {/* Divider */}
+        <div className="flex items-center my-6">
+          <hr className="flex-grow border-gray-300" />
+          <span className="mx-3 text-gray-500 text-sm">Or continue with</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        {/* Username Field */}
+        <div className="mb-4">
+          <label className="block text-gray-700 font-medium mb-1">
+            Username or Email address *
+          </label>
+          <input
+            type="text"
+            placeholder="Steven Job"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+
+        {/* Password Field */}
+        <div className="mb-4">
+          <label className="block text-gray-700 font-medium mb-1">
+            Password *
+          </label>
+          <input
+            type="password"
+            placeholder="************"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+
+        {/* Remember & Forgot */}
+        <div className="flex items-center justify-between mb-6">
+          <label className="flex items-center gap-2 text-gray-700 text-sm">
+            <input type="checkbox" className="h-4 w-4" />
+            Remember me
+          </label>
+          <button className="text-blue-600 hover:underline text-sm">
+            Forgot Password
+          </button>
+        </div>
+
+        {/* Login Button */}
+        <button className="w-full bg-[#0A2342] text-white py-3 rounded-lg text-lg font-medium hover:bg-[#0c2d57] transition">
+          Login
+        </button>
+
+        {/* Signup */}
+        <p className="text-center text-gray-600 mt-4">
+          Don’t have an Account?{" "}
+          <a className="text-blue-600 hover:underline cursor-pointer">Sign up</a>
+        </p>
+      </div>
+
+      {/* Right Image */}
+      {/* <div className="hidden lg:flex ml-20">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/747/747376.png"
+          alt="Illustration"
+          className="h-64 opacity-80"
+        />
+      </div> */}
+    </div>
+  );
+}

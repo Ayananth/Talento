@@ -6,7 +6,7 @@ import Signup from "./pages/SignUp";
 import RequireAuth from "./routes/RequireAuth";
 import RedirectIfAuth from "./routes/RedirectIfAuth";
 import LogoutButton from "./components/LogoutButton";
-
+import LoginPage from "./pages/LoginPage";
 
 function Dashboard() {
   return(
@@ -27,7 +27,7 @@ function App() {
           <Route path="/login" element={
             
             <RedirectIfAuth>
-              <Login />
+              <LoginPage />
             </RedirectIfAuth>
             
             
