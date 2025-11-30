@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useAsyncError, useNavigate } from "react-router-dom";
 import useAuth from "../../auth/useAuth";
+import { Eye, EyeOff } from "lucide-react";
+
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -8,6 +10,7 @@ export default function LoginForm() {
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -108,20 +111,33 @@ export default function LoginForm() {
             Password *
           </label>
 
-          <input
-            type="password"
-            value={password}
-            placeholder="************"
-            onChange={(e) => setPassword(e.target.value)}
-            className={`w-full border rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-              errors.password ? "border-red-500" : "border-gray-300"
-            }`}
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              placeholder="************"
+              onChange={(e) => setPassword(e.target.value)}
+              className={`w-full border rounded-lg px-4 py-3 pr-12 text-gray-700 focus:ring-2 focus:outline-none ${
+                errors.password ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-blue-500"
+              }`}
+            />
+
+            {/* Toggle Button */}
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </span>
+          </div>
+
 
           {errors.password && (
             <p className="text-red-500 text-sm mt-1">{errors.password}</p>
           )}
         </div>
+
+        
 
         {/* Options */}
         <div className="flex items-center justify-between mb-6">
