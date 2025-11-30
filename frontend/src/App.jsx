@@ -1,12 +1,12 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
-import Login from "./pages/Login";
-import Signup from "./pages/SignUp";
+import Signup from "./components/seeker/SignUp";
 import RequireAuth from "./routes/RequireAuth";
 import RedirectIfAuth from "./routes/RedirectIfAuth";
-import LogoutButton from "./components/LogoutButton";
+import LogoutButton from "./components/seeker/LogoutButton";
 import LoginPage from "./pages/seeker/LoginPage";
+import RegisterPage from "./pages/seeker/RegisterPage";
 
 function Dashboard() {
   return(
@@ -38,7 +38,7 @@ function App() {
             path="/signup"
             element={
               <RedirectIfAuth>
-                <Signup />
+                <RegisterPage />
               </RedirectIfAuth>
             }
           />

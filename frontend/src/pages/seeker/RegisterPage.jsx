@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navbar } from "../../components/seeker/NavBar";
-import LoginForm from "../../components/seeker/LoginForm";
+import SignUpForm from "../../components/seeker/SignUpForm";
 
 
 
@@ -8,7 +8,7 @@ const LoginPage = () => {
   return (
     <div>
         <Navbar/>
-        <LoginForm/>
+        <SignUpForm/>
     </div>
   )
 }
