@@ -23,6 +23,10 @@ const Login = () => {
     }
   };
 
+  const handleNavigate = ()=>{
+    navigate('/signup')
+  }
+
   return (
     <div style={{ maxWidth: 400, margin: "30px auto" }}>
       <h2>Login</h2>
@@ -37,6 +41,7 @@ const Login = () => {
         </div>
         <button type="submit" style={{ marginTop: 10 }}>Login</button>
       </form>
+        <button type="button" onClick={handleNavigate} style={{ marginTop: 10 }}>Register</button>
       {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
     </div>
   );

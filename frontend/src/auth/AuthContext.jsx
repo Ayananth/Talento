@@ -34,6 +34,13 @@ export const AuthProvider = ({ children }) => {
     return resp;
   };
 
+  // Signup/register function
+  const register = async (payload) => {
+    const resp = await api.post("/v1/auth/sign_up", payload);
+    return resp;
+  };
+
+
   // logout: clear tokens and user
   const logout = () => {
     clearTokens();
@@ -41,7 +48,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
