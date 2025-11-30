@@ -1,7 +1,4 @@
 import { useState } from "react";
-import LoginForm from '../components/seeker/LoginForm'
-
-
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -79,17 +76,3 @@ export function Navbar() {
 }
 
 
-const LoginPage = () => {
-  return (
-    <div>
-
-        <Navbar/>
-        <LoginForm/>
-
-
-      
-    </div>
-  )
-}
-
-export default LoginPage

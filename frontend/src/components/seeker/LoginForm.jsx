@@ -1,4 +1,31 @@
-export default function Login() {
+import React, {useState} from "react";
+import { useNavigate } from "react-router-dom";
+import useAuth from "../../auth/useAuth";
+
+ 
+
+export default function LoginForm() {
+  const [email, setemail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      await login({ email, password });
+      navigate("/dashboard");
+    } catch (err) {
+      setError("Login failed. Check credentials.");
+      console.error(err);
+    }
+  };
+
+  const handleNavigate = ()=>{
+    navigate('/signup')
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="max-w-md w-full">
@@ -32,9 +59,9 @@ export default function Login() {
 
         {/* Divider */}
         <div className="flex items-center my-6">
-          <hr className="flex-grow border-gray-300" />
+          <hr className="grow border-gray-300" />
           <span className="mx-3 text-gray-500 text-sm">Or continue with</span>
-          <hr className="flex-grow border-gray-300" />
+          <hr className="grow border-gray-300" />
         </div>
 
         {/* Username Field */}
@@ -42,9 +69,7 @@ export default function Login() {
           <label className="block text-gray-700 font-medium mb-1">
             Username or Email address *
           </label>
-          <input
-            type="text"
-            placeholder="Steven Job"
+          <input value={email} onChange={(e) => setemail(e.target.value)} required 
             className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
@@ -54,12 +79,14 @@ export default function Login() {
           <label className="block text-gray-700 font-medium mb-1">
             Password *
           </label>
-          <input
-            type="password"
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
             placeholder="************"
             className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          
           />
+
         </div>
+
 
         {/* Remember & Forgot */}
         <div className="flex items-center justify-between mb-6">
@@ -72,8 +99,14 @@ export default function Login() {
           </button>
         </div>
 
+
+      {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
+
+
         {/* Login Button */}
-        <button className="w-full bg-[#0A2342] text-white py-3 rounded-lg text-lg font-medium hover:bg-[#0c2d57] transition">
+        <button
+        type="submit" onClick={handleSubmit}
+        className="w-full bg-[#0A2342] text-white py-3 rounded-lg text-lg font-medium hover:bg-[#0c2d57] transition">
           Login
         </button>
 
