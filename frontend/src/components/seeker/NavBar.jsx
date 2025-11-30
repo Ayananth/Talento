@@ -4,7 +4,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="bg-white">
+    <nav className="bg-white fixed w-full">
       <div className="flex items-center justify-between max-w-7xl mx-auto px-6 py-3">
 
         {/* Brand */}
