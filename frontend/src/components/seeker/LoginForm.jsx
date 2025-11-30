@@ -7,6 +7,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -32,9 +33,11 @@ export default function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoginError(null);
-
+    
     // Validate before API call
     if (!validateForm()) return;
+
+    setLoading(true);
 
     try {
       await login({ email, password });
@@ -42,6 +45,8 @@ export default function LoginForm() {
     } catch (err) {
       setLoginError("Login failed. Check your credentials.");
       console.error(err);
+    } finally{
+      setLoading(false)
     }
   };
 
@@ -138,9 +143,10 @@ export default function LoginForm() {
         <button
           type="submit"
           onClick={handleSubmit}
+          disabled={loading}
           className="w-full bg-[#0A2342] text-white py-3 rounded-lg text-lg font-medium hover:bg-[#0c2d57] transition"
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         {/* Signup */}
