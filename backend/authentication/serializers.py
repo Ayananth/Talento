@@ -37,7 +37,8 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data.pop("password_confirmed")
         user = USER(
             email=validated_data["email"],
-            user_type=validated_data.get('user_type', 'jobseeker')
+            user_type=validated_data.get('user_type', 'jobseeker'),
+            is_active=False,
         )
         user.set_password(validated_data['password'])
         user.save()

@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
+
 )
 from . import views
 
@@ -21,6 +22,7 @@ urlpatterns = [
 
 
     path('token/refresh', TokenRefreshView.as_view(), name='jwt_refresh'),
+    path("verify-email/", views.VerifyEmailView.as_view(), name="verify_email"),
 
 
 

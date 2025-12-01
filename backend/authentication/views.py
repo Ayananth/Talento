@@ -7,6 +7,16 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
+from django.urls import reverse
+from rest_framework_simplejwt.tokens import AccessToken
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.conf import settings
+
+from .utils import generate_email_verification_token
+USER = get_user_model()
+
 
 class SignUpView(APIView):
     def post(self, request):
@@ -14,6 +24,19 @@ class SignUpView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
+            token = generate_email_verification_token(user)
+            verify_url = request.build_absolute_uri(
+                reverse("authentication:verify_email")
+            ) + f"?token={token}"
+
+            send_mail(
+                subject="Verify your Talento account",
+                message=f"Click the link to verify your account:\n{verify_url}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
             return Response({
                 "message": "User created successfully"
             }, status = status.HTTP_201_CREATED)
@@ -41,6 +64,36 @@ class LogoutView(APIView):
 
 
 
+
+
+class VerifyEmailView(APIView):
+    def get(self, request):
+        token = request.GET.get("token")
+
+        if not token:
+            return Response({"error": "Token missing"}, status=400)
+
+        try:
+            access_token = AccessToken(token)
+
+            # Ensure it is an email verification token
+            if not access_token.get("email_verification", False):
+                return Response({"error": "Invalid token type"}, status=400)
+
+            user_id = access_token["user_id"]
+            user = USER.objects.get(id=user_id)
+
+            if user.is_active:
+                return Response({"message": "Account already verified"})
+
+            # Activate the user
+            user.is_active = True
+            user.save()
+
+            return Response({"message": "Email verified successfully!"})
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
 
 
