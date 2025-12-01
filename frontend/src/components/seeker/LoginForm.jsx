@@ -25,7 +25,7 @@ export default function LoginForm() {
     if (!password.trim()) {
       newErrors.password = "Password is required";
     }
-    else if (password.length < 6) {
+    else if (password.length < 3) {
       newErrors.password = "Password must be at least 6 characters";
     }
     setErrors(newErrors);
