@@ -6,6 +6,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 
+
 USER = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
@@ -16,34 +17,27 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = USER
         fields = ("email", "password", "password_confirmed", "user_type")
-        extra_kwargs = {
-            "password": {"write_only": True},
-        }
+        extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, attrs):
-        # Step 1: Password match check FIRST
+
         if attrs["password"] != attrs["password_confirmed"]:
-            raise serializers.ValidationError({"password_confirmed": "Passwords do not match."})
-
-        # Step 2: Email uniqueness NEXT
-        if USER.objects.filter(email=attrs["email"]).exists():
-            raise serializers.ValidationError({"email": "Registration failed. Try a different email."})
-
+            raise serializers.ValidationError(
+                {"password_confirmed": "Passwords do not match."}
+            )
         return attrs
-
-
 
     def create(self, validated_data):
         validated_data.pop("password_confirmed")
         user = USER(
             email=validated_data["email"],
-            user_type=validated_data.get('user_type', 'jobseeker'),
+            user_type=validated_data.get("user_type", "jobseeker"),
             is_active=False,
+            is_email_verified=False,
         )
-        user.set_password(validated_data['password'])
+        user.set_password(validated_data["password"])
         user.save()
         return user
-    
 
     
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):

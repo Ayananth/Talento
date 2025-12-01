@@ -25,10 +25,32 @@ USER = get_user_model()
 
 class SignUpView(APIView):
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        email = request.data.get("email")
 
-        if serializer.is_valid():
+        try:
+            user = USER.objects.get(email=email)
+            if not user.is_email_verified:
+                token = generate_email_verification_token(user)
+                verify_url = request.build_absolute_uri(
+                    reverse("authentication:verify_email")
+                ) + f"?token={token}"
+
+                send_verification_email.delay(user.email, verify_url)
+
+                return Response(
+                    {"message": "Account already exists but is not verified. Verification email resent."},
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                {"error": "User already exists and is verified. Please log in."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        except USER.DoesNotExist:
+            serializer = UserSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
             user = serializer.save()
+
             token = generate_email_verification_token(user)
             verify_url = request.build_absolute_uri(
                 reverse("authentication:verify_email")
@@ -36,16 +58,13 @@ class SignUpView(APIView):
 
             send_verification_email.delay(user.email, verify_url)
 
+            return Response(
+                {"message": "User created successfully. Verification email sent."},
+                status=status.HTTP_201_CREATED,
+            )
 
-            return Response({
-                "message": "User created successfully"
-            }, status = status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
 
 class MyTokenObtainPairView(TokenObtainPairView):
-    print("Login request received")
     serializer_class = MyTokenObtainPairSerializer
 
 
