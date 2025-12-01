@@ -13,6 +13,9 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from datetime import datetime
 
 from .utils import generate_email_verification_token
 USER = get_user_model()
@@ -29,13 +32,30 @@ class SignUpView(APIView):
                 reverse("authentication:verify_email")
             ) + f"?token={token}"
 
-            send_mail(
-                subject="Verify your Talento account",
-                message=f"Click the link to verify your account:\n{verify_url}",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=False,
+
+            html_content = render_to_string(
+                "authentication/email_verification.html",
+                {
+                    "user": user,
+                    "verify_url": verify_url,
+                    "year": datetime.now().year,
+                },
             )
+
+            # 4️⃣ Send real HTML email
+            subject = "Verify your Talento account"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            to = [user.email]
+
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body="Please verify your email using the link provided.",
+                from_email=from_email,
+                to=to,
+            )
+            email.attach_alternative(html_content, "text/html")
+            email.send()
+
 
             return Response({
                 "message": "User created successfully"

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" style="margin:0; padding:0;">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Verify your Talento account</title>
+  </head>
+
+  <body style="padding:0; margin:0; background:#f0f2f5; font-family: 'Segoe UI', Arial, sans-serif;">
+
+    <!-- Outer Container -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5; padding:40px 0;">
+      <tr>
+        <td align="center">
+
+          <!-- Card -->
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 8px 18px rgba(0,0,0,0.15);">
+
+            <!-- Header -->
+            <tr>
+              <td style="
+                background: linear-gradient(135deg, #3b82f6, #06b6d4);
+                padding: 40px 20px;
+                text-align: center;
+                color: white;
+              ">
+                <h1 style="margin:0; font-size:28px; font-weight:700;">Talento</h1>
+                <p style="margin:10px 0 0; font-size:16px; opacity:0.9;">Your gateway to smarter job opportunities</p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 40px 40px; color:#333;">
+
+                <h2 style="margin:0; font-size:22px; font-weight:600;">Verify Your Email</h2>
+
+                <p style="margin:20px 0; font-size:16px; line-height:1.6;">
+                  Hi <strong>{{ user.email }}</strong>,
+                </p>
+
+                <p style="margin:0 0 20px; font-size:16px; line-height:1.6;">
+                  Thank you for signing up on <strong>Talento Job Portal</strong>.  
+                  To activate your account, please verify your email address by clicking the button below.
+                </p>
+
+                <!-- Button -->
+                <div style="text-align:center; margin:40px 0;">
+                  <a href="{{ verify_url }}"
+                    style="
+                      background:#3b82f6;
+                      background:linear-gradient(135deg, #3b82f6, #06b6d4);
+                      padding: 14px 32px;
+                      color: #fff;
+                      text-decoration:none;
+                      font-size:16px;
+                      font-weight:600;
+                      border-radius:6px;
+                      display:inline-block;
+                    "
+                  >
+                    Verify Email
+                  </a>
+                </div>
+
+                <p style="margin:20px 0 0; font-size:14px; line-height:1.6; color:#555;">
+                  If the button doesn’t work, copy and paste the link below into your browser:
+                </p>
+
+                <p style="word-break:break-all; font-size:13px; margin-top:8px; color:#3b82f6;">
+                  {{ verify_url }}
+                </p>
+
+                <p style="margin:40px 0 0; font-size:14px; color:#555;">
+                  If you didn’t create a Talento account, please ignore this email.
+                </p>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#f5f7fa; padding:20px; text-align:center; color:#888; font-size:12px;">
+                © {{ year }} Talento. All rights reserved.<br />
+                Powered by Talento Job Portal — Connecting talent with opportunity.
+              </td>
+            </tr>
+
+          </table>
+          <!-- End Card -->
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+</html>
