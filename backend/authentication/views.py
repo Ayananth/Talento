@@ -7,6 +7,21 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
+from django.urls import reverse
+from rest_framework_simplejwt.tokens import AccessToken
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from datetime import datetime
+
+from .utils import generate_email_verification_token
+from .tasks import send_verification_email
+
+USER = get_user_model()
+
 
 class SignUpView(APIView):
     def post(self, request):
@@ -14,6 +29,14 @@ class SignUpView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
+            token = generate_email_verification_token(user)
+            verify_url = request.build_absolute_uri(
+                reverse("authentication:verify_email")
+            ) + f"?token={token}"
+
+            send_verification_email.delay(user.email, verify_url)
+
+
             return Response({
                 "message": "User created successfully"
             }, status = status.HTTP_201_CREATED)
@@ -40,6 +63,79 @@ class LogoutView(APIView):
             return Response({"error": "Invalid token"}, status=400)
 
 
+
+
+
+class VerifyEmailView(APIView):
+    def get(self, request):
+        token = request.GET.get("token")
+
+        if not token:
+            return Response({"error": "Token missing"}, status=400)
+
+        try:
+            access_token = AccessToken(token)
+
+            # Ensure it is an email verification token
+            if not access_token.get("email_verification", False):
+                return Response({"error": "Invalid token type"}, status=400)
+
+            user_id = access_token["user_id"]
+            user = USER.objects.get(id=user_id)
+
+            if user.is_active:
+                return Response({"message": "Account already verified"})
+
+            # Activate the user
+            user.is_active = True
+            user.save()
+
+            return Response({"message": "Email verified successfully!"})
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+        
+
+
+
+class ResendVerificationEmailView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+
+        if not email:
+            return Response(
+                {"error": "Email field is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = USER.objects.get(email=email)
+        except USER.DoesNotExist:
+            return Response(
+                {"error": "No account found with this email."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Already verified
+        if user.is_active:
+            return Response(
+                {"message": "Email already verified."},
+                status=status.HTTP_200_OK,
+            )
+
+        # Generate new verification token
+        token = generate_email_verification_token(user)
+        verify_url = request.build_absolute_uri(
+            reverse("authentication:verify_email")
+        ) + f"?token={token}"
+
+        # Send email asynchronously with Celery
+        send_verification_email.delay(user.email, verify_url)
+
+        return Response(
+            {"message": "Verification email resent successfully."},
+            status=status.HTTP_200_OK,
+        )
 
 
 

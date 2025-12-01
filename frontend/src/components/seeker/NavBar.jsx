@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
 
   return (
     <nav className="bg-white fixed w-full">
@@ -23,11 +27,15 @@ export function Navbar() {
 
         {/* Right Buttons */}
         <div className="hidden md:flex items-center space-x-4">
-          <button className="px-4 py-2 rounded-lg text-gray-700 border border-gray-300 hover:bg-gray-100 transition">
+          <button
+          onClick={()=> navigate('/login')}
+          className="px-4 py-2 rounded-lg text-gray-700 border border-gray-300 hover:bg-gray-100 transition">
             Login
           </button>
 
-          <button className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+          <button
+          onClick={()=> navigate('/signup')}
+          className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
             Sign Up
           </button>
         </div>
@@ -62,11 +70,11 @@ export function Navbar() {
           <a className="text-gray-700 hover:text-blue-600 transition">About</a>
           <a className="text-gray-700 hover:text-blue-600 transition">Contact</a>
 
-          <button className="w-full px-4 py-2 mt-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition">
+          <button onClick={()=> navigate('/login')} className="w-full px-4 py-2 mt-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition">
             Login
           </button>
 
-          <button className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+          <button onClick={()=> navigate('/signup')} className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
             Sign Up
           </button>
         </div>
