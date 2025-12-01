@@ -1,20 +1,36 @@
-from core.celery import app
+# from celery import shared_task
+# from django.core.mail import EmailMultiAlternatives
+# from django.template.loader import render_to_string
+# from django.conf import settings
+# from datetime import datetime
 
-@app.task
-def test_celery_task():
-    print("🎉 Celery task executed successfully!")
-    return "Task Completed"
+# @shared_task(bind=True, max_retries=3)
+# def send_verification_email(self, user_email, verify_url):
+#     try:
+#         html_content = render_to_string(
+#             "authentication/email_verification.html",
+#             {
+#                 "user_email": user_email,
+#                 "verify_url": verify_url,
+#                 "year": datetime.now().year,
+#             },
+#         )
 
+#         subject = "Verify your Talento account"
+#         from_email = settings.DEFAULT_FROM_EMAIL
+#         to = [user_email]
 
-from celery import shared_task
-from django.core.mail import send_mail
+#         email = EmailMultiAlternatives(
+#             subject=subject,
+#             body="Please verify your account using the link provided.",
+#             from_email=from_email,
+#             to=to,
+#         )
+#         email.attach_alternative(html_content, "text/html")
+#         email.send()
 
-@shared_task
-def send_verification_email(subject, message, recipient):
-    send_mail(
-        subject,
-        message,
-        None,  # DEFAULT_FROM_EMAIL
-        [recipient],
-        fail_silently=False
-    )
+#         return "Email sent successfully"
+
+#     except Exception as exc:
+#         # Retry after 10 seconds
+#         raise self.retry(exc=exc, countdown=10)
