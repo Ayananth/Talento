@@ -1,13 +1,12 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
-import Signup from "./components/seeker/SignUp";
 import RequireAuth from "./routes/RequireAuth";
 import RedirectIfAuth from "./routes/RedirectIfAuth";
 import LogoutButton from "./components/seeker/LogoutButton";
 import LoginPage from "./pages/seeker/LoginPage";
 import RegisterPage from "./pages/seeker/RegisterPage";
-
+import EmailVerificationPage from "./pages/seeker/EmailVerificationPage";
 function Dashboard() {
   return(
     <>
@@ -52,6 +51,16 @@ function App() {
               </RequireAuth>
             }
           />
+
+        <Route path="/email-verification" element={
+        <RedirectIfAuth>
+          <EmailVerificationPage />
+          </RedirectIfAuth>
+  
+  
+  
+  } />
+
 
           {/* Optional: redirect root to dashboard */}
           <Route path="/" element={<Navigate to="/dashboard" />} />

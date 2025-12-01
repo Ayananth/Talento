@@ -49,7 +49,8 @@ const SignUp = () => {
 
       await register(form);
 
-      navigate("/login");
+      navigate("/email-verification", { state: { email: form.email } });
+
 
     } catch (err) {
       console.log(err.response?.data);
