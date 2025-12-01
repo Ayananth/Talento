@@ -13,25 +13,60 @@ const SignUp = () => {
     password_confirmed: "",
   });
 
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null);               // General or backend error
+  const [fieldErrors, setFieldErrors] = useState({});     // For per-field errors
+  const [loading, setLoading] = useState(false);          // Disable button + spinner
 
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
+
+    // Clear field-specific errors when user edits the input
+    setFieldErrors({
+      ...fieldErrors,
+      [e.target.name]: "",
+    });
+    setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
+    
+    // BASIC FRONTEND VALIDATION
+    if (form.password !== form.password_confirmed) {
+      setFieldErrors({ password_confirmed: "Passwords do not match" });
+      return;
+    }
 
     try {
+      setLoading(true);
+
       await register(form);
+
       navigate("/login");
+
     } catch (err) {
       console.log(err.response?.data);
-      setError("Signup failed");
+
+      // Backend validation errors
+      const backend = err.response?.data;
+
+      if (typeof backend === "object") {
+        let fe = {};
+        Object.keys(backend).forEach((key) => {
+          fe[key] = backend[key]?.[0];
+        });
+        setFieldErrors(fe);
+      } else {
+        setError("Signup failed. Try again.");
+      }
+
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,7 +82,7 @@ const SignUp = () => {
           Access all features. No credit card required.
         </p>
 
-        {/* Google Button */}
+        {/* Google Login */}
         <button className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
           <img
             src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -74,8 +109,11 @@ const SignUp = () => {
               required
               value={form.username}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className={`w-full border ${fieldErrors.username ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
             />
+            {fieldErrors.username && (
+              <p className="text-red-600 text-sm mt-1">{fieldErrors.username}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -89,8 +127,11 @@ const SignUp = () => {
               required
               value={form.email}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className={`w-full border ${fieldErrors.email ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
             />
+            {fieldErrors.email && (
+              <p className="text-red-600 text-sm mt-1">{fieldErrors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -105,8 +146,11 @@ const SignUp = () => {
               value={form.password}
               onChange={handleChange}
               placeholder="************"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className={`w-full border ${fieldErrors.password ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
             />
+            {fieldErrors.password && (
+              <p className="text-red-600 text-sm mt-1">{fieldErrors.password}</p>
+            )}
           </div>
 
           {/* Confirm Password */}
@@ -121,11 +165,16 @@ const SignUp = () => {
               value={form.password_confirmed}
               onChange={handleChange}
               placeholder="************"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className={`w-full border ${fieldErrors.password_confirmed ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
             />
+            {fieldErrors.password_confirmed && (
+              <p className="text-red-600 text-sm mt-1">
+                {fieldErrors.password_confirmed}
+              </p>
+            )}
           </div>
 
-          {/* Terms */}
+          {/* Checkbox */}
           <div className="flex items-center justify-between mb-6">
             <label className="flex items-center gap-2 text-gray-700 text-sm">
               <input type="checkbox" className="h-4 w-4" required />
@@ -136,20 +185,25 @@ const SignUp = () => {
             </button>
           </div>
 
-          {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
+          {/* GENERAL ERROR */}
+          {error && (
+            <div className="text-red-600 text-center mb-4">{error}</div>
+          )}
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-[#0A2342] text-white py-3 rounded-lg text-lg font-medium hover:bg-[#0c2d57] transition"
+            disabled={loading}
+            className={`w-full text-white py-3 rounded-lg text-lg font-medium transition 
+              ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#0A2342] hover:bg-[#0c2d57]"}`}
           >
-            Register
+            {loading ? "Processing..." : "Register"}
           </button>
         </form>
 
         <p className="text-center text-gray-600 mt-4">
-          Already have an Account?{" "}
-          <a className="text-blue-600 hover:underline cursor-pointer" href="/login">
+          Already have an account?{" "}
+          <a href="/login" className="text-blue-600 hover:underline">
             Sign In
           </a>
         </p>
