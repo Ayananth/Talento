@@ -94,6 +94,49 @@ class VerifyEmailView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=400)
+        
+
+
+
+class ResendVerificationEmailView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+
+        if not email:
+            return Response(
+                {"error": "Email field is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = USER.objects.get(email=email)
+        except USER.DoesNotExist:
+            return Response(
+                {"error": "No account found with this email."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Already verified
+        if user.is_active:
+            return Response(
+                {"message": "Email already verified."},
+                status=status.HTTP_200_OK,
+            )
+
+        # Generate new verification token
+        token = generate_email_verification_token(user)
+        verify_url = request.build_absolute_uri(
+            reverse("authentication:verify_email")
+        ) + f"?token={token}"
+
+        # Send email asynchronously with Celery
+        send_verification_email.delay(user.email, verify_url)
+
+        return Response(
+            {"message": "Verification email resent successfully."},
+            status=status.HTTP_200_OK,
+        )
+
 
 
 
