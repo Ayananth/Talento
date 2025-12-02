@@ -145,7 +145,9 @@ export default function LoginForm() {
             <input type="checkbox" className="h-4 w-4" />
             Remember me
           </label>
-          <button className="text-blue-600 hover:underline text-sm">
+          <button
+           onClick={()=> navigate('/forgot-password')}
+           className="text-blue-600 hover:underline text-sm">
             Forgot Password
           </button>
         </div>
