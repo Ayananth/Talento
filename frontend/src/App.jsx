@@ -9,6 +9,7 @@ import RegisterPage from "./pages/seeker/RegisterPage";
 import EmailVerificationPage from "./pages/seeker/EmailVerificationPage";
 import EmailSuccessPage from "./pages/seeker/EmailSuccessPage";
 import EmailFailedPage from "./pages/seeker/EmailFailedPage";
+import ForgotPasswordPage from "./pages/seeker/ForgotPasswordPage";
 
 function Dashboard() {
   return(
@@ -63,6 +64,7 @@ function App() {
 
           <Route path="/email-verified-success" element={<EmailSuccessPage />} />
           <Route path="/email-verified-failed" element={<EmailFailedPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
 
 
