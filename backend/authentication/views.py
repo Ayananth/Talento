@@ -1,10 +1,9 @@
 from rest_framework.views import APIView
-from .serializers import UserSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view #for FBV, remove if not used
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import MyTokenObtainPairSerializer
+from .serializers import MyTokenObtainPairSerializer, PasswordResetRequestSerializer, UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.urls import reverse
@@ -17,12 +16,18 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from datetime import datetime
 from django.shortcuts import redirect
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+
 
 
 from .utils import generate_email_verification_token
-from .tasks import send_verification_email
+from .tasks import send_verification_email, send_password_reset_email_task
 
 USER = get_user_model()
+token_generator = PasswordResetTokenGenerator()
+
 
 
 class SignUpView(APIView):
@@ -157,39 +162,35 @@ class ResendVerificationEmailView(APIView):
             {"message": "Verification email resent successfully."},
             status=status.HTTP_200_OK,
         )
-
-
-
-
-# @api_view(['POST'])
-# def SignUpView(request):
-#     # Deserialize the incoming data using the UserSerializer
-#     serializer = UserSerializer(data=request.data)
     
-#     # Validate the data
-#     if serializer.is_valid():
-#         try:
-#             # Create the user
-#             user = serializer.save()
 
-#             # Return a success response
-#             return Response({
-#                 "message": "User created successfully.",
-#                 "user": {
-#                     "email": user.email
-#                 }
-#             }, status=status.HTTP_201_CREATED)
-#         except Exception as e:
-#             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-#     else:
-#         # If validation fails, return errors
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-from django.http import HttpResponse
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        serliazer = PasswordResetRequestSerializer(data = request.data)
+        serliazer.is_valid(raise_exception=True)
+        email = serliazer.validated_data["email"].lower().strip()
+        try:
+            user = USER.objects.get(email=email)
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = token_generator.make_token(user)
+            frontend_base = getattr(settings, "FRONTEND_URL", None)
+            if not frontend_base:
+                return Response(
+                    {'message': "Something wrong with our end. Please try again later..."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+            reset_path = f"/reset-password?uid={uidb64}&token={token}"
+            reset_url = f"{frontend_base.rstrip('/')}{reset_path}"
+            send_password_reset_email_task.delay(user.email, reset_url)
 
-def test(request):
-    return HttpResponse("Hello, World!", content_type="text/plain")
-
+        except USER.DoesNotExist:
+            pass
 
 
-    
+        return Response(
+            {"detail": "If an account with that email exists, we sent password reset instructions."},
+            status=status.HTTP_200_OK,
+        )
+
+
+

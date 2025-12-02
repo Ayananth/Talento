@@ -46,4 +46,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
         token["email"] = user.email
         return token
+    
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
 
