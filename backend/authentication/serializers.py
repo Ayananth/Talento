@@ -21,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = USER
-        fields = ("email", "password", "password_confirmed", "user_type")
+        fields = ("email","username", "password", "password_confirmed", "user_type")
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, attrs):
@@ -35,6 +35,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("password_confirmed")
         user = USER(
+            username = validated_data["username"],
             email=validated_data["email"],
             user_type=validated_data.get("user_type", "jobseeker"),
             is_active=False,
