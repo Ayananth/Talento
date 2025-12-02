@@ -21,7 +21,7 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  
+  const [showExpired, setShowExpired] = useState(false);
 
   // Validate inputs
   const validateForm = () => {
@@ -43,16 +43,39 @@ export default function ResetPassword() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const normalizeErrorMsg = (raw) => {
+    // raw can be string, array, object, or undefined
+    if (!raw) return "";
+    if (Array.isArray(raw)) return String(raw[0] || "");
+    if (typeof raw === "object") {
+      // try to pull first field message
+      const firstKey = Object.keys(raw)[0];
+      const val = raw[firstKey];
+      if (Array.isArray(val)) return String(val[0] || "");
+      if (typeof val === "string") return val;
+      return JSON.stringify(val);
+    }
+    return String(raw);
+  };
+
   const handleReset = async (e) => {
     e.preventDefault();
     setServerMessage("");
+    setShowExpired(false);
+
+    // if uid or token missing, show useful message
+    if (!uid || !token) {
+      setServerMessage("Missing reset token. Please request a new password reset link.");
+      setShowExpired(true);
+      return;
+    }
 
     if (!validateForm()) return;
 
     setLoading(true);
 
     try {
-      const response = await api.post("/v1/auth/reset-password/", {
+      await api.post("/v1/auth/reset-password/", {
         uid,
         token,
         password,
@@ -61,10 +84,34 @@ export default function ResetPassword() {
       setServerMessage("Password reset successfully. Redirecting...");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
-      console.error(err);
-      setServerMessage(
-        err.response?.data?.detail || "Invalid or expired reset link."
-      );
+      console.error("Reset error:", err);
+
+      // err.response?.data can be many shapes. Normalize to a string:
+      const respData = err?.response?.data;
+      let msg = "";
+
+      // prefer token field, then detail, then fallback to statusText or full body
+      if (respData) {
+        if (respData.token) {
+          msg = normalizeErrorMsg(respData.token);
+        } else if (respData.detail) {
+          msg = normalizeErrorMsg(respData.detail);
+        } else {
+          // try first field
+          msg = normalizeErrorMsg(respData);
+        }
+      } else {
+        msg = err?.message || "Something went wrong";
+      }
+
+      const lower = msg.toLowerCase();
+
+      if (lower.includes("invalid") || lower.includes("expired")) {
+        setServerMessage("Your reset link is invalid or expired.");
+        setShowExpired(true);
+      } else {
+        setServerMessage(msg || "Something went wrong. Try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -161,12 +208,23 @@ export default function ResetPassword() {
           </p>
         )}
 
+        {showExpired && (
+          <div className="text-center mt-4">
+            <button
+              onClick={() => navigate("/forgot-password")}
+              className="text-blue-600 underline font-medium"
+            >
+              Request a new password reset link
+            </button>
+          </div>
+        )}
+
         {/* Submit */}
         <button
           onClick={handleReset}
-          disabled={loading}
+          disabled={loading || showExpired}
           className={`w-full bg-[#0A2342] text-white py-3 rounded-lg text-lg font-medium transition
-            ${loading ? "opacity-70 cursor-not-allowed" : "hover:bg-[#0c2d57]"}
+            ${loading || showExpired ? "opacity-70 cursor-not-allowed" : "hover:bg-[#0c2d57]"}
           `}
         >
           {loading ? "Resetting..." : "Reset Password"}
