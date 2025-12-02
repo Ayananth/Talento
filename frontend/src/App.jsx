@@ -7,8 +7,8 @@ import LogoutButton from "./components/seeker/LogoutButton";
 import LoginPage from "./pages/seeker/LoginPage";
 import RegisterPage from "./pages/seeker/RegisterPage";
 import EmailVerificationPage from "./pages/seeker/EmailVerificationPage";
-import EmailVerifiedSuccess from "./components/seeker/EmailVerifiedSuccess";
-import EmailVerifiedFailed from "./components/seeker/EmailVerifiedFailed";
+import EmailSuccessPage from "./pages/seeker/EmailSuccessPage";
+import EmailFailedPage from "./pages/seeker/EmailFailedPage";
 
 function Dashboard() {
   return(
@@ -61,8 +61,8 @@ function App() {
           </RedirectIfAuth>
   } />
 
-          <Route path="/email-verified-success" element={<EmailVerifiedSuccess />} />
-          <Route path="/email-verified-failed" element={<EmailVerifiedFailed />} />
+          <Route path="/email-verified-success" element={<EmailSuccessPage />} />
+          <Route path="/email-verified-failed" element={<EmailFailedPage />} />
 
 
 

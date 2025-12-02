@@ -51,13 +51,13 @@ export default function EmailVerifiedFailed() {
         </p>
 
         {/* Resend Button */}
-        <button
+        {/* <button
           onClick={handleResendVerification}
           disabled={loading}
           className="bg-red-600 text-white px-6 py-2 rounded-md w-full font-medium hover:bg-red-700 transition disabled:opacity-50 mb-3"
         >
           {loading ? "Resending..." : "Resend Verification Email"}
-        </button>
+        </button> */}
 
         {/* Go to Login */}
         <button
