@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.decorators import api_view #for FBV, remove if not used
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer, PasswordResetRequestSerializer, UserSerializer, ResetPasswordSerializer
@@ -19,6 +19,10 @@ from django.shortcuts import redirect
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from .serializers import GoogleAuthSerializer
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+import os
 
 
 
@@ -27,6 +31,7 @@ from .tasks import send_verification_email, send_password_reset_email_task
 
 USER = get_user_model()
 token_generator = PasswordResetTokenGenerator()
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
 
 
@@ -213,3 +218,82 @@ class ResetPasswordView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class GoogleLoginAPIView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        print("Hello world")
+        return Response(
+            {"ok":"ok"},
+            status=status.HTTP_200_OK
+        )
+
+    def post(self, request):
+        print("Checking serializer")
+        serializer = GoogleAuthSerializer(data=request.data)
+        print("done serializer")
+
+        serializer.is_valid(raise_exception=True)
+        print(" serializer valid")
+
+        token = serializer.validated_data["id_token"]
+
+        try:
+            # Verify the token and get user info
+            id_info = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+
+            # id_info contents example:
+            # { 'iss': 'https://accounts.google.com', 'sub': '107...','email': 'user@example.com', 'email_verified': True, 'name': '...', 'picture': '...' }
+
+            if id_info.get('iss') not in ['accounts.google.com', 'https://accounts.google.com']:
+                return Response({"detail": "Wrong issuer."}, status=status.HTTP_400_BAD_REQUEST)
+
+            google_sub = id_info.get('sub')
+            email = id_info.get('email')
+            email_verified = id_info.get('email_verified', False)
+            name = id_info.get('name', '')
+            picture = id_info.get('picture', '')
+
+            if not email:
+                return Response({"detail": "Google token did not contain an email."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Find or create user
+            try:
+                user = USER.objects.get(email__iexact=email)
+                # Optionally, link google_sub if not present
+                if not getattr(user, 'google_sub', None):
+                    user.google_sub = google_sub
+                    user.is_email_verified = user.is_email_verified or email_verified
+                    user.save(update_fields=['google_sub', 'is_email_verified'])
+            except USER.DoesNotExist:
+                # Create a new user. You may want to set a unusable password.
+                user = USER.objects.create(
+                    username = email.split('@')[0] if not getattr(USER._meta, 'USERNAME_FIELD', None) else email,
+                    email = email,
+                    is_email_verified = email_verified,
+                    google_sub = google_sub,
+                )
+                user.set_unusable_password()
+                user.save()
+
+            # Create JWT tokens (Simple JWT)
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                }
+            }
+            return Response(data)
+
+        except ValueError:
+            # Token invalid
+            print(f"detail: Invalid token ")
+
+            return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            print(f"detail: {str(exc)}")
+            return Response({"detail": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

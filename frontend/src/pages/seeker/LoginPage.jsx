@@ -5,6 +5,9 @@ import LoginForm from "../../components/seeker/LoginForm";
 
 
 const LoginPage = () => {
+
+
+
   return (
     <div>
         <Navbar/>

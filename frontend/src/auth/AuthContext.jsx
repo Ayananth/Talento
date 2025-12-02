@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState, useRef } from "react";
 import api from "../apis/api";
 import { saveTokens, clearTokens, getAccessToken, decodeToken } from "./authUtils";
+import { GoogleLogin } from "@react-oauth/google";
 
 export const AuthContext = createContext();
 
@@ -92,6 +93,15 @@ export const AuthProvider = ({ children }) => {
     return resp;
   };
 
+  const googleLogin = ({access, refresh}) => {
+    saveTokens({ access, refresh });
+
+    const decoded = decodeToken(access);
+    setUser(decoded);
+
+    scheduleAutoRefresh(access);
+  };
+
   // Signup/register function
   const register = async (payload) => {
     const resp = await api.post("/v1/auth/sign_up", payload);
@@ -110,7 +120,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user, login, logout, register, googleLogin }}>
       {children}
     </AuthContext.Provider>
   );

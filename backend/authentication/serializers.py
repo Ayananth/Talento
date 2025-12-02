@@ -88,3 +88,6 @@ class ResetPasswordSerializer(serializers.Serializer):
         user.save()
 
         return user
+    
+class GoogleAuthSerializer(serializers.Serializer):
+    id_token = serializers.CharField(write_only=True)
