@@ -8,4 +8,9 @@ export default defineConfig({
   plugins: [react(),
     tailwindcss(),
   ],
+    server: {
+    allowedHosts: [
+      "queenliest-cochleate-julieta.ngrok-free.dev"
+    ]
+  }
 })
