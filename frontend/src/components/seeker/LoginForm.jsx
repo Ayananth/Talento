@@ -72,8 +72,27 @@ export default function LoginForm() {
           Access to all features. No credit card required.
         </p>
 
+        <button className="w-full flex items-center justify-center gap-3  border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
+          {/* <img
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            className="h-5 w-5"
+          />
+          <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
-        <GoogleLoginButton className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition" />
+        <GoogleLoginButton />
+
+        </button>
+
+        {/* <button className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
+
+        <GoogleLoginButton />
+        </button> */}
+
+
+        {/* <GoogleLoginButton /> */}
+
+
 
         <div className="flex items-center my-6">
           <hr className="grow border-gray-300" />
