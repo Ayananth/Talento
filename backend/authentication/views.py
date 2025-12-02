@@ -16,6 +16,8 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from datetime import datetime
+from django.shortcuts import redirect
+
 
 from .utils import generate_email_verification_token
 from .tasks import send_verification_email
@@ -103,16 +105,16 @@ class VerifyEmailView(APIView):
             user = USER.objects.get(id=user_id)
 
             if user.is_active:
-                return Response({"message": "Account already verified"})
+                return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_SUCCESS_URL)
 
             # Activate the user
             user.is_active = True
             user.save()
 
-            return Response({"message": "Email verified successfully!"})
+            return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_SUCCESS_URL)
 
         except Exception as e:
-            return Response({"error": str(e)}, status=400)
+            return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_FAILED_URL)
         
 
 

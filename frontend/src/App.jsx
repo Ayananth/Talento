@@ -7,6 +7,9 @@ import LogoutButton from "./components/seeker/LogoutButton";
 import LoginPage from "./pages/seeker/LoginPage";
 import RegisterPage from "./pages/seeker/RegisterPage";
 import EmailVerificationPage from "./pages/seeker/EmailVerificationPage";
+import EmailVerifiedSuccess from "./components/seeker/EmailVerifiedSuccess";
+import EmailVerifiedFailed from "./components/seeker/EmailVerifiedFailed";
+
 function Dashboard() {
   return(
     <>
@@ -56,10 +59,13 @@ function App() {
         <RedirectIfAuth>
           <EmailVerificationPage />
           </RedirectIfAuth>
-  
-  
-  
   } />
+
+          <Route path="/email-verified-success" element={<EmailVerifiedSuccess />} />
+          <Route path="/email-verified-failed" element={<EmailVerifiedFailed />} />
+
+
+
 
 
           {/* Optional: redirect root to dashboard */}
