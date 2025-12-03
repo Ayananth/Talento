@@ -6,6 +6,9 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
+from django.contrib.auth import authenticate
+from rest_framework.exceptions import AuthenticationFailed
+
 
 
 
@@ -21,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = USER
-        fields = ("email","username", "password", "password_confirmed", "user_type")
+        fields = ("email","username", "password", "password_confirmed", "role")
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, attrs):
@@ -37,7 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = USER(
             username = validated_data["username"],
             email=validated_data["email"],
-            user_type=validated_data.get("user_type", "jobseeker"),
+            role=validated_data.get("role", "jobseeker"),
             is_active=False,
             is_email_verified=False,
         )
@@ -45,8 +48,21 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-    
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        requested_role = self.context['request'].data.get("role")
+        data = super().validate(attrs)
+        user = self.user
+        if requested_role and user.role != requested_role:
+            raise AuthenticationFailed("Invalid credentials")
+        refresh = self.get_token(user)
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        # data['role'] = user.role
+        # data['email'] = user.email
+        return data
+    
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
