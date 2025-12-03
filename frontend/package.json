@@ -15,6 +15,7 @@
     "axios": "^1.13.2",
     "flowbite": "^4.0.1",
     "flowbite-react": "^0.12.10",
+    "framer-motion": "^12.23.25",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.555.0",
     "ogl": "^1.0.11",

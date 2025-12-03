@@ -4,7 +4,7 @@ import useAuth from "../../auth/useAuth";
 import { Link } from "react-router-dom";
 
 
-const SignUp = ({role}) => {
+const SignUp = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -45,7 +45,7 @@ const SignUp = ({role}) => {
     }
 
     try {
-      form.role = role
+      form.role = "recruiter"
       setLoading(true);
 
       await register(form);

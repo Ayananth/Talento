@@ -19,12 +19,12 @@ export function Navbar() {
         </div>
 
         {/* Center Links */}
-        <div className="hidden md:flex items-center space-x-10 text-lg">
+        {/* <div className="hidden md:flex items-center space-x-10 text-lg">
           <a className="text-gray-700 hover:text-blue-600 transition">Home</a>
           <a className="text-gray-700 hover:text-blue-600 transition">Jobs</a>
           <a className="text-gray-700 hover:text-blue-600 transition">About</a>
           <a className="text-gray-700 hover:text-blue-600 transition">Contact</a>
-        </div>
+        </div> */}
 
         {/* Right Section */}
         <div className="hidden md:flex items-center space-x-4">
@@ -33,18 +33,18 @@ export function Navbar() {
           {!isAuthenticated && (
             <>
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/admin/login')}
                 className="px-4 py-2 rounded-lg text-gray-700 border border-gray-300 hover:bg-gray-100 transition"
               >
-                Login
+                Admin Login
               </button>
 
-              <button
+              {/* <button
                 onClick={() => navigate('/signup')}
                 className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
               >
                 Sign Up
-              </button>
+              </button> */}
             </>
           )}
 
@@ -60,12 +60,12 @@ export function Navbar() {
               </button>
 
               {/* Profile Icon */}
-              <button
+              {/* <button
                 onClick={() => navigate('/dashboard')}
                 className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition"
               >
                 <span className="font-bold">U</span>
-              </button>
+              </button> */}
             </>
           )}
         </div>
@@ -95,11 +95,11 @@ export function Navbar() {
       {/* MOBILE MENU */}
       {open && (
         <div className="md:hidden flex flex-col space-y-3 px-6 pb-4 border-t pt-3">
-
+{/* 
           <a className="text-gray-700 hover:text-blue-600 transition">Home</a>
           <a className="text-gray-700 hover:text-blue-600 transition">Jobs</a>
           <a className="text-gray-700 hover:text-blue-600 transition">About</a>
-          <a className="text-gray-700 hover:text-blue-600 transition">Contact</a>
+          <a className="text-gray-700 hover:text-blue-600 transition">Contact</a> */}
 
           {/* NOT AUTH */}
           {!isAuthenticated && (
@@ -108,15 +108,15 @@ export function Navbar() {
                 onClick={() => navigate('/login')}
                 className="w-full px-4 py-2 mt-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
               >
-                Login
+                Admin Login
               </button>
 
-              <button
+              {/* <button
                 onClick={() => navigate('/signup')}
                 className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
               >
                 Sign Up
-              </button>
+              </button> */}
             </>
           )}
 
@@ -130,12 +130,12 @@ export function Navbar() {
                 Logout
               </button>
 
-              <button
+              {/* <button
                 onClick={() => navigate('/dashboard')}
                 className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
               >
                 Go to Dashboard
-              </button>
+              </button> */}
             </>
           )}
         </div>

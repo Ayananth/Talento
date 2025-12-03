@@ -44,8 +44,8 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      await login({ email, password });
-      navigate("/");
+      await login({ email, password, "role":"recruiter" });
+      navigate("/recruiter");
     } catch (err) {
       setLoginError("Login failed. Check your credentials.");
       console.error(err);
@@ -54,7 +54,7 @@ export default function LoginForm() {
     }
   };
 
-  const handleNavigate = () => navigate("/signup");
+  const handleNavigate = () => navigate("/recruiter/signup");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -65,7 +65,7 @@ export default function LoginForm() {
         </h3>
 
         <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">
-          Member Login
+          Recruiter Login
         </h1>
 
         <p className="text-center text-gray-500 mb-6">
@@ -80,7 +80,7 @@ export default function LoginForm() {
           />
           <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
-        <GoogleLoginButton role={"jobseeker"} />
+        <GoogleLoginButton role={"recruiter"} />
 
         </button>
 

@@ -23,6 +23,7 @@ from .serializers import GoogleAuthSerializer
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import os
+from core.permissions import IsAdmin, IsRecruiter, IsJobseeker
 
 
 
@@ -119,6 +120,8 @@ class VerifyEmailView(APIView):
 
             # Activate the user
             user.is_active = True
+            user.is_email_verified = True
+            print(user)
             user.save()
 
             return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_SUCCESS_URL)
@@ -238,6 +241,7 @@ class GoogleLoginAPIView(APIView):
         print(" serializer valid")
 
         token = serializer.validated_data["id_token"]
+        role = serializer.validated_data["role"]
 
         try:
             # Verify the token and get user info
@@ -261,6 +265,13 @@ class GoogleLoginAPIView(APIView):
             # Find or create user
             try:
                 user = USER.objects.get(email__iexact=email)
+
+                if user.role and user.role != role:
+                    print("Role mismatch. You already registered")
+                    return Response(
+                        {"detail": f"Role mismatch. You already registered as {user.role}"},
+                        status=status.HTTP_400_BAD_REQUEST
+        )
                 # Optionally, link google_sub if not present
                 if not getattr(user, 'google_sub', None):
                     user.google_sub = google_sub
@@ -273,12 +284,20 @@ class GoogleLoginAPIView(APIView):
                     email = email,
                     is_email_verified = email_verified,
                     google_sub = google_sub,
+                    role = role
                 )
+
+                print(user)
+                print(role)
                 user.set_unusable_password()
                 user.save()
 
             # Create JWT tokens (Simple JWT)
             refresh = RefreshToken.for_user(user)
+            refresh['role'] = user.role
+            refresh['email'] = user.email
+            refresh.access_token['role'] = user.role
+            refresh.access_token['email'] = user.email
             data = {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
