@@ -23,6 +23,7 @@ from .serializers import GoogleAuthSerializer
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import os
+from core.permissions import IsAdmin, IsRecruiter, IsJobseeker
 
 
 
