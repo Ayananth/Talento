@@ -32,10 +32,10 @@ import RecruiterLanding from "./pages/recruiter/RecruiterLanding";
 import RecruiterDashboard from "./pages/recruiter/Dashboard";
 
 // ----- Admin pages & layout -----
-// import AdminLoginPage from "./pages/admin/LoginPage";
-// import AdminLayout from "./layouts/admin/AdminLayout";
-// import AdminLanding from "./pages/admin/Landing";
-// import AdminDashboard from "./pages/admin/Dashboard";
+import AdminLoginPage from "./pages/admin/LoginPage";
+import AdminLayout from "./layouts/admin/AdminLayout";
+import AdminLanding from "./pages/admin/Landing";
+import AdminDashboard from "./pages/admin/Dashboard";
 
 
 function App() {
@@ -128,7 +128,7 @@ function App() {
           </Route>
 
           {/** ----------------- Admin routes ----------------- **/}
-          {/* <Route
+          <Route
             path="/admin/login"
             element={
               <RedirectIfAuth role="admin">
@@ -148,9 +148,9 @@ function App() {
             }
           >
             <Route index element={<AdminLanding />} />
-            <Route path="dashboard" element={<AdminDashboard />} /> */}
+            <Route path="dashboard" element={<AdminDashboard />} />
             {/* other admin routes: /admin/users, /admin/settings */}
-          {/* </Route> */}
+          </Route>
 
           {/** Fallbacks */}
           {/* Redirect any unknown /admin/* or /recruiter/* to NotFound or their root */}
