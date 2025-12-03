@@ -6,7 +6,7 @@ import { User } from 'lucide-react';
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
   return (
     <nav className="bg-white w-full">
@@ -29,7 +29,7 @@ export function Navbar() {
         {/* Right Section */}
         <div className="hidden md:flex items-center space-x-4">
 
-          {/* If user is NOT authenticated */}
+          {/* ---------- NOT AUTHENTICATED ---------- */}
           {!isAuthenticated && (
             <>
               <button
@@ -48,15 +48,25 @@ export function Navbar() {
             </>
           )}
 
-          {/* If user IS authenticated */}
+          {/* ---------- AUTHENTICATED ---------- */}
           {isAuthenticated && (
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition"
-            >
-              {/* You can replace this with an icon or avatar */}
-              <span className="font-bold"><User /></span>
-            </button>
+            <>
+              {/* Logout Button */}
+              <button
+                onClick={logout}
+                className="px-4 py-2 rounded-lg text-gray-700 border border-gray-300 hover:bg-gray-100 transition"
+              >
+                Logout
+              </button>
+
+              {/* Profile Icon */}
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition"
+              >
+                <span className="font-bold">U</span>
+              </button>
+            </>
           )}
         </div>
 
@@ -82,7 +92,7 @@ export function Navbar() {
 
       </div>
 
-      {/* Mobile Menu */}
+      {/* MOBILE MENU */}
       {open && (
         <div className="md:hidden flex flex-col space-y-3 px-6 pb-4 border-t pt-3">
 
@@ -91,7 +101,7 @@ export function Navbar() {
           <a className="text-gray-700 hover:text-blue-600 transition">About</a>
           <a className="text-gray-700 hover:text-blue-600 transition">Contact</a>
 
-          {/* If NOT authenticated */}
+          {/* NOT AUTH */}
           {!isAuthenticated && (
             <>
               <button
@@ -110,14 +120,23 @@ export function Navbar() {
             </>
           )}
 
-          {/* If authenticated (Mobile) */}
+          {/* AUTH */}
           {isAuthenticated && (
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
-            >
-              Go to Dashboard
-            </button>
+            <>
+              <button
+                onClick={logout}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+              >
+                Logout
+              </button>
+
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                Go to Dashboard
+              </button>
+            </>
           )}
         </div>
       )}
