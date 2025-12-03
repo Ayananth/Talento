@@ -80,7 +80,7 @@ export default function LoginForm() {
           />
           <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
-        <GoogleLoginButton />
+        <GoogleLoginButton role={"jobseeker"} />
 
         </button>
 

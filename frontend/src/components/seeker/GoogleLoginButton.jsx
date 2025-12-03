@@ -9,7 +9,7 @@ import useAuth from "../../auth/useAuth";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-export default function GoogleLoginButton() {
+export default function GoogleLoginButton({role}) {
     const { googleLogin } = useAuth();
     const navigate = useNavigate()
   const handleSuccess = async (credentialResponse) => {
@@ -19,7 +19,7 @@ export default function GoogleLoginButton() {
 
 
     try {
-      const res = await api.post("/v1/auth/google-login/", { id_token });
+      const res = await api.post("/v1/auth/google-login/", { id_token, role });
 
       if (res.status !== 200) {
         console.error("Google login failed:", res.data);
@@ -29,7 +29,7 @@ export default function GoogleLoginButton() {
       // Your backend returns { access, refresh, user }
         const { access, refresh, user } = res.data;
 
-        googleLogin({access, refresh}); 
+        googleLogin({access, refresh, role}); 
 
       console.log("Logged in user:", user);
 

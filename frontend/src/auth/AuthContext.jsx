@@ -93,10 +93,11 @@ export const AuthProvider = ({ children }) => {
     return resp;
   };
 
-  const googleLogin = ({access, refresh}) => {
+  const googleLogin = ({access, refresh, role}) => {
     saveTokens({ access, refresh });
 
     const decoded = decodeToken(access);
+    console.log("decoded", decoded)
     setUser(decoded);
 
     scheduleAutoRefresh(access);
