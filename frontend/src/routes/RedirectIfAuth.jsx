@@ -8,7 +8,7 @@ const RedirectIfAuth = ({ children }) => {
   if (loading) return <div>Loading...</div>;
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;

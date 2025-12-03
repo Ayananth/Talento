@@ -45,7 +45,7 @@ export default function LoginForm() {
 
     try {
       await login({ email, password });
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setLoginError("Login failed. Check your credentials.");
       console.error(err);

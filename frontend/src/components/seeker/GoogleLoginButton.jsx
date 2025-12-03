@@ -33,8 +33,7 @@ export default function GoogleLoginButton() {
 
       console.log("Logged in user:", user);
 
-    //   TODO: Navigate to dashboard or update global auth state
-      navigate("/dashboard");
+      navigate("/");
 
     } catch (err) {
       console.error("Error sending Google ID token:", err);
