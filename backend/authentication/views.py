@@ -120,6 +120,8 @@ class VerifyEmailView(APIView):
 
             # Activate the user
             user.is_active = True
+            user.is_email_verified = True
+            print(user)
             user.save()
 
             return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_SUCCESS_URL)
@@ -282,7 +284,11 @@ class GoogleLoginAPIView(APIView):
                     email = email,
                     is_email_verified = email_verified,
                     google_sub = google_sub,
+                    role = role
                 )
+
+                print(user)
+                print(role)
                 user.set_unusable_password()
                 user.save()
 
