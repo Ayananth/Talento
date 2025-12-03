@@ -4,11 +4,11 @@ import SignUpForm from "../../components/seeker/SignUpForm";
 
 
 
-const LoginPage = () => {
+const LoginPage = ({role}) => {
   return (
     <div>
         <Navbar/>
-        <SignUpForm/>
+        <SignUpForm role={role}/>
     </div>
   )
 }
