@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
+
 from .models import (
     JobSeekerProfile,
     JobSeekerSkill,
@@ -36,8 +37,13 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
             "show_contact",
             "last_updated",
             "phone_number",
-            "notice_period"
+            "notice_period",
+            "profile_image"
         ]
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+            return obj.profile_image.url
+        return None
 
 class JobSeekerSkillSerializer(serializers.ModelSerializer):
     class Meta:

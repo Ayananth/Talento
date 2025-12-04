@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'profiles.apps.ProfilesConfig',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    "cloudinary",
+    "cloudinary_storage",
 ]
 
 MIDDLEWARE = [
@@ -191,3 +193,13 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 EMAIL_VERIFICATION_SUCCESS_URL = os.getenv("EMAIL_VERIFICATION_SUCCESS_URL")
 EMAIL_VERIFICATION_FAILED_URL =os.getenv("EMAIL_VERIFICATION_FAILED_URL")
+
+
+# Cloudinary settings
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
+}
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"

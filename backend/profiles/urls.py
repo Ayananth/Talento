@@ -4,4 +4,5 @@ app_name = "profile"
 
 urlpatterns = [
     path("me/", views.JobSeekerProfileView.as_view(), name="jobseeker-me"),
+    path("me/profile-image/", views.JobSeekerProfileImageView.as_view()),
 ]

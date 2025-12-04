@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from cloudinary.models import CloudinaryField
+
 
 User = settings.AUTH_USER_MODEL
 
@@ -28,11 +30,8 @@ class JobSeekerProfile(models.Model):
 
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     notice_period = models.CharField(max_length=50, blank=True, null=True)
-    profile_image = models.ImageField(
-        upload_to="profile_images/",
-        blank=True,
-        null=True
-    )
+    profile_image = CloudinaryField("image", blank=True, null=True)
+    
 
 
 

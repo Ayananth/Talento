@@ -3,6 +3,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from core.permissions import IsJobseeker
+import cloudinary.uploader
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import (
     JobSeekerProfile,
@@ -58,3 +60,57 @@ class JobSeekerProfileView(APIView):
 
         serializer = FullJobSeekerProfileSerializer(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+class JobSeekerProfileImageView(APIView):
+    permission_classes = [IsJobseeker]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def put(self, request):
+        profile = request.user.jobseeker_profile
+        file = request.FILES.get("profile_image")
+
+        if not file:
+            return Response({"error": "No image uploaded"}, status=400)
+
+        # delete old image
+        if profile.profile_image:
+            try:
+                cloudinary.uploader.destroy(profile.profile_image.public_id)
+            except:
+                pass
+
+        upload_result = cloudinary.uploader.upload(
+            file,
+            folder=f"talento-dev/profile_pics/jobseeker/",
+            overwrite=True,
+            resource_type="image"
+        )
+
+        # Save Cloudinary result into model field
+        profile.profile_image = upload_result["public_id"]
+        profile.save()
+
+        return Response({
+            "message": "Profile image updated successfully",
+            "profile_image": upload_result["secure_url"],
+        }, status=200)
+    def delete(self, request):
+        """Delete profile image."""
+        profile = request.user.jobseeker_profile
+
+        if not profile.profile_image:
+            return Response({"error": "No profile image exists"}, status=404)
+
+        # Delete Cloudinary image
+        try:
+            cloudinary.uploader.destroy(profile.profile_image.public_id)
+        except:
+            pass
+
+        profile.profile_image = None
+        profile.save()
+
+        return Response({"message": "Profile image deleted"}, status=200)
