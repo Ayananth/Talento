@@ -8,3 +8,5 @@ admin.site.register(models.JobSeekerEducation)
 admin.site.register(models.JobSeekerExperience)
 admin.site.register(models.JobSeekerResume)
 admin.site.register(models.JobSeekerLanguage)
+admin.site.register(models.RecruiterProfile)
+
