@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../apis/api";
 import {
   MapPin,
   Phone,
@@ -10,45 +10,44 @@ import {
 } from "lucide-react";
 
 export default function ProfileHeader() {
-  const [profile, setProfile] = useState({});
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Helper to replace null/undefined with placeholder
-  const getValue = (value, placeholder) =>
-    value && value !== "" ? value : placeholder;
+  const getVal = (val, placeholder) =>
+    val && val !== "" && val !== null ? val : placeholder;
 
   useEffect(() => {
-    axios
-      .get("/api/profile/")
+    api
+      .get("v1/profile/me")
       .then((res) => {
-        setProfile(res.data || {});
+        setData(res.data);
         setLoading(false);
       })
       .catch(() => {
-        setError("Failed to load profile");
+        setData(null);
         setLoading(false);
       });
   }, []);
 
-  console.log(profile)
-  console.log(getValue(profile.job_title, "Role"))
-
   if (loading) {
     return (
-      <div className="w-full bg-white rounded-2xl shadow p-6 text-center py-10">
+      <div className="w-full bg-white rounded-2xl shadow p-6 text-center py-8">
         Loading profile...
       </div>
     );
   }
 
-  if (error) {
+  if (!data) {
     return (
-      <div className="w-full bg-white rounded-2xl shadow p-6 text-center py-10 text-red-500">
-        {error}
+      <div className="w-full bg-white rounded-2xl shadow p-6 text-center py-8 text-red-500">
+        Failed to load profile.
       </div>
     );
   }
+
+  const user = data.user || {};
+  const profile = data.profile || {};
+  const exp = data.experience?.[0] || {};
 
   return (
     <div className="w-full bg-white rounded-2xl shadow p-6">
@@ -59,18 +58,14 @@ export default function ProfileHeader() {
         {/* LEFT BLOCK */}
         <div className="flex gap-6 w-full lg:w-2/3">
 
-          {/* PROFILE IMAGE */}
+          {/* PROFILE IMAGE + COMPLETION */}
           <div className="relative w-28 h-28 flex items-center justify-center">
             <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-              {profile.image ? (
-                <img src={profile.image} className="w-full h-full rounded-full object-cover" />
-              ) : (
-                "profile"
-              )}
+              profile
             </div>
 
             <div className="absolute bottom-0 bg-white shadow rounded-full px-3 py-1 text-xs text-green-600 font-semibold">
-              {getValue(profile.completion, "0%")}
+              92%
             </div>
           </div>
 
@@ -79,23 +74,25 @@ export default function ProfileHeader() {
 
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-semibold">
-                {getValue(profile.name, "User")}
+                {getVal(profile.fullname, "User")}
               </h1>
               <Edit3 size={18} className="text-gray-500" />
             </div>
 
             <p className="text-sm text-gray-700">
-              {getValue(profile.job_title, "Role")}
+              {getVal(profile.headline, "Role")}
             </p>
 
             <p className="text-xs text-gray-500">
-              at {getValue(profile.company, "Company")}
+              at {getVal(exp.company, "Company")}
             </p>
 
             <p className="text-sm text-gray-500 mt-2">
               Profile last updated —{" "}
               <span className="text-blue-600 font-medium">
-                {getValue(profile.updated, "N/A")}
+                {profile.last_updated
+                  ? new Date(profile.last_updated).toDateString()
+                  : "N/A"}
               </span>
             </p>
 
@@ -103,35 +100,36 @@ export default function ProfileHeader() {
 
             {/* DETAILS GRID */}
             <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-800">
+
               <InfoItem
                 icon={<MapPin size={14} />}
-                text={getValue(profile.location, "Location")}
+                text={getVal(profile.address, "Location")}
               />
 
               <InfoItem
                 icon={<Briefcase size={14} />}
-                text={getValue(profile.experience, "Experience")}
+                text={
+                  profile.experience_years
+                    ? `${profile.experience_years} Years`
+                    : "Experience"
+                }
               />
 
               <InfoItem
                 icon={<Briefcase size={14} />}
-                text={getValue(profile.salary, "Salary")}
+                text={getVal(profile.current_salary, "Salary")}
               />
 
-              <InfoItem
-                icon={<Phone size={14} />}
-                text={getValue(profile.phone, "Phone")}
-              />
+              {/* ❗ Phone not available in JSON */}
+              <InfoItem icon={<Phone size={14} />} text={getVal(profile.phone_number, "Phone")} />
 
               <InfoItem
                 icon={<Mail size={14} />}
-                text={getValue(profile.email, "Email")}
+                text={getVal(user.email, "Email")}
               />
 
-              <InfoItem
-                icon={<Clock size={14} />}
-                text={getValue(profile.notice_period, "Notice Period")}
-              />
+              {/* ❗ Notice period not available */}
+              <InfoItem icon={<Clock size={14} />} text={getVal(profile.notice_period, "Notice Period")} />
             </div>
 
           </div>
@@ -139,10 +137,11 @@ export default function ProfileHeader() {
 
         {/* RIGHT STATS BOX */}
         <div className="bg-[#f5f9ff] border border-[#e0eaff] rounded-xl p-6 flex justify-around w-fit lg:w-1/3">
-          <StatBox number={getValue(profile.searches, "0")} label="Search Appearances" />
+          <StatBox number="0" label="Search Appearances" />
           <div className="w-px h-12 bg-gray-300"></div>
-          <StatBox number={getValue(profile.actions, "0")} label="Recruiter Actions" />
+          <StatBox number="0" label="Recruiter Actions" />
         </div>
+
       </div>
     </div>
   );
@@ -152,7 +151,7 @@ function InfoItem({ icon, text }) {
   return (
     <div className="flex gap-2 items-start">
       {icon}
-      <span className="leading-tight">{text}</span>
+      <span>{text}</span>
     </div>
   );
 }
@@ -162,9 +161,9 @@ function StatBox({ number, label }) {
     <div className="text-center">
       <p className="text-2xl font-bold text-gray-900">{number}</p>
       <p className="text-gray-600 text-sm">{label}</p>
-      {/* <button className="text-blue-600 text-xs mt-1 hover:underline">
+      <button className="text-blue-600 text-xs mt-1 hover:underline">
         View all
-      </button> */}
+      </button>
     </div>
   );
 }

@@ -26,6 +26,14 @@ class JobSeekerProfile(models.Model):
 
     last_updated = models.DateTimeField(auto_now=True)
 
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    notice_period = models.CharField(max_length=50, blank=True, null=True)
+    profile_image = models.ImageField(
+        upload_to="profile_images/",
+        blank=True,
+        null=True
+    )
+
 
 
     def __str__(self):
