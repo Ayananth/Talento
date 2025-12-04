@@ -58,16 +58,21 @@ export default function ProfileHeader() {
         {/* LEFT BLOCK */}
         <div className="flex gap-6 w-full lg:w-2/3">
 
-          {/* PROFILE IMAGE + COMPLETION */}
-          <div className="relative w-28 h-28 flex items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-              profile
-            </div>
-
-            <div className="absolute bottom-0 bg-white shadow rounded-full px-3 py-1 text-xs text-green-600 font-semibold">
-              92%
-            </div>
+        {/* PROFILE IMAGE + edit */}
+        <div className="relative w-35 h-35 flex items-center justify-center">
+          <div className="w-30 h-30 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+            <img
+              src="https://res.cloudinary.com/dycb8cbf8/image/upload/talento-dev/profile_pics/jobseeker/c7ejm0g1ybttb4p5bpdq.jpg"
+              alt=""
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
+
+          <div className="absolute bottom-0 bg-white shadow rounded-full px-3 py-1 text-xs text-blue-600 font-semibold">
+            Edit
+          </div>
+        </div>
+
 
           {/* USER INFO */}
           <div className="flex flex-col w-full">
@@ -120,7 +125,6 @@ export default function ProfileHeader() {
                 text={getVal(profile.current_salary, "Salary")}
               />
 
-              {/* ❗ Phone not available in JSON */}
               <InfoItem icon={<Phone size={14} />} text={getVal(profile.phone_number, "Phone")} />
 
               <InfoItem
@@ -128,7 +132,6 @@ export default function ProfileHeader() {
                 text={getVal(user.email, "Email")}
               />
 
-              {/* ❗ Notice period not available */}
               <InfoItem icon={<Clock size={14} />} text={getVal(profile.notice_period, "Notice Period")} />
             </div>
 
