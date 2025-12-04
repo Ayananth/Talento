@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { CircleUser } from 'lucide-react';
 import api from "../../apis/api";
 import {
   MapPin,
@@ -33,6 +34,16 @@ export default function ProfileHeader() {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 3000); // Auto hide after 3 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   // ------------------------ IMAGE UPLOAD HANDLER ------------------------
 
