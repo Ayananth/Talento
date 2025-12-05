@@ -101,7 +101,7 @@ class JobSeekerResumeSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
-            "url",
+            "file",
             "uploaded_at",
             "parsed_data",
             "is_default",

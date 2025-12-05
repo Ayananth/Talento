@@ -15,7 +15,15 @@ from .models import (
     JobSeekerAccomplishment,
     JobSeekerResume,
 )
-from .serializers import FullJobSeekerProfileSerializer,  JobSeekerProfileUpdateSerializer
+from .serializers import (FullJobSeekerProfileSerializer,  
+                          JobSeekerProfileSerializer, 
+                          JobSeekerSkillSerializer,
+                          JobSeekerExperienceSerializer,
+                          JobSeekerEducationSerializer ,
+                          JobSeekerLanguageSerializer ,
+                          JobSeekerAccomplishmentSerializer ,
+                          JobSeekerResumeSerializer                       
+                          )
 
 
 class JobSeekerProfileView(APIView):
@@ -132,7 +140,7 @@ class JobSeekerProfileUpdateView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = JobSeekerProfileUpdateSerializer(
+        serializer = JobSeekerProfileSerializer(
             profile, data=request.data, partial=True
         )
 
@@ -141,3 +149,285 @@ class JobSeekerProfileUpdateView(APIView):
             return Response({"message": "Profile updated successfully", "profile": serializer.data})
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+class JobSeekerSkillView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def get(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        skills = JobSeekerSkill.objects.filter(profile=profile)
+        serializer = JobSeekerSkillSerializer(skills, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        serializer = JobSeekerSkillSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save(profile=profile)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+    
+
+    def delete(self, request, pk):
+        try:
+            skill = JobSeekerSkill.objects.get(id=pk)
+        except JobSeekerSkill.DoesNotExist:
+            return Response({"error": "Skill not found"}, status=404)
+
+        skill.delete()
+        return Response({"message": "Skill deleted"}, status=200)
+    
+
+
+class JobSeekerExperienceView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def get(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        exp = JobSeekerExperience.objects.filter(profile=profile)
+        serializer = JobSeekerExperienceSerializer(exp, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        serializer = JobSeekerExperienceSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(profile=profile)
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+    def patch(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Experience ID required"}, status=400)
+
+        try:
+            exp = JobSeekerExperience.objects.get(id=pk)
+        except JobSeekerExperience.DoesNotExist:
+            return Response({"error": "Experience not found"}, status=404)
+
+        serializer = JobSeekerExperienceSerializer(exp, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Experience ID required"}, status=400)
+
+        try:
+            exp = JobSeekerExperience.objects.get(id=pk)
+        except JobSeekerExperience.DoesNotExist:
+            return Response({"error": "Experience not found"}, status=404)
+
+        exp.delete()
+        return Response({"message": "Experience deleted"})
+    
+
+class JobSeekerEducationView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def get(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        edu = JobSeekerEducation.objects.filter(profile=profile)
+        serializer = JobSeekerEducationSerializer(edu, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        serializer = JobSeekerEducationSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(profile=profile)
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+    def patch(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Education ID required"}, status=400)
+
+        try:
+            edu = JobSeekerEducation.objects.get(id=pk)
+        except JobSeekerEducation.DoesNotExist:
+            return Response({"error": "Education not found"}, status=404)
+
+        serializer = JobSeekerEducationSerializer(edu, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Education ID required"}, status=400)
+
+        try:
+            edu = JobSeekerEducation.objects.get(id=pk)
+        except JobSeekerEducation.DoesNotExist:
+            return Response({"error": "Education not found"}, status=404)
+
+        edu.delete()
+        return Response({"message": "Education deleted"})
+    
+
+class JobSeekerLanguageView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def get(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        langs = JobSeekerLanguage.objects.filter(profile=profile)
+        serializer = JobSeekerLanguageSerializer(langs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        serializer = JobSeekerLanguageSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(profile=profile)
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+    def patch(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Language ID required"}, status=400)
+
+        try:
+            lang = JobSeekerLanguage.objects.get(id=pk)
+        except JobSeekerLanguage.DoesNotExist:
+            return Response({"error": "Language not found"}, status=404)
+
+        serializer = JobSeekerLanguageSerializer(lang, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Language ID required"}, status=400)
+
+        try:
+            lang = JobSeekerLanguage.objects.get(id=pk)
+        except JobSeekerLanguage.DoesNotExist:
+            return Response({"error": "Language not found"}, status=404)
+
+        lang.delete()
+        return Response({"message": "Language deleted"})
+
+
+
+    
+
+class JobSeekerAccomplishmentView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def get(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        acc = JobSeekerAccomplishment.objects.filter(profile=profile)
+        serializer = JobSeekerAccomplishmentSerializer(acc, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        serializer = JobSeekerAccomplishmentSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(profile=profile)
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+    def patch(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Accomplishment ID required"}, status=400)
+
+        try:
+            acc = JobSeekerAccomplishment.objects.get(id=pk)
+        except JobSeekerAccomplishment.DoesNotExist:
+            return Response({"error": "Accomplishment not found"}, status=404)
+
+        serializer = JobSeekerAccomplishmentSerializer(acc, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Accomplishment ID required"}, status=400)
+
+        try:
+            acc = JobSeekerAccomplishment.objects.get(id=pk)
+        except JobSeekerAccomplishment.DoesNotExist:
+            return Response({"error": "Accomplishment not found"}, status=404)
+
+        acc.delete()
+        return Response({"message": "Accomplishment deleted"})
+
+
+
+class JobSeekerResumeView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def get(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        resumes = JobSeekerResume.objects.filter(profile=profile)
+        serializer = JobSeekerResumeSerializer(resumes, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        serializer = JobSeekerResumeSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(profile=profile)
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+    def patch(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Resume ID required"}, status=400)
+
+        try:
+            resume = JobSeekerResume.objects.get(id=pk)
+        except JobSeekerResume.DoesNotExist:
+            return Response({"error": "Resume not found"}, status=404)
+
+        serializer = JobSeekerResumeSerializer(resume, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk=None):
+        if not pk:
+            return Response({"error": "Resume ID required"}, status=400)
+
+        try:
+            resume = JobSeekerResume.objects.get(id=pk)
+        except JobSeekerResume.DoesNotExist:
+            return Response({"error": "Resume not found"}, status=404)
+
+        resume.delete()
+        return Response({"message": "Resume deleted"})
