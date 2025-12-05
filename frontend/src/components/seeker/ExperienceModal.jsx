@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, AlertCircle } from "lucide-react";
+import { X } from "lucide-react";
 import api from "../../apis/api";
 
 export default function ExperienceModal({
@@ -19,7 +19,7 @@ export default function ExperienceModal({
     skills: "",
   });
 
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   // Load edit data
@@ -35,8 +35,8 @@ export default function ExperienceModal({
         description: initialData.description ?? "",
         skills: initialData.skills ?? "",
       });
+      setErrors({});
     } else if (isOpen) {
-      // Reset for Add mode
       setForm({
         role: "",
         company: "",
@@ -47,23 +47,43 @@ export default function ExperienceModal({
         description: "",
         skills: "",
       });
+      setErrors({});
     }
   }, [isOpen, initialData]);
 
   const validate = () => {
-    if (!form.role.trim()) return "Role is required";
-    if (!form.company.trim()) return "Company is required";
-    if (!form.employment_type.trim()) return "Employment type is required";
-    if (!form.start_date) return "Start date is required";
-    return "";
+    const newErrors = {};
+    const today = new Date();
+
+    const start = form.start_date ? new Date(form.start_date) : null;
+    const end = form.end_date ? new Date(form.end_date) : null;
+
+    // Required fields
+    if (!form.role.trim()) newErrors.role = "Role is required";
+    if (!form.company.trim()) newErrors.company = "Company is required";
+    if (!form.employment_type.trim()) newErrors.employment_type = "Employment type is required";
+    if (!form.start_date) newErrors.start_date = "Start date is required";
+
+    // Start date validation
+    if (start && start > today)
+      newErrors.start_date = "Start date cannot be in the future";
+
+    // End date validation
+    if (end) {
+      if (end < start)
+        newErrors.end_date = "End date cannot be before start date";
+      if (end.getTime() === start.getTime())
+        newErrors.end_date = "Start and end date cannot be the same";
+      if (end > today)
+        newErrors.end_date = "End date cannot be in the future";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
-    const err = validate();
-    if (err) {
-      setError(err);
-      return;
-    }
+    if (!validate()) return;
 
     setSaving(true);
 
@@ -71,20 +91,18 @@ export default function ExperienceModal({
       let response;
 
       if (initialData) {
-        // EDIT
         response = await api.patch(
           `/v1/profile/me/experience/${initialData.id}/`,
           form
         );
       } else {
-        // ADD
         response = await api.post(`/v1/profile/me/experience/`, form);
       }
 
       onSuccess(response.data);
       onClose();
     } catch (err) {
-      setError("Failed to save experience");
+      setErrors({ general: "Failed to save experience" });
     }
 
     setSaving(false);
@@ -95,8 +113,7 @@ export default function ExperienceModal({
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
       <div className="bg-white w-full max-w-lg rounded-xl shadow-lg p-6 relative">
-        {/* Close */}
-        <button className="absolute right-4 top-4" onClick={onClose}>
+        <button className="absolute right-4 top-4 text-gray-600" onClick={onClose}>
           <X />
         </button>
 
@@ -104,11 +121,8 @@ export default function ExperienceModal({
           {initialData ? "Edit Experience" : "Add Experience"}
         </h2>
 
-        {error && (
-          <div className="bg-red-100 text-red-700 border border-red-300 px-3 py-2 rounded mb-4 flex gap-2 items-center">
-            <AlertCircle size={16} />
-            {error}
-          </div>
+        {errors.general && (
+          <p className="text-red-600 mb-3">{errors.general}</p>
         )}
 
         <div className="grid grid-cols-1 gap-3">
@@ -125,20 +139,24 @@ export default function ExperienceModal({
               <label className="text-sm font-medium">{label}</label>
               <input
                 type={type || "text"}
-                className="w-full border rounded-lg p-2 mt-1"
+                className={`w-full border rounded-lg p-2 mt-1 ${
+                  errors[name] ? "border-red-500" : "border-gray-300"
+                }`}
                 value={form[name]}
-                onChange={(e) =>
-                  setForm({ ...form, [name]: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, [name]: e.target.value })}
               />
+              {errors[name] && (
+                <p className="text-red-600 text-sm mt-1">{errors[name]}</p>
+              )}
             </div>
           ))}
 
-          {/* Description */}
           <div>
             <label className="text-sm font-medium">Description</label>
             <textarea
-              className="w-full border rounded-lg p-2 mt-1"
+              className={`w-full border rounded-lg p-2 mt-1 ${
+                errors.description ? "border-red-500" : "border-gray-300"
+              }`}
               rows="3"
               value={form.description}
               onChange={(e) =>
