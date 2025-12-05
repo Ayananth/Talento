@@ -2,12 +2,15 @@ import React, { useEffect, useState } from "react";
 import ExperienceModal from "./ExperienceModal";
 import api from "../../apis/api";
 import { Trash2 } from "lucide-react";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 
 
 export default function EmploymentCard() {
   const [jobs, setJobs] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editJob, setEditJob] = useState(null);
+const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [deleteId, setDeleteId] = useState(null);
 
   // Load jobs
   useEffect(() => {
@@ -29,17 +32,17 @@ export default function EmploymentCard() {
     }
   };
 
-const handleDelete = async (id) => {
-  if (!confirm("Are you sure you want to delete this experience?")) return;
-
-  try {
-    await api.delete(`/v1/profile/me/experience/${id}/`);
-    setJobs((prev) => prev.filter((job) => job.id !== id));
-  } catch (err) {
-    console.log(err);
-    alert("Failed to delete experience");
-  }
-};
+    const handleDelete = async () => {
+    try {
+        await api.delete(`/v1/profile/me/experience/${deleteId}/`);
+        setJobs((prev) => prev.filter((job) => job.id !== deleteId));
+        setShowDeleteModal(false);
+        setDeleteId(null);
+    } catch (err) {
+        console.log(err);
+        alert("Failed to delete experience");
+    }
+    };
 
 
   return (
@@ -55,6 +58,16 @@ const handleDelete = async (id) => {
         onSuccess={handleSuccess}
         initialData={editJob}
       />
+
+        <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+            setShowDeleteModal(false);
+            setDeleteId(null);
+        }}
+        onConfirm={handleDelete}
+        />
+
 
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
@@ -88,8 +101,12 @@ const handleDelete = async (id) => {
                 <Trash2
                 size={18}
                 className="text-red-500 cursor-pointer"
-                onClick={() => handleDelete(job.id)}
+                onClick={() => {
+                    setDeleteId(job.id);
+                    setShowDeleteModal(true);
+                }}
                 />
+
             </div>
             </div>
 
