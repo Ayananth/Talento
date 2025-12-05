@@ -5,6 +5,7 @@ import ResumeUploadCard from '../../components/seeker/ResumeUploadCard'
 import ResumeHeadlineCard from '../../components/seeker/ResumeHeadlineCard'
 import KeySkillsCard from '../../components/seeker/KeySkillsCard'
 import EmploymentCard from '../../components/seeker/EmploymentCard'
+import EducationCard from '../../components/seeker/EducationCard'
 
 const Dashboard = () => {
   return (
@@ -22,6 +23,7 @@ const Dashboard = () => {
             <ResumeHeadlineCard />
             <KeySkillsCard />
             <EmploymentCard />
+            <EducationCard />
             
           </div>
         </div>
