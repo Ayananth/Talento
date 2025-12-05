@@ -4,10 +4,11 @@ import Sidebar from '../../components/seeker/Sidebar'
 import ResumeUploadCard from '../../components/seeker/ResumeUploadCard'
 import ResumeHeadlineCard from '../../components/seeker/ResumeHeadlineCard'
 import KeySkillsCard from '../../components/seeker/KeySkillsCard'
+import EmploymentCard from '../../components/seeker/EmploymentCard'
 
 const Dashboard = () => {
   return (
-    <div className="max-w-7xl mx-auto mt-5 px-4">
+    <div className="max-w-7xl mx-auto mt-5 px-4 mb-10">
       <ProfileHeader />
 
       <div className="flex gap-6 mt-6">
@@ -20,6 +21,8 @@ const Dashboard = () => {
             <ResumeUploadCard />
             <ResumeHeadlineCard />
             <KeySkillsCard />
+            <EmploymentCard />
+            
           </div>
         </div>
       </div>
