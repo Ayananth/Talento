@@ -293,7 +293,7 @@ function StatBox({ number, label }) {
       <p className="text-2xl font-bold text-gray-900">{number}</p>
       <p className="text-gray-600 text-sm">{label}</p>
       <button className="text-blue-600 text-xs mt-1 hover:underline">
-        View all
+        {/* View all */}
       </button>
     </div>
   );

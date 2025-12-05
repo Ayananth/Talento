@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
       refreshAccessToken();
     }, refreshIn);
 
-    console.log("⏲️ Auto-refresh scheduled in:", refreshIn / 1000, "seconds");
+    console.log("Auto-refresh scheduled in:", refreshIn / 1000, "seconds");
   };
 
   const refreshAccessToken = async () => {
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
 
       scheduleAutoRefresh(newAccess);
 
-      console.log("🔄 Access token refreshed!");
+      console.log("Access token refreshed!");
     } catch (err) {
       console.log(" Auto-refresh failed. Logging out.");
       logout();
