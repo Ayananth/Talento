@@ -15,7 +15,7 @@ from .models import (
     JobSeekerAccomplishment,
     JobSeekerResume,
 )
-from .serializers import FullJobSeekerProfileSerializer
+from .serializers import FullJobSeekerProfileSerializer,  JobSeekerProfileUpdateSerializer
 
 
 class JobSeekerProfileView(APIView):
@@ -114,3 +114,30 @@ class JobSeekerProfileImageView(APIView):
         profile.save()
 
         return Response({"message": "Profile image deleted"}, status=200)
+
+
+
+
+class JobSeekerProfileUpdateView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def patch(self, request):
+        user = request.user
+
+        try:
+            profile = JobSeekerProfile.objects.get(user=user)
+        except JobSeekerProfile.DoesNotExist:
+            return Response(
+                {"error": "Profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = JobSeekerProfileUpdateSerializer(
+            profile, data=request.data, partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Profile updated successfully", "profile": serializer.data})
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
