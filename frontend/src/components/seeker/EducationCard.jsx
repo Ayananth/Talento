@@ -40,7 +40,7 @@ export default function EducationCard() {
 
   const handleSubmit = async (data) => {
     if (editItem) {
-      await api.put(`v1/profile/me/education/${editItem.id}/`, data);
+      await api.patch(`v1/profile/me/education/${editItem.id}/`, data);
     } else {
       await api.post(`v1/profile/me/education/`, data);
     }

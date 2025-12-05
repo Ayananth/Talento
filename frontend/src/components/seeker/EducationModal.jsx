@@ -5,14 +5,16 @@ export default function EducationModal({
   isOpen,
   onClose,
   onSubmit,
-  initialData = null, // If editing, contains: {id, degree, institution, start_date, end_date}
+  initialData = null,
 }) {
   const [degree, setDegree] = useState("");
   const [institution, setInstitution] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // Load initial data when editing
+  const [dateError, setDateError] = useState("");
+
+  // Load values when editing
   useEffect(() => {
     if (initialData) {
       setDegree(initialData.degree || "");
@@ -25,12 +27,48 @@ export default function EducationModal({
       setStartDate("");
       setEndDate("");
     }
+
+    setDateError("");
   }, [initialData]);
+
+    useEffect(() => {
+    const today = new Date().setHours(0, 0, 0, 0);
+    const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
+    const end = endDate ? new Date(endDate).setHours(0, 0, 0, 0) : null;
+
+    // RESET error
+    setDateError("");
+
+    // Rule 1: start date cannot be in the future
+    if (start && start > today) {
+        setDateError("Start date cannot be in the future.");
+        return;
+    }
+
+    if (start === end) {
+        setDateError("Dates can not be same");
+        return;
+    }
+
+    if (end && end > today) {
+        setDateError("End date cannot be in the future.");
+        return;
+    }
+
+    if (start && end && end < start) {
+        setDateError("End date cannot be earlier than start date.");
+        return;
+    }
+
+}, [startDate, endDate]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Final check
+    if (dateError) return;
 
     onSubmit({
       degree,
@@ -43,8 +81,8 @@ export default function EducationModal({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-lg relative">
-        
-        {/* Close Button */}
+
+        {/* Close */}
         <button className="absolute right-4 top-4" onClick={onClose}>
           <X className="w-5 h-5 text-gray-500 hover:text-gray-700" />
         </button>
@@ -92,7 +130,9 @@ export default function EducationModal({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
+              className={`w-full border rounded-lg px-3 py-2 text-sm ${
+                dateError ? "border-red-500" : ""
+              }`}
               required
             />
           </div>
@@ -106,11 +146,17 @@ export default function EducationModal({
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
+              className={`w-full border rounded-lg px-3 py-2 text-sm ${
+                dateError ? "border-red-500" : ""
+              }`}
             />
+
+            {dateError && (
+              <p className="text-red-500 text-xs mt-1">{dateError}</p>
+            )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Buttons */}
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
@@ -122,7 +168,12 @@ export default function EducationModal({
 
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+              disabled={!!dateError}
+              className={`px-4 py-2 rounded-lg text-white text-sm transition ${
+                dateError
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
               {initialData ? "Save Changes" : "Add"}
             </button>
