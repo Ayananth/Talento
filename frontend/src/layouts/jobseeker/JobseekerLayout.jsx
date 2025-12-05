@@ -3,6 +3,7 @@ import Footer from '../../components/seeker/Footer'
 import { Outlet } from 'react-router-dom'
 
 
+
 const JobseekerLayout = () => {
   return (
     <>
