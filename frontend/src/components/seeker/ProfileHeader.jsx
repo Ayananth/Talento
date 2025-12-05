@@ -10,6 +10,7 @@ import {
   Edit3,
   AlertCircle,
 } from "lucide-react";
+import ProfileEditModal from "./ProfileEditModal";
 
 export default function ProfileHeader() {
   const [data, setData] = useState(null);
@@ -17,6 +18,9 @@ export default function ProfileHeader() {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [success, setSuccess] = useState("");
+
   const baseUrl = "https://res.cloudinary.com/dycb8cbf8/"
 
   const getVal = (val, placeholder) =>
@@ -44,6 +48,13 @@ export default function ProfileHeader() {
       return () => clearTimeout(timer);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
 
   // ------------------------ IMAGE UPLOAD HANDLER ------------------------
 
@@ -120,16 +131,56 @@ export default function ProfileHeader() {
   const profile = data.profile || {};
   const exp = data.experience?.[0] || {};
 
+  const initialData = {
+    fullname: profile.fullname,
+    headline: profile.headline,
+    company: exp.company,
+    address: profile.address,
+    current_salary: profile.current_salary,
+    experience_years: profile.experience_years,
+    notice_period: profile.notice_period,
+    phone_number: profile.phone_number,
+    email: user.email,
+  };
   // ------------------------ MAIN UI ------------------------
+
+
+
+
 
   return (
     <div className="w-full bg-white rounded-2xl shadow p-6">
+
+      {/* modal */}
+      <ProfileEditModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        initialData={initialData}
+        onSuccess={(updated) => {
+          setData((prev) => ({
+            ...prev,
+            profile: {
+              ...prev.profile,
+              ...updated.profile
+            }
+          }));
+          setSuccess("Profile updated successfully!");
+        }}
+      />
 
       {/* ERROR MESSAGE */}
       {error && (
         <div className="bg-red-100 border border-red-300 text-red-700 p-3 rounded-lg mb-4 flex items-center gap-2">
           <AlertCircle size={18} />
           {error}
+        </div>
+      )}
+
+      {/* success message */}
+
+      {success && (
+        <div className="bg-green-100 border border-green-300 text-green-700 p-3 rounded-lg mb-4 flex items-center gap-2">
+          ✓ {success}
         </div>
       )}
 
@@ -178,7 +229,9 @@ export default function ProfileHeader() {
               <h1 className="text-xl font-semibold">
                 {getVal(profile.fullname, "User")}
               </h1>
-              <Edit3 size={18} className="text-gray-500" />
+              <button onClick={() => setShowModal(true)}>
+                <Edit3 size={18} className="text-gray-500" />
+              </button>
             </div>
 
             <p className="text-sm text-gray-700">
