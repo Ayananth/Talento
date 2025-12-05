@@ -14,9 +14,9 @@ export default function ExperienceModal({
     employment_type: "",
     start_date: "",
     end_date: "",
-    notice_period: "",
+    // notice_period: "",
     description: "",
-    skills: "",
+    // skills: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -28,24 +28,24 @@ export default function ExperienceModal({
       setForm({
         role: initialData.role ?? "",
         company: initialData.company ?? "",
-        employment_type: initialData.employment_type ?? "",
+        // employment_type: initialData.employment_type ?? "",
         start_date: initialData.start_date ?? "",
         end_date: initialData.end_date ?? "",
-        notice_period: initialData.notice_period ?? "",
+        // notice_period: initialData.notice_period ?? "",
         description: initialData.description ?? "",
-        skills: initialData.skills ?? "",
+        // skills: initialData.skills ?? "",
       });
       setErrors({});
     } else if (isOpen) {
       setForm({
         role: "",
         company: "",
-        employment_type: "",
+        // employment_type: "",
         start_date: "",
         end_date: "",
-        notice_period: "",
+        // notice_period: "",
         description: "",
-        skills: "",
+        // skills: "",
       });
       setErrors({});
     }
@@ -61,7 +61,7 @@ export default function ExperienceModal({
     // Required fields
     if (!form.role.trim()) newErrors.role = "Role is required";
     if (!form.company.trim()) newErrors.company = "Company is required";
-    if (!form.employment_type.trim()) newErrors.employment_type = "Employment type is required";
+    // if (!form.employment_type.trim()) newErrors.employment_type = "Employment type is required";
     if (!form.start_date) newErrors.start_date = "Start date is required";
 
     // Start date validation
@@ -129,11 +129,11 @@ export default function ExperienceModal({
           {[
             ["role", "Role"],
             ["company", "Company"],
-            ["employment_type", "Employment Type"],
+            // ["employment_type", "Employment Type"],
             ["start_date", "Start Date", "date"],
             ["end_date", "End Date", "date"],
-            ["notice_period", "Notice Period"],
-            ["skills", "Skills (comma-separated)"],
+            // ["notice_period", "Notice Period"],
+            // ["skills", "Skills (comma-separated)"],
           ].map(([name, label, type]) => (
             <div key={name}>
               <label className="text-sm font-medium">{label}</label>
