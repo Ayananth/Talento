@@ -1,39 +1,122 @@
-import React, { useState } from "react";
-import { X, Plus, Check } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, Plus, Check, AlertCircle } from "lucide-react";
+import api from "../../apis/api";
 
 export default function KeySkillsCard() {
-  const [skills, setSkills] = useState(["Python", "AWS"]);
+  const [skills, setSkills] = useState([]);
   const [adding, setAdding] = useState(false);
   const [newSkill, setNewSkill] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const removeSkill = (skill) => {
-    setSkills(skills.filter((s) => s !== skill));
+  // -------------------------------------------------
+  // Load skills on component mount
+  // -------------------------------------------------
+  useEffect(() => {
+    api
+      .get("/v1/profile/me/skills/")
+      .then((res) => setSkills(res.data)) // expects list of skills
+      .catch(() => setSkills([]));
+  }, []);
+
+  // Auto-hide alerts
+  useEffect(() => {
+    if (error || success) {
+      const t = setTimeout(() => {
+        setError("");
+        setSuccess("");
+      }, 2500);
+      return () => clearTimeout(t);
+    }
+  }, [error, success]);
+
+  // -------------------------------------------------
+  // Remove skill
+  // -------------------------------------------------
+  const removeSkill = async (skill) => {
+    try {
+      await api.delete(`/v1/profile/me/skills/${skill.id}/`);
+      setSkills(skills.filter((s) => s.id !== skill.id));
+      setSuccess("Skill removed");
+    } catch (err) {
+      setError("Failed to delete skill");
+    }
   };
 
-  const addSkill = () => {
-    const skill = newSkill.trim();
+  // -------------------------------------------------
+  // Add skill
+  // -------------------------------------------------
+const addSkill = async () => {
+  const skill = newSkill.trim();
 
-    if (!skill) return;
-    if (skills.includes(skill)) return;
+  // 1. Empty check
+  if (!skill) {
+    setError("Skill cannot be empty");
+    return;
+  }
 
-    setSkills([...skills, skill]);
+  // 2. Only letters, numbers, space, and hyphens
+  const regex = /^[A-Za-z0-9\s-]+$/;
+  if (!regex.test(skill)) {
+    setError("Skill cannot contain special characters");
+    return;
+  }
+
+  // 3. Minimum length
+  if (skill.length < 2) {
+    setError("Skill must be at least 2 characters");
+    return;
+  }
+
+  // 4. Duplicate check
+  if (skills.some((s) => s.skill_name.toLowerCase() === skill.toLowerCase())) {
+    setError("Skill already exists");
+    return;
+  }
+
+  // Backend POST
+  try {
+    const res = await api.post("/v1/profile/me/skills/", {
+      skill_name: skill,
+    });
+
+    setSkills((prev) => [...prev, res.data]);
     setNewSkill("");
     setAdding(false);
-  };
+    setSuccess("Skill added!");
+  } catch (err) {
+    console.log(err);
+    setError("Failed to add skill");
+  }
+};
+
 
   return (
     <div className="rounded-xl border bg-white px-6 py-4 shadow-sm">
       <h3 className="text-base font-semibold text-gray-900 mb-3">Key skills</h3>
 
-      <div className="flex items-center flex-wrap gap-3">
+      {/* SUCCESS MESSAGE */}
+      {success && (
+        <div className="bg-green-100 text-green-700 border border-green-300 px-3 py-2 rounded mb-3 flex items-center gap-2">
+          ✓ {success}
+        </div>
+      )}
 
-        {/* Existing Skill Pills */}
-        {skills.map((skill, index) => (
+      {/* ERROR MESSAGE */}
+      {error && (
+        <div className="bg-red-100 text-red-700 border border-red-300 px-3 py-2 rounded mb-3 flex items-center gap-2">
+          <AlertCircle size={16} /> {error}
+        </div>
+      )}
+
+      <div className="flex items-center flex-wrap gap-3">
+        {/* Existing/Loaded Skills */}
+        {skills.map((skill) => (
           <div
-            key={index}
+            key={skill.id}
             className="flex items-center gap-1 border border-gray-300 px-3 py-1 rounded-full text-sm text-gray-700 bg-gray-50"
           >
-            {skill}
+            {skill.skill_name}
             <X
               size={14}
               className="cursor-pointer text-gray-500 hover:text-gray-700"
@@ -62,7 +145,7 @@ export default function KeySkillsCard() {
             />
           </div>
         ) : (
-          // Show + button when not adding
+          // + button
           <button
             className="w-7 h-7 flex items-center justify-center text-black border border-gray-300 rounded-full hover:bg-gray-100"
             onClick={() => setAdding(true)}
