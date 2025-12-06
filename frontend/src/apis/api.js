@@ -13,6 +13,7 @@ api.interceptors.request.use((config) => {
   if (access) {
     config.headers.Authorization = `Bearer ${access}`;
   }
+  console.log("➡️ API Request:", config.method?.toUpperCase(), config.url);
   return config;
 });
 

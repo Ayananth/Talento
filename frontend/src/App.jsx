@@ -47,11 +47,53 @@ function App() {
 
 
           {/** ----------------- Public auth & misc pages (visible to logged out users) ----------------- **/}
-          <Route path="/email-verification" element={<EmailVerificationPage />} />
-          <Route path="/email-verified-success" element={<EmailSuccessPage />} />
-          <Route path="/email-verified-failed" element={<EmailFailedPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          
+          <Route
+            path="/email-verification"
+            element={
+              <RedirectIfAuth>
+                <EmailVerificationPage />
+              </RedirectIfAuth>
+            }
+          />
+
+          <Route
+            path="/email-verified-success"
+            element={
+              <RedirectIfAuth>
+                <EmailSuccessPage />
+              </RedirectIfAuth>
+            }
+          />
+
+          <Route
+            path="/email-verified-failed"
+            element={
+              <RedirectIfAuth>
+            <EmailFailedPage />
+            </RedirectIfAuth>
+            }
+
+          />
+
+          <Route
+            path="/forgot-password"
+            element={
+              <RedirectIfAuth>
+                <ForgotPasswordPage />
+              </RedirectIfAuth>
+            }
+          />
+
+          <Route
+            path="/reset-password"
+            element={
+              <RedirectIfAuth>
+                <ResetPasswordPage />
+              </RedirectIfAuth>
+            }
+          />
+
           <Route path="/notfound" element={<NotFound />} />
 
           {/** ----------------- Jobseeker routes ----------------- **/}

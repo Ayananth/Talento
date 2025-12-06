@@ -23,5 +23,6 @@ ADMIN_PATH = os.getenv("ADMIN_PATH",  "admin/")
 urlpatterns = [
     path(f'{ADMIN_PATH}', admin.site.urls),
     path("v1/auth/", include("authentication.urls", namespace="authentication")),
+    path("v1/profile/", include("profiles.urls", namespace="profile")),
 
 ]

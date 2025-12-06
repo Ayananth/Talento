@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../auth/useAuth";
 import { User } from 'lucide-react';
+import { CircleUser } from 'lucide-react';
+
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -64,7 +66,7 @@ export function Navbar() {
                 onClick={() => navigate('/dashboard')}
                 className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition"
               >
-                <span className="font-bold">U</span>
+                <span className="font-bold"> <CircleUser /> </span>
               </button>
             </>
           )}
