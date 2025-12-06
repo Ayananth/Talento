@@ -1,0 +1,145 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useAuth from "../../auth/useAuth";
+import { User } from 'lucide-react';
+
+export function Navbar() {
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
+
+  return (
+    <nav className="bg-white w-full">
+      <div className="flex items-center justify-between max-w-7xl mx-auto px-6 py-3">
+
+        {/* Brand */}
+        <div className="flex items-center space-x-3">
+          <img src="/src/assets/react.svg" alt="logo" className="h-8 w-8" />
+          <span className="text-2xl font-semibold text-gray-800 tracking-tight">Talento</span>
+        </div>
+
+        {/* Center Links */}
+        {/* <div className="hidden md:flex items-center space-x-10 text-lg">
+          <a className="text-gray-700 hover:text-blue-600 transition">Home</a>
+          <a className="text-gray-700 hover:text-blue-600 transition">Jobs</a>
+          <a className="text-gray-700 hover:text-blue-600 transition">About</a>
+          <a className="text-gray-700 hover:text-blue-600 transition">Contact</a>
+        </div> */}
+
+        {/* Right Section */}
+        <div className="hidden md:flex items-center space-x-4">
+
+          {/* ---------- NOT AUTHENTICATED ---------- */}
+          {!isAuthenticated && (
+            <>
+              <button
+                onClick={() => navigate('/admin/login')}
+                className="px-4 py-2 rounded-lg text-gray-700 border border-gray-300 hover:bg-gray-100 transition"
+              >
+                Admin Login
+              </button>
+
+              {/* <button
+                onClick={() => navigate('/signup')}
+                className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                Sign Up
+              </button> */}
+            </>
+          )}
+
+          {/* ---------- AUTHENTICATED ---------- */}
+          {isAuthenticated && (
+            <>
+              {/* Logout Button */}
+              <button
+                onClick={logout}
+                className="px-4 py-2 rounded-lg text-gray-700 border border-gray-300 hover:bg-gray-100 transition"
+              >
+                Logout
+              </button>
+
+              {/* Profile Icon */}
+              {/* <button
+                onClick={() => navigate('/dashboard')}
+                className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition"
+              >
+                <span className="font-bold">U</span>
+              </button> */}
+            </>
+          )}
+        </div>
+
+        {/* Mobile Toggle */}
+        <button
+          className="md:hidden p-2"
+          onClick={() => setOpen(!open)}
+        >
+          <svg
+            className="w-6 h-6 text-gray-700"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            {open ? (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+            )}
+          </svg>
+        </button>
+
+      </div>
+
+      {/* MOBILE MENU */}
+      {open && (
+        <div className="md:hidden flex flex-col space-y-3 px-6 pb-4 border-t pt-3">
+{/* 
+          <a className="text-gray-700 hover:text-blue-600 transition">Home</a>
+          <a className="text-gray-700 hover:text-blue-600 transition">Jobs</a>
+          <a className="text-gray-700 hover:text-blue-600 transition">About</a>
+          <a className="text-gray-700 hover:text-blue-600 transition">Contact</a> */}
+
+          {/* NOT AUTH */}
+          {!isAuthenticated && (
+            <>
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full px-4 py-2 mt-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+              >
+                Admin Login
+              </button>
+
+              {/* <button
+                onClick={() => navigate('/signup')}
+                className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                Sign Up
+              </button> */}
+            </>
+          )}
+
+          {/* AUTH */}
+          {isAuthenticated && (
+            <>
+              <button
+                onClick={logout}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+              >
+                Logout
+              </button>
+
+              {/* <button
+                onClick={() => navigate('/dashboard')}
+                className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                Go to Dashboard
+              </button> */}
+            </>
+          )}
+        </div>
+      )}
+    </nav>
+  );
+}
