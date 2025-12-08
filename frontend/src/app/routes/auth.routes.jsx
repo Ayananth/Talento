@@ -2,6 +2,8 @@ import LoginPage from "../../features/auth/pages/LoginPage";
 import AuthenticationLayout from "../../features/auth/layout/AuthenticationLayout";
 import SignupPage from "../../features/auth/pages/SignupPage";
 import EmailVerificationPage from "../../features/auth/pages/EmailVerificationPage";
+import EmailSuccessPage from "../../features/auth/pages/EmailSuccessPage";
+import EmailFailedPage from "../../features/auth/pages/EmailFailedPage";
 
 const authRoutes = [
   {
@@ -23,6 +25,14 @@ const authRoutes = [
         {
           path:"/email-verification",
           element: <EmailVerificationPage />
+        },
+        {
+          path:"/email-verified-success",
+          element: <EmailSuccessPage />
+        },
+        {
+          path:"/email-verified-failed",
+          element: <EmailFailedPage />
         }
       ]
   },
