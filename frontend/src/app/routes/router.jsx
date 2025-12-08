@@ -19,9 +19,11 @@ import LoginPage from "../../features/auth/pages/LoginPage";
 // export default router;
 
 import authRoutes from "./auth.routes";
+import jobseekerRoutes from "./jobseeker.routes";
 
 const router = createBrowserRouter([
-  ...authRoutes, 
+  ...authRoutes, ,
+  ...jobseekerRoutes
 ]);
 
 export default router;
