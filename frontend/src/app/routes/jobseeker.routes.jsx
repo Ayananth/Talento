@@ -1,15 +1,22 @@
 
-import LoginPage from "../../features/auth/pages/LoginPage";
-import AuthenticationLayout from "../../features/auth/layout/AuthenticationLayout";
-import SignupPage from "../../features/auth/pages/SignupPage";
-
 import Homepage from "../../features/jobseeker/home/Homepage";
+import RequireAuth from "../../features/routes/RequireAuth";
+import RoleRoute from "../../features/routes/RoleRoute";
 
 const jobseekerRoutes = [
-  {
-    path: "/",
-    element: <Homepage />
-  }
+{
+  element: <RequireAuth />,
+  children: [
+    {
+      element: <RoleRoute allowedRoles={["jobseeker"]} />,
+      children: [
+        { path: "/", element: <Homepage /> },
+        { path: "/profile", element: <Homepage /> },
+      ]
+    }
+  ]
+}
+
 
 ];
 

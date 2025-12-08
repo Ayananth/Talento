@@ -6,46 +6,30 @@ import EmailSuccessPage from "../../features/auth/pages/EmailSuccessPage";
 import EmailFailedPage from "../../features/auth/pages/EmailFailedPage";
 import ForgotPasswordPage from "../../features/auth/pages/ForgotPasswordPage";
 import ResetPasswordPage from "../../features/auth/pages/ResetPasswordPage";
+import RedirectIfAuth from "../../features/routes/RedirectIfAuth";
+
 
 const authRoutes = [
-  {
+{
+  element: (
+    <RedirectIfAuth>
+      <AuthenticationLayout />
+    </RedirectIfAuth>
+  ),
+  children: [
+    { path: "/login", element: <LoginPage role="jobseeker" /> },
+    { path: "/recruiter/login", element: <LoginPage role="recruiter" /> },
+    { path: "/signup", element: <SignupPage role="jobseeker" /> },
+    { path: "/recruiter/signup", element: <SignupPage role="recruiter" /> },
+    { path: "/email-verification", element: <EmailVerificationPage /> },
+    { path: "/forgot-password", element: <ForgotPasswordPage /> },
+    { path: "/reset-password", element: <ResetPasswordPage /> },
+    { path: "/email-verified-success", element: <EmailSuccessPage /> },
+    { path: "/email-verified-failed", element: <EmailFailedPage /> },
 
-    element:<AuthenticationLayout />,
-      children: [
-        {
-          path:"login",
-          element: <LoginPage role="jobseeker" />
-        },
-        {
-          path:"recruiter/login",
-          element: <LoginPage role="recruiter" />
-        },
-        {
-          path:"signup",
-          element: <SignupPage role="jobseeker" />
-        },
-        {
-          path:"/email-verification",
-          element: <EmailVerificationPage />
-        },
-        {
-          path:"/email-verified-success",
-          element: <EmailSuccessPage />
-        },
-        {
-          path:"/email-verified-failed",
-          element: <EmailFailedPage />
-        },
-        {
-          path:"/forgot-password",
-          element: <ForgotPasswordPage />
-        },
-        {
-          path:"/reset-password",
-          element: <ResetPasswordPage />
-        }
-      ]
-  },
+  ],
+}
+
 
 ];
 
