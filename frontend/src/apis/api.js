@@ -1,10 +1,11 @@
 import axios from "axios";
 import { API_BASE_URL } from "../constants";
-import { getAccessToken, getRefreshToken, saveTokens, clearTokens } from "../auth/authUtils";
+import { getAccessToken, saveTokens, clearTokens } from "../auth/authUtils";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 // Attach access token to all requests
@@ -24,38 +25,37 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Not a 401 → nothing to do
     if (error.response?.status !== 401) {
       return Promise.reject(error);
     }
 
     // Prevent infinite loop
     if (originalRequest._retry) {
+      clearTokens();
       return Promise.reject(error);
     }
     originalRequest._retry = true;
 
-    // Try refresh token
     try {
-      const refresh = getRefreshToken();
-      if (!refresh) throw new Error("No refresh token");
+      console.log("Attempting access token refresh...");
 
-      const response = await axios.post(`${API_BASE_URL}/v1/auth/token/refresh/`, {
-        refresh: refresh,
-      });
+      // Refresh token is sent automatically via cookie
+      const response = await axios.post(
+        `${API_BASE_URL}/v1/auth/token/refresh/`,
+        {},
+        { withCredentials: true }
+      );
 
       const newAccess = response.data.access;
-      const newRefresh = response.data.refresh || refresh;
 
-      // Save new tokens
-      saveTokens({ access: newAccess, refresh: newRefresh });
+      saveTokens({ access: newAccess });
 
       // Retry original request with new access token
       originalRequest.headers.Authorization = `Bearer ${newAccess}`;
       return api(originalRequest);
 
     } catch (err) {
-      // Refresh failed → logout user
+      console.log("Auto refresh failed → logging out.");
       clearTokens();
       return Promise.reject(err);
     }
