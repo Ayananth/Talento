@@ -11,6 +11,7 @@ export function Navbar() {
 
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
+  console.log("isAuthenticated", isAuthenticated)
 
   const linkStyle =
     "text-gray-700 hover:text-blue-600 transition font-medium relative group";

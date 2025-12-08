@@ -1,6 +1,7 @@
 import LoginPage from "../../features/auth/pages/LoginPage";
 import AuthenticationLayout from "../../features/auth/layout/AuthenticationLayout";
 import SignupPage from "../../features/auth/pages/SignupPage";
+import EmailVerificationPage from "../../features/auth/pages/EmailVerificationPage";
 
 const authRoutes = [
   {
@@ -19,6 +20,10 @@ const authRoutes = [
           path:"signup",
           element: <SignupPage role="jobseeker" />
         },
+        {
+          path:"/email-verification",
+          element: <EmailVerificationPage />
+        }
       ]
   },
 
