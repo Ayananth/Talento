@@ -1,32 +1,41 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { navigateNowByRole } from "../utils/redirectByRole";
 
 export default function EmailVerifiedSuccess() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [seconds, setSeconds] = useState(3);
 
+  // Extract ?role=jobseeker/recruiter/admin
+  const params = new URLSearchParams(location.search);
+  const role = params.get("role") || "jobseeker";
+
+  // Handle auto-redirect countdown
   useEffect(() => {
+    // Count down
     const countdown = setInterval(() => {
       setSeconds((prev) => Math.max(prev - 1, 0));
     }, 1000);
 
+    // Auto-redirect after 3s
     const redirectTimer = setTimeout(() => {
-      navigate("/login");
+      navigateNowByRole(navigate, role);
     }, 3000);
 
+    // Cleanup function (avoids memory leaks)
     return () => {
       clearInterval(countdown);
       clearTimeout(redirectTimer);
     };
-  }, [navigate]);
+  }, [navigate, role]);
 
   return (
     <div className="max-w-md mx-auto w-full text-center">
 
       {/* Animated success icon */}
       <div className="flex justify-center mb-6">
-        <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center shadow-md 
-                        animate-[pop_0.4s_ease-out]">
+        <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center shadow-md animate-[pop_0.4s_ease-out]">
           <svg
             className="w-12 h-12 text-green-600"
             fill="none"
@@ -47,15 +56,18 @@ export default function EmailVerifiedSuccess() {
         Email Verified Successfully!
       </h1>
 
-      <p className="text-gray-600 mb-2">Your account is now active.</p>
+      <p className="text-gray-600 mb-2">
+        Your account is now active.
+      </p>
 
       <p className="text-gray-600 mb-6">
         Redirecting in{" "}
-        <span className="font-semibold text-green-600">{seconds}</span> seconds...
+        <span className="font-semibold text-green-600">{seconds}</span>{" "}
+        seconds...
       </p>
 
       <button
-        onClick={() => navigate("/login")}
+        onClick={() => navigateNowByRole(navigate, role)}
         className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition"
       >
         Go to Login

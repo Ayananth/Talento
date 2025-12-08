@@ -39,8 +39,7 @@ GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 class SignUpView(APIView):
     def post(self, request):
         email = request.data.get("email")
-        requested_role = request.data.get("role")
-        print(f"{requested_role=}")
+
 
         try:
             user = USER.objects.get(email=email)
@@ -48,7 +47,7 @@ class SignUpView(APIView):
                 token = generate_email_verification_token(user)
                 verify_url = request.build_absolute_uri(
                     reverse("authentication:verify_email")
-                ) + f"?token={token}&role={requested_role}"
+                ) + f"?token={token}"
 
                 send_verification_email.delay(user.email, verify_url)
 
@@ -69,7 +68,7 @@ class SignUpView(APIView):
             token = generate_email_verification_token(user)
             verify_url = request.build_absolute_uri(
                 reverse("authentication:verify_email")
-            ) + f"?token={token}?role={requested_role}"
+            ) + f"?token={token}"
 
             send_verification_email.delay(user.email, verify_url)
 
@@ -137,11 +136,16 @@ class VerifyEmailView(APIView):
     def get(self, request):
         token = request.GET.get("token")
 
+
         if not token:
             return Response({"error": "Token missing"}, status=400)
 
+        role = "jobseeker"
+
         try:
             access_token = AccessToken(token)
+            role = access_token.get("role", "jobseeker")
+            
 
             # Ensure it is an email verification token
             if not access_token.get("email_verification", False):
@@ -159,10 +163,21 @@ class VerifyEmailView(APIView):
             print(user)
             user.save()
 
-            return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_SUCCESS_URL)
+            success_url = (
+                f"{settings.FRONTEND_URL}{settings.EMAIL_VERIFICATION_SUCCESS_URL}"
+                f"?role={role}"
+            )
+
+            return redirect(success_url)
 
         except Exception as e:
-            return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_FAILED_URL)
+            failed_url = (
+                f"{settings.FRONTEND_URL}{settings.EMAIL_VERIFICATION_FAILED_URL}"
+                f"?role={role}"
+            )
+
+            return redirect(failed_url)
+
         
 
 
@@ -170,8 +185,6 @@ class VerifyEmailView(APIView):
 class ResendVerificationEmailView(APIView):
     def post(self, request):
         email = request.data.get("email")
-        requested_role = request.data.get("role")
-        print(f"{requested_role=}")
 
         if not email:
             return Response(
@@ -196,10 +209,10 @@ class ResendVerificationEmailView(APIView):
 
         # Generate new verification token
         token = generate_email_verification_token(user)
+        
         verify_url = request.build_absolute_uri(
             reverse("authentication:verify_email")
-        ) + f"?token={token}?role={requested_role}"
-        print(f"{requested_role=}")
+        ) + f"?token={token}"
 
         # Send email asynchronously with Celery
         send_verification_email.delay(user.email, verify_url)

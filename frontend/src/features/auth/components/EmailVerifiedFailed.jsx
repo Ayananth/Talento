@@ -1,31 +1,32 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function EmailVerifiedFailed() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [seconds, setSeconds] = useState(5);
 
-  const handleResendVerification = async () => {
-    setLoading(true);
+  // Auto-redirect to jobseeker signup
+  useEffect(() => {
+    const countdown = setInterval(() => {
+      setSeconds((prev) => Math.max(prev - 1, 0));
+    }, 1000);
 
-    try {
-      // TODO: Call your backend API to resend email
-      // await api.post("/v1/auth/resend-verification-email/", { email });
-      alert("Verification email sent again!");
-    } catch (error) {
-      alert("Failed to resend verification email.");
-    }
+    const timer = setTimeout(() => {
+      navigate("/signup");
+    }, 5000);
 
-    setLoading(false);
-  };
+    return () => {
+      clearInterval(countdown);
+      clearTimeout(timer);
+    };
+  }, [navigate]);
 
   return (
     <div className="max-w-md mx-auto w-full text-center">
 
       {/* Error Icon */}
       <div className="flex justify-center mb-6">
-        <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center shadow-md
-                        animate-[pop_0.4s_ease-out]">
+        <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center shadow-md animate-[pop_0.4s_ease-out]">
           <svg
             className="w-12 h-12 text-red-600"
             fill="none"
@@ -39,32 +40,40 @@ export default function EmailVerifiedFailed() {
       </div>
 
       <h1 className="text-3xl font-bold text-gray-900 mb-2">
-        Verification Failed
+        Email Verification Failed
       </h1>
 
-      <p className="text-gray-600 mb-6">
-        The verification link may be invalid or expired.  
-        Please request a new one to continue.
+      <p className="text-gray-600 mb-2">
+        The verification link is invalid or expired.
       </p>
 
-      {/* Resend Button */}
+      <p className="text-gray-600 mb-6">
+        Please register again to receive a new verification email.
+      </p>
+
+      <p className="text-gray-600 mb-6">
+        Redirecting in{" "}
+        <span className="font-semibold text-red-600">{seconds}</span> seconds...
+      </p>
+
+      {/* Register Again Button */}
       <button
-        onClick={handleResendVerification}
-        disabled={loading}
+        onClick={() => navigate("/signup")}
         className="w-full bg-red-600 text-white py-3 rounded-lg font-medium 
-                   hover:bg-red-700 transition disabled:opacity-50 mb-4"
+                   hover:bg-red-700 transition"
       >
-        {loading ? "Resending..." : "Resend Verification Email"}
+        Register Again
       </button>
 
-      {/* Login Button */}
+      {/* Optional: login button */}
       <button
         onClick={() => navigate("/login")}
-        className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg 
-                   font-medium hover:bg-gray-100 transition"
+        className="w-full border border-gray-300 text-gray-700 mt-3 py-3 
+                   rounded-lg font-medium hover:bg-gray-100 transition"
       >
         Go to Login
       </button>
+
     </div>
   );
 }
