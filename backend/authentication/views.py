@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.decorators import api_view #for FBV, remove if not used
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import MyTokenObtainPairSerializer, PasswordResetRequestSerializer, UserSerializer, ResetPasswordSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -79,6 +79,39 @@ class SignUpView(APIView):
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data = request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response({"detail": "Invalid credentials"}, status=400)
+        
+        user = serializer.user
+        refresh = MyTokenObtainPairSerializer.get_token(user)
+        response = Response(
+            {"access": str(refresh.access_token)},
+            status=status.HTTP_200_OK
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=str(refresh),
+            httponly = True,
+            secure=False,
+            samesite="None",
+            max_age=7*24*60* 60,
+            path="v1/auth/token/refresh/"
+
+        )
+
+        return response
+        
+
+# class CustomTokenRefreshView(TokenRefreshView):
+#     serializer_class = 
+
 
 
 

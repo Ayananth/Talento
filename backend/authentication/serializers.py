@@ -57,11 +57,14 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         if requested_role and user.role != requested_role:
             raise AuthenticationFailed("Invalid credentials")
         refresh = self.get_token(user)
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
+        # data['refresh'] = str(refresh)
+        # data['access'] = str(refresh.access_token)
+        access = str(refresh.access_token)
         # data['role'] = user.role
         # data['email'] = user.email
-        return data
+        return {
+            'access': access
+        }
     
     @classmethod
     def get_token(cls, user):
