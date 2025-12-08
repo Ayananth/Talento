@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAsyncError, useNavigate } from "react-router-dom";
 import useAuth from "../context/useAuth"
 import { Eye, EyeOff } from "lucide-react";
-// import GoogleLoginButton from "./GoogleLoginButton";
+import GoogleLoginButton from "./GoogleLoginButton";
 
 
 export default function     LoginForm({role, redirectAfterLogin}) {
@@ -98,16 +98,19 @@ export default function     LoginForm({role, redirectAfterLogin}) {
           <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
         {/* <GoogleLoginButton role={"jobseeker"} /> */}
+          {role !== "admin" && <GoogleLoginButton role={role} />}
+
 
         </button>
 
-        {/* <button className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
+        {/* 
+        <button className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
 
         <GoogleLoginButton />
-        </button> */}
+        </button> 
+        */}
 
 
-        {/* <GoogleLoginButton /> */}
 
 
 

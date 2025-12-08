@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import useAuth from "../context/useAuth";
+import GoogleLoginButton from "./GoogleLoginButton";
 
 
 const SignupForm = ({role}) => {
@@ -86,15 +87,29 @@ const SignupForm = ({role}) => {
           Access all features. No credit card required.
         </p>
 
+        <button className="w-full flex items-center justify-center gap-3  border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
+          {/* <img
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            className="h-5 w-5"
+          />
+          <span className="text-gray-700 font-medium">Sign in with Google</span> */}
+
+        {/* <GoogleLoginButton role={"jobseeker"} /> */}
+          {role !== "admin" && <GoogleLoginButton role={role} />}
+
+
+        </button>
+
         {/* Google Login */}
-        <button className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
+        {/* <button className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
           <img
             src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
             alt="Google"
             className="h-5 w-5"
           />
           <span className="text-gray-700 font-medium">Sign in with Google</span>
-        </button>
+        </button> */}
 
         <div className="flex items-center my-6">
           <hr className="grow border-gray-300" />
