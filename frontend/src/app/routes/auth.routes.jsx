@@ -4,6 +4,8 @@ import SignupPage from "../../features/auth/pages/SignupPage";
 import EmailVerificationPage from "../../features/auth/pages/EmailVerificationPage";
 import EmailSuccessPage from "../../features/auth/pages/EmailSuccessPage";
 import EmailFailedPage from "../../features/auth/pages/EmailFailedPage";
+import ForgotPasswordPage from "../../features/auth/pages/ForgotPasswordPage";
+import ResetPasswordPage from "../../features/auth/pages/ResetPasswordPage";
 
 const authRoutes = [
   {
@@ -33,6 +35,14 @@ const authRoutes = [
         {
           path:"/email-verified-failed",
           element: <EmailFailedPage />
+        },
+        {
+          path:"/forgot-password",
+          element: <ForgotPasswordPage />
+        },
+        {
+          path:"/reset-password",
+          element: <ResetPasswordPage />
         }
       ]
   },
@@ -40,3 +50,4 @@ const authRoutes = [
 ];
 
 export default authRoutes;
+
