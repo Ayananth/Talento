@@ -16,5 +16,10 @@ export default defineConfig({
       "@": "/src",
     },
   },
+  server: {
+    allowedHosts: [
+      "queenliest-cochleate-julieta.ngrok-free.dev"
+    ],
+  },
 
 })
