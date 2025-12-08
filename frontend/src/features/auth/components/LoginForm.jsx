@@ -5,7 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 // import GoogleLoginButton from "./GoogleLoginButton";
 
 
-export default function     LoginForm() {
+export default function     LoginForm({role, redirectAfterLogin}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
@@ -14,6 +14,8 @@ export default function     LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+
 
   const validateForm = () => {
     const newErrors = {};
@@ -45,7 +47,7 @@ export default function     LoginForm() {
 
     try {
       await login({ email, password });
-      navigate("/");
+      navigate(redirectAfterLogin);
     } catch (err) {
       setLoginError("Login failed. Check your credentials.");
       console.error(err);
@@ -54,7 +56,22 @@ export default function     LoginForm() {
     }
   };
 
-  const handleNavigate = () => navigate("/signup");
+  // const handleNavigate = () => navigate("/signup");
+
+  const handleNavigate = ()=>{
+      switch (role) {
+        case "jobseeker":
+          navigate("/signup");
+          break;
+
+        case "recruiter":
+          navigate("/recruiter/signup");
+          break;
+
+        default:
+          console.warn("Unknown role:", role);
+      }
+  }
 
   return (
 <div className="w-full">

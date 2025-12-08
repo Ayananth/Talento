@@ -3,7 +3,20 @@ import LoginForm from '../components/LoginForm'
 
 
 const LoginPage = ({role="jobseeker"}) => {
-  console.log("Login page callled")
+
+
+  const redirectMap = {
+  jobseeker: "/",
+  recruiter: "/recruiter/home",
+  admin: "/admin/home",
+};
+
+const redirectAfterLogin = redirectMap[role] ?? "/";
+
+
+
+
+
   return (
 
       <div className="flex justify-center items-center py-20 mt-5 px-4">
@@ -25,7 +38,7 @@ const LoginPage = ({role="jobseeker"}) => {
             />
           </div>
       <div className="w-full lg:w-1/2 p-10">
-        <LoginForm />
+        <LoginForm role={role} redirectAfterLogin={redirectAfterLogin} />
       </div>
 
 

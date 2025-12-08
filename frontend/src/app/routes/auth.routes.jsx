@@ -5,7 +5,6 @@ import SignupPage from "../../features/auth/pages/SignupPage";
 const authRoutes = [
   {
 
-    path: "/",
     element:<AuthenticationLayout />,
       children: [
         {
