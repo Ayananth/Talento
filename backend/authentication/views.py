@@ -39,6 +39,8 @@ GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 class SignUpView(APIView):
     def post(self, request):
         email = request.data.get("email")
+        requested_role = request.data.get("role")
+        print(f"{requested_role=}")
 
         try:
             user = USER.objects.get(email=email)
@@ -46,7 +48,7 @@ class SignUpView(APIView):
                 token = generate_email_verification_token(user)
                 verify_url = request.build_absolute_uri(
                     reverse("authentication:verify_email")
-                ) + f"?token={token}"
+                ) + f"?token={token}&role={requested_role}"
 
                 send_verification_email.delay(user.email, verify_url)
 
@@ -67,7 +69,7 @@ class SignUpView(APIView):
             token = generate_email_verification_token(user)
             verify_url = request.build_absolute_uri(
                 reverse("authentication:verify_email")
-            ) + f"?token={token}"
+            ) + f"?token={token}?role={requested_role}"
 
             send_verification_email.delay(user.email, verify_url)
 
@@ -168,6 +170,8 @@ class VerifyEmailView(APIView):
 class ResendVerificationEmailView(APIView):
     def post(self, request):
         email = request.data.get("email")
+        requested_role = request.data.get("role")
+        print(f"{requested_role=}")
 
         if not email:
             return Response(
@@ -194,7 +198,8 @@ class ResendVerificationEmailView(APIView):
         token = generate_email_verification_token(user)
         verify_url = request.build_absolute_uri(
             reverse("authentication:verify_email")
-        ) + f"?token={token}"
+        ) + f"?token={token}?role={requested_role}"
+        print(f"{requested_role=}")
 
         # Send email asynchronously with Celery
         send_verification_email.delay(user.email, verify_url)

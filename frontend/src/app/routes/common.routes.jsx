@@ -3,19 +3,9 @@ import AuthenticationLayout from "../../features/auth/layout/AuthenticationLayou
 
 
 const commonRoutes = [
-{
-  element: (
-      <AuthenticationLayout />
-  ),
-  children: [
-
-    { path: "/not-authorized", element: <NotAuthorizedPage /> },
-
-  ],
-}
-
-
+  { path: "/not-authorized", element: <NotAuthorizedPage /> },
 ];
+
 
 export default commonRoutes;
 

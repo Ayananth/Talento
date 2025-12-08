@@ -1,9 +1,9 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import useAuth from "../auth/context/useAuth";
-
 export default function RedirectIfAuth({ children }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
 
   if (isAuthenticated) {
     if (user.role === "jobseeker") return <Navigate to="/" replace />;
@@ -11,5 +11,5 @@ export default function RedirectIfAuth({ children }) {
     if (user.role === "admin") return <Navigate to="/admin/home" replace />;
   }
 
-  return children;
+  return children ? children : <Outlet />;
 }

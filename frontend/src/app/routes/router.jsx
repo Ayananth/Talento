@@ -24,7 +24,7 @@ import commonRoutes from "./common.routes";
 
 
 const router = createBrowserRouter([
-  ...authRoutes, ,
+  ...authRoutes,
   ...jobseekerRoutes,
   ...commonRoutes
 
