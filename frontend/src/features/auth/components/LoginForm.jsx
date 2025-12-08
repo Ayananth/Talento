@@ -46,7 +46,7 @@ export default function     LoginForm({role, redirectAfterLogin}) {
     setLoading(true);
 
     try {
-      await login({ email, password });
+      await login({ email, password, role });
       navigate(redirectAfterLogin);
     } catch (err) {
       setLoginError("Login failed. Check your credentials.");
