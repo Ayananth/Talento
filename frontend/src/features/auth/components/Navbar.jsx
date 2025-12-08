@@ -1,17 +1,22 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import useAuth from '../context/useAuth'
 import { User } from 'lucide-react';
 import { CircleUser } from 'lucide-react';
 
 
-export function Navbar() {
+export function Navbar({role}) {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { isAuthenticated, logout } = useAuth();
   console.log("isAuthenticated", isAuthenticated)
+
+  const isRecruiter = pathname.includes("/recruiter/");
+  const loginUrl = isRecruiter ? "/recruiter/login" : "/login";
+  const signupUrl = isRecruiter ? "/recruiter/signup" : "/signup";
 
   const linkStyle =
     "text-gray-700 hover:text-blue-600 transition font-medium relative group";
@@ -39,14 +44,14 @@ export function Navbar() {
           {!isAuthenticated && (
             <>
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate(loginUrl)}
                 className="px-5 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 transition font-medium"
               >
                 Login
               </button>
 
               <button
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate(signupUrl)}
                 className="px-6 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition shadow-md"
               >
                 Sign Up
@@ -111,23 +116,19 @@ export function Navbar() {
       {open && (
         <div className="md:hidden flex flex-col space-y-3 px-6 pb-4 border-t pt-3 bg-white/90 backdrop-blur-lg">
 
-          {["Home", "Jobs", "About", "Contact"].map((item) => (
-            <NavLink key={item} className="text-gray-700 text-lg">
-              {item}
-            </NavLink>
-          ))}
+
 
           {!isAuthenticated && (
             <>
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate(loginUrl)}
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
               >
                 Login
               </button>
 
               <button
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate(signupUrl)}
                 className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
               >
                 Sign Up
