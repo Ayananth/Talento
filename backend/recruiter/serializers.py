@@ -25,3 +25,22 @@ class RecruiterDraftCreateSerializer(serializers.Serializer):
     # File fields (draft) – CloudinaryFields on the model
     draft_logo = serializers.ImageField(required=False, allow_null=True)
     draft_business_registration_doc = serializers.FileField(required=False, allow_null=True)
+
+
+
+class AdminRecruiterListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecruiterProfile
+        fields = [
+            "id",
+            "company_name",
+            "industry",
+            "status",
+            "pending_data",
+            "draft_logo",
+            "draft_business_registration_doc",
+            "rejection_reason",
+            "verified_at",
+            "created_at",
+            "updated_at",
+        ]

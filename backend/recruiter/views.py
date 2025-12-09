@@ -5,8 +5,12 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 
 from .models import RecruiterProfile
-from .serializers import RecruiterDraftCreateSerializer
+from .serializers import RecruiterDraftCreateSerializer, AdminRecruiterListSerializer
 from core.permissions import IsRecruiter, IsAdmin
+
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from .filters import RecruiterProfileFilter
 
 
 
@@ -221,3 +225,35 @@ class AdminRejectRecruiterProfileView(generics.UpdateAPIView):
         )
 
 
+
+
+
+
+class AdminRecruiterListView(generics.ListAPIView):
+    """
+    Features:
+    - Filtering (status, name, industry, email)
+    - Search
+    - Ordering (optional)
+    - Pending count included in response
+    """
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    queryset = RecruiterProfile.objects.all()
+    serializer_class = AdminRecruiterListSerializer
+
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = RecruiterProfileFilter
+    search_fields = ["company_name", "industry", "user__email"]
+    ordering_fields = ["created_at", "company_name", "status"]
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+
+        pending_count = RecruiterProfile.objects.filter(status="pending").count()
+        response.data = {
+            "pending_count": pending_count,
+            "total_companies": self.get_queryset().count(),
+            "results": response.data,
+        }
+        return response

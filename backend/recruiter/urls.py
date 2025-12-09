@@ -14,6 +14,8 @@ urlpatterns = [
         "recruiter/profile/<int:pk>/approve/", views.AdminApproveRecruiterProfileView.as_view(), name="admin-approve-recruiter-profile",
     ),
 
+    path("recruiters/", views.AdminRecruiterListView.as_view(), name="admin-recruiters-list"),
+
 
 
 ]

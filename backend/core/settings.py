@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'corsheaders',
     "cloudinary",
     "cloudinary_storage",
-    "recruiter"
+    "recruiter",
+    "django_filters",
 ]
 
 MIDDLEWARE = [
