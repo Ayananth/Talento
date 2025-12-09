@@ -14,6 +14,10 @@ from pathlib import Path
 import django
 from datetime import timedelta
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,6 +52,7 @@ INSTALLED_APPS = [
     'corsheaders',
     "cloudinary",
     "cloudinary_storage",
+    "recruiter"
 ]
 
 MIDDLEWARE = [

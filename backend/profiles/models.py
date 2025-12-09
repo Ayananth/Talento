@@ -130,26 +130,3 @@ class JobSeekerLanguage(models.Model):
 
 
 
-# ---------------------------------------------------------
-# 2. RECRUITER PROFILE
-# ---------------------------------------------------------
-class RecruiterProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="recruiter_profile")
-
-    company_name = models.CharField(max_length=255)
-    website = models.CharField(max_length=255, blank=True, null=True)
-    logo_url = models.TextField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-
-    industry = models.CharField(max_length=255, blank=True, null=True)
-
-    location = models.CharField(max_length=255, blank=True, null=True)
-    about = models.TextField(blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-    phone = models.CharField(max_length=50, blank=True, null=True)
-
-    verified = models.BooleanField(default=False)
-    joined_date = models.DateField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.company_name} - {self.user}"
