@@ -55,3 +55,56 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
             },
             status=status.HTTP_201_CREATED,
         )
+    
+
+class RecruiterProfileDraftUpdateView(generics.GenericAPIView):
+    """
+    PATCH /api/recruiter/profile/draft/update/
+
+    - Updates only parts of the draft.
+    - Does NOT touch published fields.
+    - Any update puts status back to "pending".
+    """
+    serializer_class = RecruiterDraftCreateSerializer
+    permission_classes = [IsAuthenticated, IsRecruiter]
+    parser_classes = [MultiPartParser, FormParser]  # supports file upload
+
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        profile = user.recruiter_profile
+
+        if profile.pending_data is None:
+            return Response(
+                {"error": "No draft exists. Submit a draft first."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = self.get_serializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data.copy()
+
+        draft_logo = data.pop("draft_logo", None)
+        draft_doc = data.pop("draft_business_registration_doc", None)
+
+        profile.pending_data.update(data)
+
+        if draft_logo is not None:
+            profile.draft_logo = draft_logo
+
+        if draft_doc is not None:
+            profile.draft_business_registration_doc = draft_doc
+
+        profile.status = "pending"
+        profile.rejection_reason = ""
+        profile.save()
+
+        return Response(
+            {
+                "detail": "Draft updated successfully.",
+                "pending_data": profile.pending_data,
+                "status": profile.status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
