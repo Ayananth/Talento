@@ -77,3 +77,39 @@ class RecruiterProfile(models.Model):
 
     def __str__(self):
         return f"{self.company_name} ({self.user.email})"
+    
+    def has_published_data(self) -> bool:
+        """
+        Returns True if the company profile has ever been approved at least once.
+        We check key published fields, not just status.
+        """
+        return bool(self.company_name or self.website or self.industry)
+
+    def has_draft(self) -> bool:
+        """Return True if recruiter has any draft text or draft files."""
+        return bool(self.pending_data or self.draft_logo or self.draft_business_registration_doc)
+
+
+    def is_first_submission(self) -> bool:
+        """
+        Recruiter is submitting their company for the first time.
+        """
+        return self.status == "pending" and not self.has_published_data()
+
+    def is_editing(self) -> bool:
+        """
+        Recruiter is editing an already approved profile.
+        """
+        return self.status == "pending" and self.has_published_data()
+
+
+    def is_published(self) -> bool:
+        return self.status == "published"
+
+
+    def is_pending_review(self) -> bool:
+        return self.status == "pending"
+
+
+    def is_rejected(self) -> bool:
+        return self.status == "rejected"

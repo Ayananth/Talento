@@ -119,8 +119,6 @@ class RecruiterProfileDraftUpdateView(generics.GenericAPIView):
 
 class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
     """
-    PATCH /api/admin/recruiter/profile/<pk>/approve/
-
     Admin approves the draft:
     - pending_data → published fields
     - draft files → live files
@@ -177,4 +175,49 @@ class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
             },
             status=status.HTTP_200_OK,
         )
+    
+
+class AdminRejectRecruiterProfileView(generics.UpdateAPIView):
+    """
+    - Admin rejects the draft
+    - Keeps pending_data intact
+    - Keeps draft files intact
+    - Sets status = 'rejected'
+    - Saves rejection reason
+    """
+
+    permission_classes = [IsAdmin]
+    queryset = RecruiterProfile.objects.all()
+
+    def patch(self, request, *args, **kwargs):
+        profile = self.get_object()
+
+        if not profile.pending_data and not profile.draft_logo and not profile.draft_business_registration_doc:
+            return Response(
+                {"error": "No draft exists to reject."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        reason = request.data.get("reason", "").strip()
+
+        if not reason:
+            return Response(
+                {"error": "Rejection reason is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        profile.status = "rejected"
+        profile.rejection_reason = reason
+        profile.save()
+
+        return Response(
+            {
+                "detail": "Draft rejected successfully.",
+                "status": profile.status,
+                "rejection_reason": profile.rejection_reason,
+                "pending_data": profile.pending_data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
