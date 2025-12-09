@@ -40,6 +40,7 @@ class SignUpView(APIView):
     def post(self, request):
         email = request.data.get("email")
 
+
         try:
             user = USER.objects.get(email=email)
             if not user.is_email_verified:
@@ -135,11 +136,16 @@ class VerifyEmailView(APIView):
     def get(self, request):
         token = request.GET.get("token")
 
+
         if not token:
             return Response({"error": "Token missing"}, status=400)
 
+        role = "jobseeker"
+
         try:
             access_token = AccessToken(token)
+            role = access_token.get("role", "jobseeker")
+            
 
             # Ensure it is an email verification token
             if not access_token.get("email_verification", False):
@@ -157,10 +163,21 @@ class VerifyEmailView(APIView):
             print(user)
             user.save()
 
-            return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_SUCCESS_URL)
+            success_url = (
+                f"{settings.FRONTEND_URL}{settings.EMAIL_VERIFICATION_SUCCESS_URL}"
+                f"?role={role}"
+            )
+
+            return redirect(success_url)
 
         except Exception as e:
-            return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_FAILED_URL)
+            failed_url = (
+                f"{settings.FRONTEND_URL}{settings.EMAIL_VERIFICATION_FAILED_URL}"
+                f"?role={role}"
+            )
+
+            return redirect(failed_url)
+
         
 
 
@@ -192,6 +209,7 @@ class ResendVerificationEmailView(APIView):
 
         # Generate new verification token
         token = generate_email_verification_token(user)
+        
         verify_url = request.build_absolute_uri(
             reverse("authentication:verify_email")
         ) + f"?token={token}"
