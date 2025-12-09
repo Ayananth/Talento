@@ -2,10 +2,12 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.utils import timezone
 
 from .models import RecruiterProfile
 from .serializers import RecruiterDraftCreateSerializer
-from core.permissions import IsRecruiter 
+from core.permissions import IsRecruiter, IsAdmin
+
 
 
 class RecruiterProfileDraftCreateView(generics.GenericAPIView):
@@ -104,6 +106,74 @@ class RecruiterProfileDraftUpdateView(generics.GenericAPIView):
                 "detail": "Draft updated successfully.",
                 "pending_data": profile.pending_data,
                 "status": profile.status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+
+
+
+
+
+
+class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
+    """
+    PATCH /api/admin/recruiter/profile/<pk>/approve/
+
+    Admin approves the draft:
+    - pending_data → published fields
+    - draft files → live files
+    - clear draft fields
+    - status = "published"
+    """
+
+    permission_classes = [IsAdmin]
+    queryset = RecruiterProfile.objects.all()
+
+    def patch(self, request, *args, **kwargs):
+        profile = self.get_object()
+
+        if not profile.pending_data and not profile.draft_logo and not profile.draft_business_registration_doc:
+            return Response(
+                {"error": "No draft exists to approve."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if profile.pending_data:
+            for field, value in profile.pending_data.items():
+                if hasattr(profile, field):
+                    setattr(profile, field, value)
+
+        if profile.draft_logo:
+            profile.logo = profile.draft_logo
+
+        if profile.draft_business_registration_doc:
+            profile.business_registration_doc = profile.draft_business_registration_doc
+
+        profile.pending_data = None
+        profile.draft_logo = None
+        profile.draft_business_registration_doc = None
+
+        profile.status = "published"
+        profile.rejection_reason = ""
+        profile.verified_at = timezone.now()
+
+        profile.save()
+
+        return Response(
+            {
+                "detail": "Recruiter profile approved and published successfully.",
+                "status": profile.status,
+                "published_data": {
+                    "company_name": profile.company_name,
+                    "website": profile.website,
+                    "industry": profile.industry,
+                    "company_size": profile.company_size,
+                    "about_company": profile.about_company,
+                    "logo": str(profile.logo),
+                    "business_registration_doc": str(profile.business_registration_doc),
+                },
             },
             status=status.HTTP_200_OK,
         )
