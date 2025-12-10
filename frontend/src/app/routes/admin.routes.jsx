@@ -5,15 +5,16 @@ import RecruiterListPage from "../../features/admin/recruiters/RecruiterListPage
 import AdminLayout from "../../features/admin/layout/AdminLayout";
 import { Children } from "react";
 import Dashboard from "../../features/admin/pages/Dashboard";
+import AdminLoginPage from "../../features/admin/pages/AdminLoginPage";
 
 
 const adminRoutes = [
   {
     path: "/admin",
     element: (
-    //   <RequireAuth>
+      <RequireAuth>
         <AdminLayout />
-    //   </RequireAuth>
+     </RequireAuth>
     ),
     children: [
       {
@@ -24,7 +25,10 @@ const adminRoutes = [
         ]
       }
     ]
-  }
+  },
+
+    { path: "/admin/login", element: <AdminLoginPage role="admin" /> },
+
 ];
 
 

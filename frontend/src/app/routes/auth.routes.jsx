@@ -19,7 +19,6 @@ const authRoutes = [
   children: [
     { path: "/login", element: <LoginPage role="jobseeker" /> },
     { path: "/recruiter/login", element: <LoginPage role="recruiter" /> },
-    { path: "/admin/login", element: <LoginPage role="admin" /> },
     { path: "/signup", element: <SignupPage role="jobseeker" /> },
     { path: "/recruiter/signup", element: <SignupPage role="recruiter" /> },
     { path: "/email-verification", element: <EmailVerificationPage /> },
