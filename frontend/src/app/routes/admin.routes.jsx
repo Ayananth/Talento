@@ -20,7 +20,7 @@ const adminRoutes = [
       {
         element: <RoleRoute allowedRoles={["admin"]} />,
         children: [
-          { path: "dashboard", element: <Dashboard /> },
+          { path: "home", element: <Dashboard /> },
           { path: "recruiters", element: <RecruiterListPage /> }
         ]
       }
