@@ -16,6 +16,12 @@ urlpatterns = [
 
     path("recruiters/", views.AdminRecruiterListView.as_view(), name="admin-recruiters-list"),
 
+    path(
+        "admin/recruiter/<int:pk>/",
+        views.AdminRecruiterProfileDetailView.as_view(),
+        name="admin-recruiter-detail",
+    ),
+
 
 
 ]

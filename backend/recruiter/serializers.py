@@ -44,3 +44,34 @@ class AdminRecruiterListSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class RecruiterProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecruiterProfile
+        fields = [
+            "id",
+            "company_name",
+            "website",
+            "logo",                     
+            "about_company",            
+            "industry",
+            "company_size",
+            "location",
+            "address",
+            "phone",
+            "support_email",
+            "linkedin",
+            "facebook",
+            "twitter",
+            "business_registration_doc",  
+            "verified_at",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = (
+            "id",
+            "verified_at",
+            "created_at",
+            "updated_at",
+        )

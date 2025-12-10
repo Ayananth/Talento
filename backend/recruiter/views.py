@@ -5,7 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 
 from .models import RecruiterProfile
-from .serializers import RecruiterDraftCreateSerializer, AdminRecruiterListSerializer
+from .serializers import RecruiterDraftCreateSerializer, AdminRecruiterListSerializer, RecruiterProfileSerializer
 from core.permissions import IsRecruiter, IsAdmin
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -257,3 +257,13 @@ class AdminRecruiterListView(generics.ListAPIView):
             "results": response.data,
         }
         return response
+
+
+class AdminRecruiterProfileDetailView(generics.RetrieveAPIView):
+    """
+    Admin view to fetch full details of a recruiter
+    """
+
+    serializer_class = RecruiterProfileSerializer
+    queryset = RecruiterProfile.objects.all()
+    permission_classes = [IsAuthenticated, IsAdmin]
