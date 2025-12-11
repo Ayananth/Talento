@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { getPendingList } from "./apis/getPendingList";
 import useAuth from "../../auth/context/useAuth";
+import Pagination from "../../../shared/components/Pagination";
+import { PAGE_SIZE } from "../../../shared/constants/constants";
+
 
 export default function PendingApprovalsPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [page, setPage] = useState(1);
-  const [next, setNext] = useState(null);
-  const [prev, setPrev] = useState(null);
+  const [count, setCount] = useState(0); // total rows
+  const pageSize = PAGE_SIZE;
 
   const { loading: authLoading } = useAuth();
 
+  const totalPages = Math.ceil(count / pageSize);
+
   const fetchData = async (pageNum) => {
+    setLoading(true);
     try {
       const response = await getPendingList(pageNum);
 
@@ -26,8 +32,7 @@ export default function PendingApprovalsPage() {
       }));
 
       setData(mapped);
-      setNext(response.next);
-      setPrev(response.previous);
+      setCount(response.count); //total rows from backedn
     } catch (error) {
       console.error("API ERROR:", error);
     } finally {
@@ -55,6 +60,7 @@ export default function PendingApprovalsPage() {
         Pending Approvals
       </h2>
 
+      {/* Table */}
       <div className="overflow-x-auto bg-white shadow rounded-xl">
         <table className="w-full text-left">
           <thead>
@@ -117,30 +123,12 @@ export default function PendingApprovalsPage() {
         </table>
       </div>
 
-      {/* PAGINATION BUTTONS */}
-      <div className="flex justify-center items-center gap-4 mt-6">
-        <button
-          disabled={!prev}
-          onClick={() => setPage(page - 1)}
-          className={`px-4 py-2 border rounded-lg ${
-            !prev ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          Prev
-        </button>
-
-        <span className="font-medium text-gray-700">Page {page}</span>
-
-        <button
-          disabled={!next}
-          onClick={() => setPage(page + 1)}
-          className={`px-4 py-2 border rounded-lg ${
-            !next ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          Next
-        </button>
-      </div>
+      {/* Pagination Component */}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(num) => setPage(num)}
+      />
     </div>
   );
 }
