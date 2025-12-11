@@ -251,15 +251,13 @@ class AdminRecruiterListView(generics.ListAPIView):
         return RecruiterProfile.objects.filter(status="pending")
 
     def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-
-        pending_count = RecruiterProfile.objects.filter(status="pending").count()
-        response.data = {
-            "pending_count": pending_count,
-            "total_companies": self.get_queryset().count(),
-            "results": response.data,
-        }
-        return response
+        paginated_response = super().list(request, *args, **kwargs)
+        return Response({
+            "count": paginated_response.data.get("count"),
+            "next": paginated_response.data.get("next"),
+            "previous": paginated_response.data.get("previous"),
+            "results": paginated_response.data.get("results"),
+        })
 
 
 class AdminRecruiterProfileDetailView(generics.RetrieveAPIView):
