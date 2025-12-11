@@ -62,14 +62,14 @@ export default function PendingApprovalsPage() {
       label: "User",
       key: "user",
       sortable: true,
-      orderingKey: "user__username",  // <-- valid DRF field
+      orderingKey: "user__username", 
     },
 
     {
       label: "Company",
       key: "company",
       sortable: true,
-      orderingKey: "company_name", // <-- correct backend field
+      orderingKey: "company_name", 
     },
 
     {
@@ -83,7 +83,7 @@ export default function PendingApprovalsPage() {
       label: "Submitted",
       key: "submitted",
       sortable: true,
-      orderingKey: "created_at", // or "updated_at" if used
+      orderingKey: "created_at", 
     },
   ];
 
