@@ -247,6 +247,9 @@ class AdminRecruiterListView(generics.ListAPIView):
     search_fields = ["company_name", "industry", "user__email"]
     ordering_fields = ["created_at", "company_name", "status"]
 
+    def get_queryset(self):
+        return RecruiterProfile.objects.filter(status="pending")
+
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
 
