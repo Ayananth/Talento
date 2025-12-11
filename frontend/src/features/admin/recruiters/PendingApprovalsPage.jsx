@@ -9,12 +9,13 @@ export default function PendingApprovalsPage() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
+  const [ordering, setOrdering] = useState("");
   const pageSize = PAGE_SIZE;
   const totalPages = Math.ceil(count / pageSize);
   const { loading: authLoading } = useAuth();
 
-  const fetchData = async (pageNum) => {
-    const response = await getPendingList(pageNum);
+  const fetchData = async (pageNum, orderingValue = ordering) => {
+    const response = await getPendingList(pageNum, orderingValue);
 
     const mapped = response.results.map((item) => ({
       id: item.id,
@@ -31,47 +32,61 @@ export default function PendingApprovalsPage() {
 
   useEffect(() => {
     if (!authLoading) fetchData(page);
-  }, [authLoading, page]);
+  }, [authLoading, page, ordering]);
+
+  const handleSort = (orderingKey) => {
+    if (!orderingKey) return;
+
+    if (ordering === orderingKey) {
+      setOrdering(`-${orderingKey}`);      // ascending → descending
+    } else if (ordering === `-${orderingKey}`) {
+      setOrdering("");                     // descending → reset
+    } else {
+      setOrdering(orderingKey);            // no sort → ascending
+    }
+
+    setPage(1); // reset page
+  };
+
+
 
   const columns = [
     {
       label: "No",
       key: "number",
+      sortable: false,
       render: (_, index) => (page - 1) * pageSize + index + 1,
     },
-    { label: "User", key: "user" },
-    { label: "Company", key: "company" },
+
+    {
+      label: "User",
+      key: "user",
+      sortable: true,
+      orderingKey: "user__username",  // <-- valid DRF field
+    },
+
+    {
+      label: "Company",
+      key: "company",
+      sortable: true,
+      orderingKey: "company_name", // <-- correct backend field
+    },
 
     {
       label: "Status",
       key: "status",
-      render: (row) => (
-        <span className={`px-2 py-1 rounded text-xs font-semibold capitalize ${
-            row.status === "approved"
-              ? "bg-green-100 text-green-700"
-              : row.status === "pending"
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-red-100 text-red-700"
-          }`}>
-          {row.status}
-        </span>
-      ),
+      sortable: true,
+      orderingKey: "status",
     },
+
     {
-      label: "Request",
-      key: "mode",
-      render: (row) => (
-        <span className={`px-2 py-1 rounded text-xs font-semibold capitalize ${
-            row.mode === "new"
-              ? "bg-purple-100 text-purple-700"
-              : "bg-blue-100 text-blue-700"
-          }`}>
-          {row.mode}
-        </span>
-      ),
+      label: "Submitted",
+      key: "submitted",
+      sortable: true,
+      orderingKey: "created_at", // or "updated_at" if used
     },
-    { label: "Submitted", key: "submitted" },
   ];
+
 
   return (
     <div className="p-4 md:p-6">
@@ -88,7 +103,10 @@ export default function PendingApprovalsPage() {
             View
           </button>
         )}
-      />
+        ordering={ordering}
+        onSort={handleSort}
+
+/>
 
       <Pagination
         page={page}

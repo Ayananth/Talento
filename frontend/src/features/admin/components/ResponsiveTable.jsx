@@ -1,19 +1,31 @@
 import React from "react";
 
 /**
- * columns = [
- *   { label: "No", key: "number", render: (_, index) => index + 1 },
- *   { label: "User", key: "user" },
- *   { label: "Company", key: "company" },
+ * PROPS:
+ * data: array of table rows
+ * columns: [
  *   {
- *     label: "Status",
- *     key: "status",
- *     render: (row) => <StatusBadge status={row.status}/>
- *   },
+ *     label: "Company",
+ *     key: "company",
+ *     sortable: true,
+ *     render: (row, index) => JSX
+ *   }
  * ]
+ *
+ * rowKey: string identifying unique key (default: "id")
+ * actions: (row, index) => JSX button(s)
+ * ordering: current ordering string ("company", "-company", "")
+ * onSort: function(key)
  */
 
-export default function ResponsiveTable({ data = [], columns = [], rowKey = "id", actions }) {
+export default function ResponsiveTable({
+  data = [],
+  columns = [],
+  rowKey = "id",
+  actions,
+  ordering = "",
+  onSort,
+}) {
   return (
     <div className="w-full bg-white shadow rounded-xl overflow-hidden">
 
@@ -24,13 +36,30 @@ export default function ResponsiveTable({ data = [], columns = [], rowKey = "id"
         <table className="min-w-full table-fixed text-left">
           <thead className="bg-gray-100 text-gray-700">
             <tr>
-              {columns.map((col) => (
-                <th key={col.key} className="px-4 py-3">
-                  {col.label}
-                </th>
-              ))}
+              {columns.map((col) => {
+                const isAsc = ordering === col.key;
+                const isDesc = ordering === `-${col.key}`;
 
-              {actions && <th className="px-4 py-3">Actions</th>}
+                return (
+                  <th
+                    key={col.key}
+                    className={`px-4 py-3 text-sm font-semibold ${
+                      col.sortable ? "cursor-pointer hover:bg-gray-200 select-none" : ""
+                    }`}
+                    onClick={() => col.sortable && onSort && onSort(col.orderingKey || col.key)}
+                  >
+                    <div className="flex items-center gap-1">
+                      {col.label}
+
+                      {/* Sort icons */}
+                      {col.sortable && isAsc && <span>↑</span>}
+                      {col.sortable && isDesc && <span>↓</span>}
+                    </div>
+                  </th>
+                );
+              })}
+
+              {actions && <th className="px-4 py-3 text-sm font-semibold">Actions</th>}
             </tr>
           </thead>
 
@@ -65,15 +94,35 @@ export default function ResponsiveTable({ data = [], columns = [], rowKey = "id"
             key={row[rowKey]}
             className="border rounded-lg p-3 bg-white shadow-sm hover:shadow-md"
           >
-            {columns.map((col) => (
-              <p key={col.key} className="text-sm text-gray-700 mb-1">
-                <span className="font-semibold">{col.label}: </span>
-                {col.render ? col.render(row, index) : row[col.key]}
-              </p>
-            ))}
+            {columns.map((col) => {
+              const isAsc = ordering === col.key;
+              const isDesc = ordering === `-${col.key}`;
+
+              return (
+                <p key={col.key} className="text-sm text-gray-700 mb-2">
+                  <span className="font-semibold">{col.label}: </span>
+
+                  {/* If sortable, allow clicking on label */}
+                  {col.sortable ? (
+                    <span
+                      onClick={() => onSort(col.orderingKey || col.key)}
+                      className="cursor-pointer underline"
+                    >
+                      {col.render ? col.render(row, index) : row[col.key]}
+                      {isAsc && <span> ↑</span>}
+                      {isDesc && <span> ↓</span>}
+                    </span>
+                  ) : (
+                    <span>
+                      {col.render ? col.render(row, index) : row[col.key]}
+                    </span>
+                  )}
+                </p>
+              );
+            })}
 
             {actions && (
-              <div className="mt-2">
+              <div className="mt-3">
                 {actions(row, index)}
               </div>
             )}
