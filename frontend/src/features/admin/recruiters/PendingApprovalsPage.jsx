@@ -5,34 +5,41 @@ import useAuth from "../../auth/context/useAuth";
 export default function PendingApprovalsPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const [next, setNext] = useState(null);
+  const [prev, setPrev] = useState(null);
+
   const { loading: authLoading } = useAuth();
 
+  const fetchData = async (pageNum) => {
+    try {
+      const response = await getPendingList(pageNum);
+
+      const mapped = response.results.map((item) => ({
+        id: item.id,
+        user: item.username,
+        company: item.company_name,
+        status: item.status,
+        mode: item.request_type?.toLowerCase(),
+        submitted: item.updated_at,
+      }));
+
+      setData(mapped);
+      setNext(response.next);
+      setPrev(response.previous);
+    } catch (error) {
+      console.error("API ERROR:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    if (authLoading) return;
-
-    const fetchData = async () => {
-      try {
-        const response = await getPendingList();
-
-        const mapped = response.results.map((item) => ({
-          id: item.id,
-          user: item.username,
-          company: item.company_name,
-          status: item.status,
-          mode: item.request_type?.toLowerCase(),
-          submitted: item.updated_at,
-        }));
-
-        setData(mapped);
-      } catch (error) {
-        console.error("API ERROR:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [authLoading]);
+    if (!authLoading) {
+      fetchData(page);
+    }
+  }, [authLoading, page]);
 
   if (loading) {
     return (
@@ -44,7 +51,9 @@ export default function PendingApprovalsPage() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Pending Approvals</h2>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+        Pending Approvals
+      </h2>
 
       <div className="overflow-x-auto bg-white shadow rounded-xl">
         <table className="w-full text-left">
@@ -93,7 +102,9 @@ export default function PendingApprovalsPage() {
                   </span>
                 </td>
 
-                <td className="px-4 py-2">{new Date(item.submitted).toLocaleString()}</td>
+                <td className="px-4 py-2">
+                  {new Date(item.submitted).toLocaleString()}
+                </td>
 
                 <td className="px-4 py-2">
                   <button className="px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
@@ -104,6 +115,31 @@ export default function PendingApprovalsPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* PAGINATION BUTTONS */}
+      <div className="flex justify-center items-center gap-4 mt-6">
+        <button
+          disabled={!prev}
+          onClick={() => setPage(page - 1)}
+          className={`px-4 py-2 border rounded-lg ${
+            !prev ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          Prev
+        </button>
+
+        <span className="font-medium text-gray-700">Page {page}</span>
+
+        <button
+          disabled={!next}
+          onClick={() => setPage(page + 1)}
+          className={`px-4 py-2 border rounded-lg ${
+            !next ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          Next
+        </button>
       </div>
     </div>
   );
