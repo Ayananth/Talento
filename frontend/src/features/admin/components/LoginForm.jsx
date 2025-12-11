@@ -41,7 +41,7 @@ export default function LoginForm({ role }) {
 
     try {
       await login({ email, password, role: "admin" });
-      navigate("/admin/dashboard");
+      navigate("/admin/home");
     } catch (err) {
       setLoginError("Login failed. Check your credentials.");
     } finally {

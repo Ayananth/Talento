@@ -6,6 +6,8 @@ import AdminLayout from "../../features/admin/layout/AdminLayout";
 import { Children } from "react";
 import Dashboard from "../../features/admin/pages/Dashboard";
 import AdminLoginPage from "../../features/admin/pages/AdminLoginPage";
+import AdminReviewCompanyPage from "../../features/admin/recruiters/AdminReviewCompanyPage";
+import PendingApprovalsPage from "../../features/admin/recruiters/PendingApprovalsPage";
 
 
 const adminRoutes = [
@@ -21,7 +23,10 @@ const adminRoutes = [
         element: <RoleRoute allowedRoles={["admin"]} />,
         children: [
           { path: "home", element: <Dashboard /> },
-          { path: "recruiters", element: <RecruiterListPage /> }
+          { path: "recruiters", element: <RecruiterListPage /> },
+          { path: "recruiter/changes", element: <AdminReviewCompanyPage /> },
+          { path: "recruiter/approvals", element: <PendingApprovalsPage /> }
+
         ]
       }
     ]

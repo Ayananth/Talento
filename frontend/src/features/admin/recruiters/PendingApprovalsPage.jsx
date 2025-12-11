@@ -34,20 +34,25 @@ export default function PendingApprovalsPage() {
   }, [authLoading, page]);
 
   const columns = [
-    { label: "ID", key: "id" },
+    {
+      label: "No",
+      key: "number",
+      render: (_, index) => (page - 1) * pageSize + index + 1,
+    },
     { label: "User", key: "user" },
     { label: "Company", key: "company" },
+
     {
       label: "Status",
       key: "status",
       render: (row) => (
         <span className={`px-2 py-1 rounded text-xs font-semibold capitalize ${
-          row.status === "approved"
-            ? "bg-green-100 text-green-700"
-            : row.status === "pending"
-            ? "bg-yellow-100 text-yellow-700"
-            : "bg-red-100 text-red-700"
-        }`}>
+            row.status === "approved"
+              ? "bg-green-100 text-green-700"
+              : row.status === "pending"
+              ? "bg-yellow-100 text-yellow-700"
+              : "bg-red-100 text-red-700"
+          }`}>
           {row.status}
         </span>
       ),
@@ -57,10 +62,10 @@ export default function PendingApprovalsPage() {
       key: "mode",
       render: (row) => (
         <span className={`px-2 py-1 rounded text-xs font-semibold capitalize ${
-          row.mode === "new"
-            ? "bg-purple-100 text-purple-700"
-            : "bg-blue-100 text-blue-700"
-        }`}>
+            row.mode === "new"
+              ? "bg-purple-100 text-purple-700"
+              : "bg-blue-100 text-blue-700"
+          }`}>
           {row.mode}
         </span>
       ),
