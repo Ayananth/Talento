@@ -29,10 +29,13 @@ class RecruiterDraftCreateSerializer(serializers.Serializer):
 
 
 class AdminRecruiterListSerializer(serializers.ModelSerializer):
+    request_type = serializers.SerializerMethodField()
+    username = serializers.CharField(source='user.username')
     class Meta:
         model = RecruiterProfile
         fields = [
             "id",
+            "username",
             "company_name",
             "industry",
             "status",
@@ -43,7 +46,15 @@ class AdminRecruiterListSerializer(serializers.ModelSerializer):
             "verified_at",
             "created_at",
             "updated_at",
+            "request_type"
         ]
+    def get_request_type(self, obj):
+        if obj.is_first_submission():
+            return "New"
+        elif obj.is_editing():
+            return "Edit"
+        return None
+
 
 
 class RecruiterProfileSerializer(serializers.ModelSerializer):
