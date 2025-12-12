@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import useAuth from '../context/useAuth'
 import { User } from 'lucide-react';
 import { CircleUser } from 'lucide-react';
+import {LogOut} from 'lucide-react'
 
 
 export function Navbar({role}) {
@@ -78,7 +79,7 @@ export function Navbar({role}) {
               {profileOpen && (
                 <div className="absolute right-0 mt-3 bg-white shadow-lg rounded-xl py-3 w-48 border border-gray-100 animate-fadeIn">
                   <button
-                    onClick={() => navigate("/dashboard")}
+                    onClick={() => navigate("/profile")}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
                   >
                     Dashboard

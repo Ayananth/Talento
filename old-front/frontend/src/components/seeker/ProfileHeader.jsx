@@ -190,38 +190,57 @@ export default function ProfileHeader() {
         {/* LEFT BLOCK */}
         <div className="flex gap-6 w-full lg:w-2/3">
 
-          {/* PROFILE IMAGE + upload */}
-          <div className="relative w-35 h-35 flex items-center justify-center">
-            <div className="w-30 h-30 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-              <img
-                src={
-                  preview
-                    ? preview
-                    : baseUrl+profile.profile_image
-                    ? baseUrl+profile.profile_image
-                    : "https://via.placeholder.com/150?text=Profile"
-                }
-                alt=""
-                className={`w-full h-full object-cover rounded-full ${
-                  uploading ? "opacity-70" : ""
-                }`}
-              />
-            </div>
+{/* PROFILE IMAGE + upload (debug version) */}
+<div className="relative" style={{ width: 128, height: 128 }}>
+  <div
+    className="rounded-full bg-gray-200 overflow-hidden flex items-center justify-center"
+    style={{ width: 128, height: 128 }}
+  >
+    <img
+      src={
+        // explicit safe fallback: preview OR valid profile.profile_image OR placeholder
+        preview ||
+        (profile && profile.profile_image
+          ? `${baseUrl}${profile.profile_image}`
+          : "https://via.placeholder.com/150?text=Profile")
+      }
+      alt="Profile"
+      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "9999px" }}
+      className={uploading ? "opacity-70" : ""}
+      onError={(e) => {
+        console.warn("Profile image failed to load, falling back to placeholder.", {
+          preview,
+          profile_image: profile?.profile_image,
+          constructedUrl: profile?.profile_image ? `${baseUrl}${profile.profile_image}` : null,
+        });
+        e.currentTarget.src = "https://via.placeholder.com/150?text=Profile";
+      }}
+      onLoad={() => {
+        console.log("Profile image loaded:", {
+          preview,
+          profile_image: profile?.profile_image,
+          constructedUrl: profile?.profile_image ? `${baseUrl}${profile.profile_image}` : null,
+          naturalWidth: e?.target?.naturalWidth, // will be undefined in some envs, ignore if so
+        });
+      }}
+    />
+  </div>
 
-            {/* Upload button */}
-            <div className="absolute bottom-0 bg-white shadow rounded-full px-3 py-1 text-xs text-blue-600 font-semibold cursor-pointer">
-              <label htmlFor="profileUpload" className="cursor-pointer">
-                {uploading ? "Uploading..." : "Edit"}
-              </label>
-              <input
-                id="profileUpload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
-            </div>
-          </div>
+  {/* Upload button (unchanged) */}
+  <div className="absolute bottom-0 bg-white shadow rounded-full px-3 py-1 text-xs text-blue-600 font-semibold cursor-pointer">
+    <label htmlFor="profileUpload" className="cursor-pointer">
+      {uploading ? "Uploading..." : "Edit"}
+    </label>
+    <input
+      id="profileUpload"
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={handleImageUpload}
+    />
+  </div>
+</div>
+
 
           {/* USER INFO */}
           <div className="flex flex-col w-full">
