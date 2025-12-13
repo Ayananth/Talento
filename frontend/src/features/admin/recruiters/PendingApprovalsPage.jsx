@@ -4,6 +4,7 @@ import useAuth from "../../auth/context/useAuth";
 import Pagination from "../../../shared/components/Pagination";
 import { PAGE_SIZE } from "../../../shared/constants/constants";
 import ResponsiveTable from "../components/ResponsiveTable";
+import { useNavigate } from "react-router-dom";
 
 export default function PendingApprovalsPage() {
   const [data, setData] = useState([]);
@@ -13,6 +14,7 @@ export default function PendingApprovalsPage() {
   const pageSize = PAGE_SIZE;
   const totalPages = Math.ceil(count / pageSize);
   const { loading: authLoading } = useAuth();
+  const navigate = useNavigate()
 
   const fetchData = async (pageNum, orderingValue = ordering) => {
     const response = await getPendingList(pageNum, orderingValue);
@@ -99,7 +101,8 @@ export default function PendingApprovalsPage() {
         columns={columns}
         rowKey="id"
         actions={(row) => (
-          <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+          onClick={()=> navigate(`1`)}>
             View
           </button>
         )}

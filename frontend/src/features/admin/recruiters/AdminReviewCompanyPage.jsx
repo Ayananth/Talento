@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import FirstTimeCompanyView from "./FirstTimeCompanyView";
+import SideComparison from "./SideComparison";
 /**
  * Highlight class depending on difference between published and pending
  */
@@ -71,7 +72,9 @@ export default function AdminReviewCompanyPage() {
     user,
   } = data;
 
-  return <FirstTimeCompanyView data={data}/>
+  // return <SideComparison/>
+
+  // return <FirstTimeCompanyView data={data}/>
 
   return (
     

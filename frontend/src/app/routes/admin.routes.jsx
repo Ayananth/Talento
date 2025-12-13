@@ -8,6 +8,7 @@ import Dashboard from "../../features/admin/pages/Dashboard";
 import AdminLoginPage from "../../features/admin/pages/AdminLoginPage";
 import AdminReviewCompanyPage from "../../features/admin/recruiters/AdminReviewCompanyPage";
 import PendingApprovalsPage from "../../features/admin/recruiters/PendingApprovalsPage";
+import AdminApprovePage from "../../features/admin/recruiters/AdminApprovePage";
 
 
 const adminRoutes = [
@@ -25,7 +26,8 @@ const adminRoutes = [
           { path: "home", element: <Dashboard /> },
           { path: "recruiters", element: <RecruiterListPage /> },
           { path: "recruiter/changes", element: <AdminReviewCompanyPage /> },
-          { path: "recruiter/approvals", element: <PendingApprovalsPage /> }
+          { path: "recruiter/approvals", element: <PendingApprovalsPage /> },
+          { path: "recruiter/approvals/1", element: <AdminApprovePage /> },
 
         ]
       }
