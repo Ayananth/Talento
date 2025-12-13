@@ -5,7 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 
 from .models import RecruiterProfile
-from .serializers import RecruiterDraftCreateSerializer, AdminRecruiterListSerializer
+from .serializers import RecruiterDraftCreateSerializer, AdminRecruiterListSerializer, RecruiterProfileSerializer
 from core.permissions import IsRecruiter, IsAdmin
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -230,13 +230,6 @@ class AdminRejectRecruiterProfileView(generics.UpdateAPIView):
 
 
 class AdminRecruiterListView(generics.ListAPIView):
-    """
-    Features:
-    - Filtering (status, name, industry, email)
-    - Search
-    - Ordering (optional)
-    - Pending count included in response
-    """
 
     permission_classes = [IsAuthenticated, IsAdmin]
     queryset = RecruiterProfile.objects.all()
@@ -247,13 +240,60 @@ class AdminRecruiterListView(generics.ListAPIView):
     search_fields = ["company_name", "industry", "user__email"]
     ordering_fields = ["created_at", "company_name", "status"]
 
-    def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
+    def get_queryset(self):
+        return RecruiterProfile.objects.filter(status="pending")
 
-        pending_count = RecruiterProfile.objects.filter(status="pending").count()
-        response.data = {
-            "pending_count": pending_count,
-            "total_companies": self.get_queryset().count(),
-            "results": response.data,
-        }
-        return response
+    def list(self, request, *args, **kwargs):
+        paginated_response = super().list(request, *args, **kwargs)
+        return Response({
+            "count": paginated_response.data.get("count"),
+            "next": paginated_response.data.get("next"),
+            "previous": paginated_response.data.get("previous"),
+            "results": paginated_response.data.get("results"),
+        })
+
+
+class AdminRecruiterProfileDetailView(generics.RetrieveAPIView):
+    """
+    Admin view to fetch full details of a recruiter
+    """
+
+    serializer_class = RecruiterProfileSerializer
+    queryset = RecruiterProfile.objects.all()
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+
+class BaseAdminRecruiterListView(generics.ListAPIView):
+    """
+    Shared logic for:
+      - Recruiter list
+      - Pending recruiter list
+    """
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = AdminRecruiterListSerializer
+
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = RecruiterProfileFilter
+
+    search_fields = ["company_name", "industry", "user__email"]
+    ordering_fields = ["created_at", "company_name", "status"]
+
+    queryset = RecruiterProfile.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        paginated_response = super().list(request, *args, **kwargs)
+        return Response({
+            "count": paginated_response.data.get("count"),
+            "next": paginated_response.data.get("next"),
+            "previous": paginated_response.data.get("previous"),
+            "results": paginated_response.data.get("results"),
+        })
+    
+class AdminRecruiterListView(BaseAdminRecruiterListView):
+    queryset = RecruiterProfile.objects.all()
+
+
+class PendingRecruiterListView(BaseAdminRecruiterListView):
+    def get_queryset(self):
+        return RecruiterProfile.objects.filter(status="pending")

@@ -21,12 +21,14 @@ import LoginPage from "../../features/auth/pages/LoginPage";
 import authRoutes from "./auth.routes";
 import jobseekerRoutes from "./jobseeker.routes";
 import commonRoutes from "./common.routes";
+import adminRoutes from "./admin.routes"
 
 
 const router = createBrowserRouter([
   ...authRoutes,
   ...jobseekerRoutes,
-  ...commonRoutes
+  ...commonRoutes,
+  ...adminRoutes
 
 ]);
 

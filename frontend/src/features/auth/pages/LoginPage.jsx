@@ -28,8 +28,11 @@ const redirectAfterLogin = redirectMap[role] ?? "/";
               Welcome Back to Talento
             </h1>
             <p className="text-lg opacity-90">
-              Your career journey continues here.  
-              Login and discover new opportunities!
+              {/* Your career journey continues here.   */}
+              {role==="jobseeker" && "Your career journey continues here."   }
+              {role==="admin" && "Manage Talento."   }
+
+              {role!=="admin" && "Login and discover new opportunities!"}
             </p>
 
             <img

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import useAuth from '../context/useAuth'
 import { User } from 'lucide-react';
 import { CircleUser } from 'lucide-react';
+import {LogOut} from 'lucide-react'
 
 
 export function Navbar({role}) {
@@ -43,12 +44,16 @@ export function Navbar({role}) {
           {/* BEFORE LOGIN */}
           {!isAuthenticated && (
             <>
+            {role!=="admin" &&
               <button
                 onClick={() => navigate(loginUrl)}
                 className="px-5 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 transition font-medium"
               >
                 Login
               </button>
+}
+
+              {role!=="admin" &&
 
               <button
                 onClick={() => navigate(signupUrl)}
@@ -56,6 +61,7 @@ export function Navbar({role}) {
               >
                 Sign Up
               </button>
+}
             </>
           )}
 
@@ -73,7 +79,7 @@ export function Navbar({role}) {
               {profileOpen && (
                 <div className="absolute right-0 mt-3 bg-white shadow-lg rounded-xl py-3 w-48 border border-gray-100 animate-fadeIn">
                   <button
-                    onClick={() => navigate("/dashboard")}
+                    onClick={() => navigate("/profile")}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
                   >
                     Dashboard
@@ -120,12 +126,18 @@ export function Navbar({role}) {
 
           {!isAuthenticated && (
             <>
+            {role!=="admin" &&
+
               <button
                 onClick={() => navigate(loginUrl)}
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
               >
                 Login
               </button>
+}
+
+            {role!=="admin" &&
+
 
               <button
                 onClick={() => navigate(signupUrl)}
@@ -133,6 +145,7 @@ export function Navbar({role}) {
               >
                 Sign Up
               </button>
+}
             </>
           )}
 
