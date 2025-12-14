@@ -3,8 +3,12 @@ import {
   HelpCircle,
   Mail,
   FileText,
-  ShieldCheck
+  ShieldCheck,
+  Upload,
+  Image,
+  X
 } from "lucide-react";
+
 
 export default function RecruiterOnboardingPage() {
   const [formData, setFormData] = useState({
@@ -99,12 +103,17 @@ export default function RecruiterOnboardingPage() {
                 onChange={handleChange}
               />
 
-              <FileInput
-                label="Company Logo (optional)"
-                name="logo"
-                accept="image/*"
-                onChange={handleChange}
-              />
+            <FileUploadField
+            label="Company Logo (optional)"
+            name="logo"
+            type="image"
+            accept="image/*"
+            file={formData.logo}
+            onChange={handleChange}
+            onRemove={() =>
+                setFormData((prev) => ({ ...prev, logo: null }))
+            }
+            />
             </Section>
 
             {/* CONTACT */}
@@ -136,12 +145,17 @@ export default function RecruiterOnboardingPage() {
 
             {/* BUSINESS VERIFICATION */}
             <Section title="Business Verification">
-              <FileInput
-                label="Business Registration Document (PDF/Image)"
+                <FileUploadField
+                label="Business Registration Document (PDF / Image)"
                 name="business_registration_doc"
                 accept=".pdf,image/*"
+                file={formData.business_registration_doc}
                 onChange={handleChange}
-              />
+                onRemove={() =>
+                    setFormData((prev) => ({ ...prev, business_registration_doc: null }))
+                }
+                />
+
             </Section>
 
             {/* SUBMIT */}
@@ -196,12 +210,59 @@ const Textarea = (props) => (
   <textarea {...props} rows="4" className="input mt-4" />
 );
 
-const FileInput = ({ label, ...props }) => (
-  <div className="mt-4">
-    <label className="block text-sm text-gray-600 mb-1">{label}</label>
-    <input type="file" {...props} />
-  </div>
-);
+const FileUploadField = ({
+  label,
+  name,
+  accept,
+  file,
+  onChange,
+  onRemove,
+  type = "file", // "file" | "image"
+}) => {
+  return (
+    <div className="mt-4">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label}
+      </label>
+
+      {!file ? (
+        <label className="flex items-center justify-center gap-3 border-2 border-dashed rounded-xl p-6 cursor-pointer hover:border-blue-500 transition">
+          {type === "image" ? (
+            <Image className="text-gray-400" />
+          ) : (
+            <FileText className="text-gray-400" />
+          )}
+          <span className="text-sm text-gray-600">
+            Click to upload
+          </span>
+          <Upload className="text-gray-400" size={16} />
+          <input
+            type="file"
+            name={name}
+            accept={accept}
+            onChange={onChange}
+            className="hidden"
+          />
+        </label>
+      ) : (
+        <div className="flex items-center justify-between border rounded-lg px-4 py-3 bg-gray-50">
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            {type === "image" ? <Image size={16} /> : <FileText size={16} />}
+            {file.name}
+          </div>
+
+          <button
+            type="button"
+            onClick={onRemove}
+            className="text-red-500 hover:text-red-700"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const FooterLink = ({ icon, text, href }) => (
   <a href={href} className="flex items-center gap-1 hover:text-blue-600">
