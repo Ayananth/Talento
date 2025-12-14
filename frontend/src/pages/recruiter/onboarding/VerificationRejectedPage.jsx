@@ -1,8 +1,17 @@
-import { Clock, CheckCircle, HelpCircle } from "lucide-react";
+import { XCircle, Edit3, HelpCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function VerificationPendingPage() {
+/**
+ * Props:
+ * - rejectionReason (string) – admin message
+ */
+export default function RecruiterVerificationRejectedPage({
+  rejectionReason,
+}) {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-gray-100 flex flex-col">
 
       {/* HEADER */}
       <header className="bg-white border-b">
@@ -22,46 +31,50 @@ export default function VerificationPendingPage() {
 
           {/* ICON */}
           <div className="flex justify-center mb-6">
-            <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
-              <Clock className="text-blue-600" size={28} />
+            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+              <XCircle className="text-red-600" size={28} />
             </div>
           </div>
 
           {/* TITLE */}
           <h1 className="text-2xl font-semibold text-gray-900">
-            Verification in Progress
+            Verification Rejected
           </h1>
 
-          {/* DESCRIPTION */}
+          {/* MESSAGE */}
           <p className="text-gray-600 mt-3">
-            Your company profile has been successfully submitted and is
-            currently under review by our admin team.
+            Your company profile could not be approved at this time.
           </p>
 
-          {/* STATUS */}
-          <div className="mt-6 flex items-center justify-center gap-2 text-sm font-medium text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-lg py-2">
-            <Clock size={16} />
-            Status: Pending Review
-          </div>
-
-          {/* INFO */}
-          <div className="mt-6 text-sm text-gray-500 space-y-2">
-            <p>
-              ⏱️ Review usually takes <strong>24–48 hours</strong>.
+          {/* ADMIN REASON */}
+          <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4 text-left">
+            <p className="text-sm font-medium text-red-700 mb-1">
+              Reason from Admin
             </p>
-            <p>
-              You’ll be notified once your profile is approved or if changes
-              are required.
+            <p className="text-sm text-red-800 whitespace-pre-line">
+              {rejectionReason || "No reason provided."}
             </p>
           </div>
 
-          {/* ACTION */}
+          {/* NEXT STEPS */}
+          <div className="mt-6 text-sm text-gray-600 space-y-2">
+            <p>
+              Please update the requested details and resubmit your profile for
+              review.
+            </p>
+            <p>
+              Once resubmitted, our team will review it again.
+            </p>
+          </div>
+
+          {/* ACTIONS */}
           <div className="mt-8 flex flex-col gap-3">
             <button
-              disabled
-              className="w-full bg-gray-200 text-gray-500 py-2.5 rounded-lg cursor-not-allowed"
+              onClick={() => navigate("/recruiter/profile/edit")}
+              className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
             >
-              Post a Job (Disabled)
+              <Edit3 size={16} />
+              Edit & Resubmit Profile
             </button>
 
             <a
