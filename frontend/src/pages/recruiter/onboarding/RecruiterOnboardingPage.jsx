@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HelpCircle, Mail, FileText, ShieldCheck } from "lucide-react";
 
 export default function RecruiterOnboardingPage() {
   const [formData, setFormData] = useState({
@@ -33,7 +34,6 @@ export default function RecruiterOnboardingPage() {
 
     try {
       console.log("Submitting recruiter verification");
-      // await api.post("/recruiter/verify/", payload)
       alert("Application submitted for verification");
     } catch (err) {
       alert("Something went wrong");
@@ -43,12 +43,11 @@ export default function RecruiterOnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
-      
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-gray-100">
+
       {/* NAVBAR */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3">
-          {/* Logo */}
           <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold">
             T
           </div>
@@ -64,17 +63,16 @@ export default function RecruiterOnboardingPage() {
           Recruiter Verification
         </h1>
         <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
-          To ensure trust and quality on Talento, we verify all recruiters
-          before allowing job postings.
+          To maintain trust on Talento, we verify all recruiters before enabling job postings.
         </p>
       </section>
 
-      {/* FORM CARD */}
-      <main className="max-w-4xl mx-auto mt-10 px-4 pb-16">
+      {/* FORM */}
+      <main className="flex-1 max-w-4xl mx-auto mt-10 px-4 pb-16 w-full">
         <div className="bg-white rounded-2xl shadow-sm border p-8">
           <form onSubmit={handleSubmit} className="space-y-10">
 
-            {/* COMPANY INFO */}
+            {/* COMPANY */}
             <section>
               <h2 className="text-lg font-semibold mb-4">
                 Company Details
@@ -105,7 +103,7 @@ export default function RecruiterOnboardingPage() {
               </div>
             </section>
 
-            {/* CONTACT INFO */}
+            {/* CONTACT */}
             <section>
               <h2 className="text-lg font-semibold mb-4">
                 Contact Information
@@ -132,6 +130,38 @@ export default function RecruiterOnboardingPage() {
           </form>
         </div>
       </main>
+
+      {/* FOOTER */}
+      <footer className="bg-white border-t">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
+
+          {/* LEFT */}
+          <div className="flex items-center gap-5">
+            <a href="/support" className="flex items-center gap-1 hover:text-blue-600">
+              <HelpCircle size={16} /> Support
+            </a>
+            <a href="/contact" className="flex items-center gap-1 hover:text-blue-600">
+              <Mail size={16} /> Contact
+            </a>
+          </div>
+
+          {/* CENTER */}
+          <div className="flex items-center gap-5">
+            <a href="/terms" className="flex items-center gap-1 hover:text-blue-600">
+              <FileText size={16} /> Terms
+            </a>
+            <a href="/privacy" className="flex items-center gap-1 hover:text-blue-600">
+              <ShieldCheck size={16} /> Privacy
+            </a>
+          </div>
+
+          {/* RIGHT */}
+          <div className="text-gray-500">
+            © {new Date().getFullYear()} Talento
+          </div>
+
+        </div>
+      </footer>
 
       {/* INPUT STYLE */}
       <style>
