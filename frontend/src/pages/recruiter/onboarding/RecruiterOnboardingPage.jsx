@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { HelpCircle, Mail, FileText, ShieldCheck } from "lucide-react";
+import {
+  HelpCircle,
+  Mail,
+  FileText,
+  ShieldCheck
+} from "lucide-react";
 
 export default function RecruiterOnboardingPage() {
   const [formData, setFormData] = useState({
@@ -7,12 +12,16 @@ export default function RecruiterOnboardingPage() {
     website: "",
     industry: "",
     company_size: "",
-    location: "",
     about_company: "",
-    contact_name: "",
-    contact_email: "",
     phone: "",
+    support_email: "",
+    location: "",
+    address: "",
+    linkedin: "",
+    facebook: "",
+    twitter: "",
     logo: null,
+    business_registration_doc: null,
   });
 
   const [loading, setLoading] = useState(false);
@@ -30,12 +39,15 @@ export default function RecruiterOnboardingPage() {
     setLoading(true);
 
     const payload = new FormData();
-    Object.entries(formData).forEach(([k, v]) => v && payload.append(k, v));
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value) payload.append(key, value);
+    });
 
     try {
-      console.log("Submitting recruiter verification");
+      console.log("Submitting recruiter profile", payload);
+      // await api.post("/recruiter/profile/submit/", payload)
       alert("Application submitted for verification");
-    } catch (err) {
+    } catch (error) {
       alert("Something went wrong");
     } finally {
       setLoading(false);
@@ -45,25 +57,23 @@ export default function RecruiterOnboardingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-gray-100">
 
-      {/* NAVBAR */}
+      {/* HEADER */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold">
+          <div className="w-10 h-10 bg-blue-600 rounded-lg text-white flex items-center justify-center font-bold">
             T
           </div>
-          <span className="text-xl font-semibold text-gray-800">
-            Talento
-          </span>
+          <span className="text-xl font-semibold">Talento</span>
         </div>
       </header>
 
-      {/* PAGE HEADER */}
+      {/* TITLE */}
       <section className="max-w-4xl mx-auto text-center mt-12 px-4">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold">
           Recruiter Verification
         </h1>
-        <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
-          To maintain trust on Talento, we verify all recruiters before enabling job postings.
+        <p className="text-gray-600 mt-3">
+          Submit your company details for verification before posting jobs.
         </p>
       </section>
 
@@ -72,56 +82,74 @@ export default function RecruiterOnboardingPage() {
         <div className="bg-white rounded-2xl shadow-sm border p-8">
           <form onSubmit={handleSubmit} className="space-y-10">
 
-            {/* COMPANY */}
-            <section>
-              <h2 className="text-lg font-semibold mb-4">
-                Company Details
-              </h2>
+            {/* COMPANY INFO */}
+            <Section title="Company Information">
+              <Grid>
+                <Input name="company_name" required placeholder="Company Name *" value={formData.company_name} onChange={handleChange} />
+                <Input name="website" placeholder="Website" value={formData.website} onChange={handleChange} />
+                <Input name="industry" placeholder="Industry" value={formData.industry} onChange={handleChange} />
+                <Input name="company_size" placeholder="Company Size (e.g. 11–50)" value={formData.company_size} onChange={handleChange} />
+                <Input name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="md:col-span-2" />
+              </Grid>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input name="company_name" required placeholder="Company Name *" value={formData.company_name} onChange={handleChange} className="input" />
-                <input name="website" placeholder="Company Website" value={formData.website} onChange={handleChange} className="input" />
-                <input name="industry" placeholder="Industry" value={formData.industry} onChange={handleChange} className="input" />
-                <input name="company_size" placeholder="Company Size (e.g. 11–50)" value={formData.company_size} onChange={handleChange} className="input" />
-                <input name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="input md:col-span-2" />
-              </div>
-
-              <textarea
+              <Textarea
                 name="about_company"
-                rows="4"
-                placeholder="Brief description about your company"
+                placeholder="About your company"
                 value={formData.about_company}
                 onChange={handleChange}
-                className="input mt-4"
               />
 
-              <div className="mt-4">
-                <label className="block text-sm text-gray-600 mb-1">
-                  Company Logo (optional)
-                </label>
-                <input type="file" name="logo" accept="image/*" onChange={handleChange} />
-              </div>
-            </section>
+              <FileInput
+                label="Company Logo (optional)"
+                name="logo"
+                accept="image/*"
+                onChange={handleChange}
+              />
+            </Section>
 
             {/* CONTACT */}
-            <section>
-              <h2 className="text-lg font-semibold mb-4">
-                Contact Information
-              </h2>
+            <Section title="Contact Information">
+              <Grid>
+                <Input name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} />
+                <Input name="support_email" type="email" placeholder="Support Email" value={formData.support_email} onChange={handleChange} />
+              </Grid>
+            </Section>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input name="contact_name" required placeholder="Contact Person Name *" value={formData.contact_name} onChange={handleChange} className="input" />
-                <input name="contact_email" required type="email" placeholder="Official Email *" value={formData.contact_email} onChange={handleChange} className="input" />
-                <input name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} className="input md:col-span-2" />
-              </div>
-            </section>
+            {/* ADDRESS */}
+            <Section title="Address">
+              <Textarea
+                name="address"
+                placeholder="Full Address"
+                value={formData.address}
+                onChange={handleChange}
+              />
+            </Section>
+
+            {/* SOCIAL */}
+            <Section title="Social Links (optional)">
+              <Grid>
+                <Input name="linkedin" placeholder="LinkedIn URL" value={formData.linkedin} onChange={handleChange} />
+                <Input name="facebook" placeholder="Facebook URL" value={formData.facebook} onChange={handleChange} />
+                <Input name="twitter" placeholder="Twitter / X URL" value={formData.twitter} onChange={handleChange} />
+              </Grid>
+            </Section>
+
+            {/* BUSINESS VERIFICATION */}
+            <Section title="Business Verification">
+              <FileInput
+                label="Business Registration Document (PDF/Image)"
+                name="business_registration_doc"
+                accept=".pdf,image/*"
+                onChange={handleChange}
+              />
+            </Section>
 
             {/* SUBMIT */}
             <div className="pt-6 border-t flex justify-end">
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-600 text-white px-8 py-2.5 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                className="bg-blue-600 text-white px-8 py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
                 {loading ? "Submitting..." : "Submit for Verification"}
               </button>
@@ -133,52 +161,66 @@ export default function RecruiterOnboardingPage() {
 
       {/* FOOTER */}
       <footer className="bg-white border-t">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
-
-          {/* LEFT */}
-          <div className="flex items-center gap-5">
-            <a href="/support" className="flex items-center gap-1 hover:text-blue-600">
-              <HelpCircle size={16} /> Support
-            </a>
-            <a href="/contact" className="flex items-center gap-1 hover:text-blue-600">
-              <Mail size={16} /> Contact
-            </a>
-          </div>
-
-          {/* CENTER */}
-          <div className="flex items-center gap-5">
-            <a href="/terms" className="flex items-center gap-1 hover:text-blue-600">
-              <FileText size={16} /> Terms
-            </a>
-            <a href="/privacy" className="flex items-center gap-1 hover:text-blue-600">
-              <ShieldCheck size={16} /> Privacy
-            </a>
-          </div>
-
-          {/* RIGHT */}
-          <div className="text-gray-500">
-            © {new Date().getFullYear()} Talento
-          </div>
-
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-wrap justify-between gap-4 text-sm text-gray-600">
+          <FooterLink icon={<HelpCircle size={16} />} text="Support" href="/support" />
+          <FooterLink icon={<Mail size={16} />} text="Contact" href="/contact" />
+          <FooterLink icon={<FileText size={16} />} text="Terms" href="/terms" />
+          <FooterLink icon={<ShieldCheck size={16} />} text="Privacy" href="/privacy" />
+          <span>© {new Date().getFullYear()} Talento</span>
         </div>
       </footer>
 
-      {/* INPUT STYLE */}
-      <style>
-        {`
-          .input {
-            width: 100%;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.6rem;
-            padding: 0.6rem 0.75rem;
-            outline: none;
-          }
-          .input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 1px #2563eb;
-          }
-        `}
-      </style>
+      <InputStyles />
     </div>
   );
 }
+
+/* ------------------ Reusable UI Components ------------------ */
+
+const Section = ({ title, children }) => (
+  <section>
+    <h2 className="text-lg font-semibold mb-4">{title}</h2>
+    {children}
+  </section>
+);
+
+const Grid = ({ children }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{children}</div>
+);
+
+const Input = ({ className = "", ...props }) => (
+  <input {...props} className={`input ${className}`} />
+);
+
+const Textarea = (props) => (
+  <textarea {...props} rows="4" className="input mt-4" />
+);
+
+const FileInput = ({ label, ...props }) => (
+  <div className="mt-4">
+    <label className="block text-sm text-gray-600 mb-1">{label}</label>
+    <input type="file" {...props} />
+  </div>
+);
+
+const FooterLink = ({ icon, text, href }) => (
+  <a href={href} className="flex items-center gap-1 hover:text-blue-600">
+    {icon} {text}
+  </a>
+);
+
+const InputStyles = () => (
+  <style>{`
+    .input {
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.6rem;
+      padding: 0.6rem 0.75rem;
+      outline: none;
+    }
+    .input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb;
+    }
+  `}</style>
+);
