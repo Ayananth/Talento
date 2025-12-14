@@ -8,9 +8,11 @@ import {
   Image,
   X
 } from "lucide-react";
+import {  isValidEmail,isValidURL,validateFile,  MAX_LOGO_SIZE,  MAX_DOC_SIZE,} from "../../../utils/recruiter/utils"
 
 
 export default function RecruiterOnboardingPage() {
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     company_name: "",
     website: "",
@@ -30,33 +32,96 @@ export default function RecruiterOnboardingPage() {
 
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+    const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
-  };
 
-  const handleSubmit = async (e) => {
+    if (files) {
+        const file = files[0];
+        let error = null;
+
+        if (name === "logo") {
+        error = validateFile(
+            file,
+            ["image/jpeg", "image/png", "image/webp"],
+            MAX_LOGO_SIZE
+        );
+        }
+
+        if (name === "business_registration_doc") {
+        error = validateFile(
+            file,
+            ["application/pdf", "image/jpeg", "image/png"],
+            MAX_DOC_SIZE
+        );
+        }
+
+        if (error) {
+        setErrors((prev) => ({ ...prev, [name]: error }));
+        return;
+        }
+
+        setErrors((prev) => ({ ...prev, [name]: null }));
+        setFormData((prev) => ({ ...prev, [name]: file }));
+        return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+
+    const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const newErrors = {};
+
+    if (!formData.company_name.trim()) {
+        newErrors.company_name = "Company name is required";
+    }
+
+    if (!formData.support_email || !isValidEmail(formData.support_email)) {
+        newErrors.support_email = "Valid support email is required";
+    }
+
+    if (formData.website && !isValidURL(formData.website)) {
+        newErrors.website = "Invalid website URL";
+    }
+
+    ["linkedin", "facebook", "twitter"].forEach((field) => {
+        if (formData[field] && !isValidURL(formData[field])) {
+        newErrors[field] = "Invalid URL";
+        }
+    });
+
+    if (formData.about_company && formData.about_company.length < 30) {
+        newErrors.about_company =
+        "Company description should be at least 30 characters";
+    }
+
+    if (formData.phone && formData.phone.replace(/\D/g, "").length < 8) {
+        newErrors.phone = "Invalid phone number";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+    }
+
+    setErrors({});
     setLoading(true);
 
     const payload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) payload.append(key, value);
-    });
+    Object.entries(formData).forEach(([k, v]) => v && payload.append(k, v));
 
     try {
       console.log("Submitting recruiter profile", payload);
-      // await api.post("/recruiter/profile/submit/", payload)
-      alert("Application submitted for verification");
+        // await api.post("/recruiter/profile/submit/", payload)
+        alert("Application submitted for verification");
     } catch (error) {
-      alert("Something went wrong");
+        alert("Something went wrong");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+    };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-gray-100">
@@ -89,11 +154,11 @@ export default function RecruiterOnboardingPage() {
             {/* COMPANY INFO */}
             <Section title="Company Information">
               <Grid>
-                <Input name="company_name" required placeholder="Company Name *" value={formData.company_name} onChange={handleChange} />
-                <Input name="website" placeholder="Website" value={formData.website} onChange={handleChange} />
+                <Input name="company_name" required placeholder="Company Name *" value={formData.company_name} onChange={handleChange}  error={errors.company_name} />
+                <Input name="website" placeholder="Website" value={formData.website} onChange={handleChange}  error={errors.website}/>
                 <Input name="industry" placeholder="Industry" value={formData.industry} onChange={handleChange} />
-                <Input name="company_size" placeholder="Company Size (e.g. 11–50)" value={formData.company_size} onChange={handleChange} />
-                <Input name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="md:col-span-2" />
+                <Input name="company_size" placeholder="Company Size (e.g. 11–50)" value={formData.company_size} onChange={handleChange}  error={errors.company_size}/>
+                <Input name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="md:col-span-2"  error={errors.location}/>
               </Grid>
 
               <Textarea
@@ -101,6 +166,7 @@ export default function RecruiterOnboardingPage() {
                 placeholder="About your company"
                 value={formData.about_company}
                 onChange={handleChange}
+                 error={errors.about_company}
               />
 
             <FileUploadField
@@ -113,14 +179,15 @@ export default function RecruiterOnboardingPage() {
             onRemove={() =>
                 setFormData((prev) => ({ ...prev, logo: null }))
             }
+            error={errors.logo}
             />
             </Section>
 
             {/* CONTACT */}
             <Section title="Contact Information">
               <Grid>
-                <Input name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} />
-                <Input name="support_email" type="email" placeholder="Support Email" value={formData.support_email} onChange={handleChange} />
+                <Input name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange}  error={errors.phone}/>
+                <Input name="support_email" type="email" placeholder="Support Email" value={formData.support_email} onChange={handleChange}  error={errors.support_email}/>
               </Grid>
             </Section>
 
@@ -131,15 +198,16 @@ export default function RecruiterOnboardingPage() {
                 placeholder="Full Address"
                 value={formData.address}
                 onChange={handleChange}
+                 error={errors.address}
               />
             </Section>
 
             {/* SOCIAL */}
             <Section title="Social Links (optional)">
               <Grid>
-                <Input name="linkedin" placeholder="LinkedIn URL" value={formData.linkedin} onChange={handleChange} />
-                <Input name="facebook" placeholder="Facebook URL" value={formData.facebook} onChange={handleChange} />
-                <Input name="twitter" placeholder="Twitter / X URL" value={formData.twitter} onChange={handleChange} />
+                <Input name="linkedin" placeholder="LinkedIn URL" value={formData.linkedin} onChange={handleChange}  error={errors.linkedin}/>
+                <Input name="facebook" placeholder="Facebook URL" value={formData.facebook} onChange={handleChange}  error={errors.facebook}/>
+                <Input name="twitter" placeholder="Twitter / X URL" value={formData.twitter} onChange={handleChange} error={errors.twitter}/>
               </Grid>
             </Section>
 
@@ -154,6 +222,7 @@ export default function RecruiterOnboardingPage() {
                 onRemove={() =>
                     setFormData((prev) => ({ ...prev, business_registration_doc: null }))
                 }
+                error={errors.business_registration_doc}
                 />
 
             </Section>
@@ -202,9 +271,13 @@ const Grid = ({ children }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{children}</div>
 );
 
-const Input = ({ className = "", ...props }) => (
-  <input {...props} className={`input ${className}`} />
+const Input = ({ error, ...props }) => (
+  <div>
+    <input {...props} className="input" />
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+  </div>
 );
+
 
 const Textarea = (props) => (
   <textarea {...props} rows="4" className="input mt-4" />
@@ -260,6 +333,11 @@ const FileUploadField = ({
           </button>
         </div>
       )}
+
+      {error && (
+  <p className="text-red-500 text-xs mt-2">{error}</p>
+)}
+
     </div>
   );
 };
