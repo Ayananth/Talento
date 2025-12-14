@@ -9,6 +9,9 @@ import {
   ShieldCheck
 } from "lucide-react";
 import {  isValidEmail,isValidURL,validateFile,  MAX_LOGO_SIZE,  MAX_DOC_SIZE,} from "../../../utils/recruiter/utils"
+import { createRecruiter } from "@/apis/recruiter/apis";
+import api from "../../../apis/api";
+import {useNavigate} from 'react-router-dom'
 
 
 export default function RecruiterOnboardingPage() {
@@ -31,6 +34,7 @@ export default function RecruiterOnboardingPage() {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   /* -------------------- Handlers -------------------- */
 
@@ -70,58 +74,84 @@ export default function RecruiterOnboardingPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newErrors = {};
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!formData.company_name.trim()) {
-      newErrors.company_name = "Company name is required";
+  const newErrors = {};
+
+  if (!formData.company_name.trim()) {
+    newErrors.company_name = "Company name is required";
+  }
+
+  if (!formData.support_email || !isValidEmail(formData.support_email)) {
+    newErrors.support_email = "Valid support email is required";
+  }
+
+  if (formData.website && !isValidURL(formData.website)) {
+    newErrors.website = "Invalid website URL";
+  }
+
+  ["linkedin", "facebook", "twitter"].forEach((field) => {
+    if (formData[field] && !isValidURL(formData[field])) {
+      newErrors[field] = "Invalid URL";
     }
+  });
 
-    if (!formData.support_email || !isValidEmail(formData.support_email)) {
-      newErrors.support_email = "Valid support email is required";
-    }
+  if (formData.about_company && formData.about_company.length < 30) {
+    newErrors.about_company =
+      "Company description must be at least 30 characters";
+  }
 
-    if (formData.website && !isValidURL(formData.website)) {
-      newErrors.website = "Invalid website URL";
-    }
+  if (formData.phone && formData.phone.replace(/\D/g, "").length < 8) {
+    newErrors.phone = "Invalid phone number";
+  }
 
-    ["linkedin", "facebook", "twitter"].forEach((field) => {
-      if (formData[field] && !isValidURL(formData[field])) {
-        newErrors[field] = "Invalid URL";
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  setErrors({});
+  setLoading(true);
+
+  try {
+    const payload = new FormData();
+
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && value !== "") {
+        payload.append(key, value);
       }
     });
 
-    if (formData.about_company && formData.about_company.length < 30) {
-      newErrors.about_company =
-        "Company description must be at least 30 characters";
+
+    const response = await api.post(
+      "/v1/recruiter/profile/draft/create/",
+      payload,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    console.log("Recruiter draft created:", response.data);
+
+    navigate("/recruiter/verification-pending");
+
+    alert("Profile submitted for verification");
+
+  } catch (error) {
+    console.error(error);
+
+    if (error.response?.data) {
+      setErrors(error.response.data);
+    } else {
+      alert("Something went wrong. Please try again.");
     }
-
-    if (formData.phone && formData.phone.replace(/\D/g, "").length < 8) {
-      newErrors.phone = "Invalid phone number";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setErrors({});
-    setLoading(true);
-
-    const payload = new FormData();
-    Object.entries(formData).forEach(([k, v]) => v && payload.append(k, v));
-
-    try {
-      console.log("Submitting recruiter profile");
-      // await api.post("/recruiter/profile/submit/", payload)
-      alert("Application submitted for verification");
-    } catch {
-      alert("Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* -------------------- UI -------------------- */
 
