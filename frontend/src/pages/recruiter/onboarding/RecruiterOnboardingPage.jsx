@@ -18,7 +18,6 @@ export default function RecruiterOnboardingPage() {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: files ? files[0] : value,
@@ -29,21 +28,14 @@ export default function RecruiterOnboardingPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Prepare form data (important for file upload)
     const payload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) payload.append(key, value);
-    });
+    Object.entries(formData).forEach(([k, v]) => v && payload.append(k, v));
 
     try {
-      // TODO: replace with real API
-      console.log("Submitting recruiter verification:", Object.fromEntries(payload));
-
+      console.log("Submitting recruiter verification");
       // await api.post("/recruiter/verify/", payload)
-
       alert("Application submitted for verification");
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
       alert("Something went wrong");
     } finally {
       setLoading(false);
@@ -51,141 +43,104 @@ export default function RecruiterOnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center py-10 px-4">
-      <div className="w-full max-w-3xl bg-white rounded-xl shadow-sm border p-8">
-        <h1 className="text-2xl font-semibold mb-2">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+      
+      {/* NAVBAR */}
+      <header className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3">
+          {/* Logo */}
+          <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold">
+            T
+          </div>
+          <span className="text-xl font-semibold text-gray-800">
+            Talento
+          </span>
+        </div>
+      </header>
+
+      {/* PAGE HEADER */}
+      <section className="max-w-4xl mx-auto text-center mt-12 px-4">
+        <h1 className="text-3xl font-bold text-gray-900">
           Recruiter Verification
         </h1>
-        <p className="text-gray-600 mb-6">
-          Complete your company details to get verified and start posting jobs.
+        <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
+          To ensure trust and quality on Talento, we verify all recruiters
+          before allowing job postings.
         </p>
+      </section>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+      {/* FORM CARD */}
+      <main className="max-w-4xl mx-auto mt-10 px-4 pb-16">
+        <div className="bg-white rounded-2xl shadow-sm border p-8">
+          <form onSubmit={handleSubmit} className="space-y-10">
 
-          {/* Company Info */}
-          <section>
-            <h2 className="text-lg font-medium mb-4">Company Details</h2>
+            {/* COMPANY INFO */}
+            <section>
+              <h2 className="text-lg font-semibold mb-4">
+                Company Details
+              </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                name="company_name"
-                placeholder="Company Name *"
-                required
-                value={formData.company_name}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input name="company_name" required placeholder="Company Name *" value={formData.company_name} onChange={handleChange} className="input" />
+                <input name="website" placeholder="Company Website" value={formData.website} onChange={handleChange} className="input" />
+                <input name="industry" placeholder="Industry" value={formData.industry} onChange={handleChange} className="input" />
+                <input name="company_size" placeholder="Company Size (e.g. 11–50)" value={formData.company_size} onChange={handleChange} className="input" />
+                <input name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="input md:col-span-2" />
+              </div>
+
+              <textarea
+                name="about_company"
+                rows="4"
+                placeholder="Brief description about your company"
+                value={formData.about_company}
                 onChange={handleChange}
-                className="input"
+                className="input mt-4"
               />
 
-              <input
-                name="website"
-                placeholder="Company Website"
-                value={formData.website}
-                onChange={handleChange}
-                className="input"
-              />
+              <div className="mt-4">
+                <label className="block text-sm text-gray-600 mb-1">
+                  Company Logo (optional)
+                </label>
+                <input type="file" name="logo" accept="image/*" onChange={handleChange} />
+              </div>
+            </section>
 
-              <input
-                name="industry"
-                placeholder="Industry"
-                value={formData.industry}
-                onChange={handleChange}
-                className="input"
-              />
+            {/* CONTACT INFO */}
+            <section>
+              <h2 className="text-lg font-semibold mb-4">
+                Contact Information
+              </h2>
 
-              <input
-                name="company_size"
-                placeholder="Company Size (e.g. 10-50)"
-                value={formData.company_size}
-                onChange={handleChange}
-                className="input"
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input name="contact_name" required placeholder="Contact Person Name *" value={formData.contact_name} onChange={handleChange} className="input" />
+                <input name="contact_email" required type="email" placeholder="Official Email *" value={formData.contact_email} onChange={handleChange} className="input" />
+                <input name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} className="input md:col-span-2" />
+              </div>
+            </section>
 
-              <input
-                name="location"
-                placeholder="Location"
-                value={formData.location}
-                onChange={handleChange}
-                className="input md:col-span-2"
-              />
+            {/* SUBMIT */}
+            <div className="pt-6 border-t flex justify-end">
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-blue-600 text-white px-8 py-2.5 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+              >
+                {loading ? "Submitting..." : "Submit for Verification"}
+              </button>
             </div>
 
-            <textarea
-              name="about_company"
-              placeholder="About the company"
-              rows="4"
-              value={formData.about_company}
-              onChange={handleChange}
-              className="input mt-4"
-            />
+          </form>
+        </div>
+      </main>
 
-            <div className="mt-4">
-              <label className="block text-sm text-gray-600 mb-1">
-                Company Logo (optional)
-              </label>
-              <input
-                type="file"
-                name="logo"
-                accept="image/*"
-                onChange={handleChange}
-              />
-            </div>
-          </section>
-
-          {/* Contact Info */}
-          <section>
-            <h2 className="text-lg font-medium mb-4">Contact Information</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                name="contact_name"
-                placeholder="Contact Person Name *"
-                required
-                value={formData.contact_name}
-                onChange={handleChange}
-                className="input"
-              />
-
-              <input
-                name="contact_email"
-                placeholder="Official Email *"
-                required
-                type="email"
-                value={formData.contact_email}
-                onChange={handleChange}
-                className="input"
-              />
-
-              <input
-                name="phone"
-                placeholder="Phone Number"
-                value={formData.phone}
-                onChange={handleChange}
-                className="input md:col-span-2"
-              />
-            </div>
-          </section>
-
-          {/* Submit */}
-          <div className="pt-6 border-t flex justify-end">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? "Submitting..." : "Submit for Verification"}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Tailwind input utility */}
+      {/* INPUT STYLE */}
       <style>
         {`
           .input {
             width: 100%;
             border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            padding: 0.5rem 0.75rem;
+            border-radius: 0.6rem;
+            padding: 0.6rem 0.75rem;
             outline: none;
           }
           .input:focus {
