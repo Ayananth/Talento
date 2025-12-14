@@ -33,8 +33,16 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         user = request.user
+        print(f"{request.user=}")
 
         profile, _ = RecruiterProfile.objects.get_or_create(user=user)
+
+        if profile.status in ["approved"]:
+            return Response(
+                {"detail": "Profile already submitted"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
         data = serializer.validated_data.copy()
 
@@ -50,7 +58,7 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
             profile.draft_business_registration_doc = draft_doc
 
         profile.status = "pending"
-        profile.rejection_reason = ""
+        profile.rejection_reason = None
         profile.save()
 
         return Response(
