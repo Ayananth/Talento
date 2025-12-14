@@ -77,7 +77,7 @@ export default function RecruiterOnboardingPage() {
           Recruiter Verification
         </h1>
         <p className="text-gray-600 mt-3">
-          Submit your company details for verification before posting jobs.
+          To maintain trust on Talento, we verify all recruiters before enabling job postings.
         </p>
       </section>
 
