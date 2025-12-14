@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import LoginPage from "../../features/auth/pages/LoginPage";
 
 // const router = createBrowserRouter([
 //   {
@@ -20,7 +19,7 @@ import LoginPage from "../../features/auth/pages/LoginPage";
 
 import authRoutes from "./auth.routes";
 import jobseekerRoutes from "./jobseeker.routes";
-import commonRoutes from "./common.routes";
+import commonRoutes from "./common.routes.jsx";
 import adminRoutes from "./admin.routes"
 
 
@@ -33,3 +32,4 @@ const router = createBrowserRouter([
 ]);
 
 export default router;
+
