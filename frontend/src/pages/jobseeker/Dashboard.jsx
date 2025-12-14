@@ -1,11 +1,11 @@
 import React from 'react'
-import ProfileHeader from '../../components/seeker/ProfileHeader'
-import Sidebar from '../../components/seeker/Sidebar'
-import ResumeUploadCard from '../../components/seeker/ResumeUploadCard'
-import KeySkillsCard from '../../components/seeker/KeySkillsCard'
-import EmploymentCard from '../../components/seeker/EmploymentCard'
-import EducationCard from '../../components/seeker/EducationCard'
-import { Navbar } from '../../../../../frontend/src2/features/auth/components/Navbar'
+import ProfileHeader from '@/components/jobseeker/ProfileHeader'
+import Sidebar from '@/components/jobseeker/Sidebar'
+import ResumeUploadCard from '@/components/jobseeker/ResumeUploadCard'
+import KeySkillsCard from '@/components/jobseeker/KeySkillsCard'
+import EmploymentCard from '@/components/jobseeker/EmploymentCard'
+import EducationCard from '@/components/jobseeker/EducationCard'
+import { Navbar } from '@/components/common/Navbar'
 
 const Dashboard = () => {
   return (

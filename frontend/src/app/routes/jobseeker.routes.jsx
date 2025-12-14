@@ -1,24 +1,42 @@
-
-import Homepage from "../../features/jobseeker/home/Homepage";
-import RequireAuth from "../../features/routes/RequireAuth";
-import RoleRoute from "../../features/routes/RoleRoute";
-import Dashboard from "../../../../old-front/frontend/src/pages/seeker/Dashboard";
+import HomePage from "../../pages/jobseeker/HomePage";
+import RequireAuth from "@/auth/routes/RequireAuth";
+import RoleRoute from "@/auth/routes/RoleRoute";
+import Dashboard from "../../pages/jobseeker/Dashboard";
+import DashboardLayout from "@/layouts/jobseeker/DashboardLayout";
+import LandingLayout from "../../layouts/jobseeker/LandingLayout";
+import Profile from "../../pages/jobseeker/Profile";
 
 const jobseekerRoutes = [
-{
-  element: <RequireAuth />,
-  children: [
-    {
-      element: <RoleRoute allowedRoles={["jobseeker"]} />,
-      children: [
-        { path: "/", element: <Homepage /> },
-        { path: "/profile", element: <Dashboard /> },
-      ]
-    }
-  ]
-}
+  {
+    element: <RequireAuth />,
+    children: [
+      {
+        element: <RoleRoute allowedRoles={["jobseeker"]} />,
+        children: [{ path: "/profile", element: <Dashboard /> }],
+      },
+    ],
+  },
 
+  {
+    element: <LandingLayout />,
+    children: [{ path: "/", element: <HomePage /> }],
+  },
 
+  {
+    path:"/profile",
+    element: (
+      // <RequireAuth>
+        <DashboardLayout />
+      // </RequireAuth>
+    ),
+
+    children: [
+      {
+        element: <RoleRoute allowedRoles={["jobseeker"]} />,
+        children: [{ path: "", element: <Profile /> }],
+      },
+    ],
+  },
 ];
 
 export default jobseekerRoutes;

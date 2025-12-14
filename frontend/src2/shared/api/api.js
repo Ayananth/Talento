@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_BASE_URL } from "../../shared/constants/constants"
+import { API_BASE_URL } from "../constants/constants"
 import { getAccessToken, saveTokens, clearTokens } from "../../features/auth/context/authUtils";
 
 const api = axios.create({

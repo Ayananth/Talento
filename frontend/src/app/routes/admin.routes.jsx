@@ -1,23 +1,26 @@
-import Homepage from "../../features/jobseeker/home/Homepage";
-import RequireAuth from "../../features/routes/RequireAuth";
-import RoleRoute from "../../features/routes/RoleRoute";
-import RecruiterListPage from "../../features/admin/recruiters/RecruiterListPage";
-import AdminLayout from "../../features/admin/layout/AdminLayout";
-import { Children } from "react";
-import Dashboard from "../../features/admin/pages/Dashboard";
-import AdminLoginPage from "../../features/admin/pages/AdminLoginPage";
-import AdminReviewCompanyPage from "../../features/admin/recruiters/AdminReviewCompanyPage";
-import PendingApprovalsPage from "../../features/admin/recruiters/PendingApprovalsPage";
-import AdminApprovePage from "../../features/admin/recruiters/AdminApprovePage";
+// import AdminReviewCompanyPage from "../../features/admin/recruiters/AdminReviewCompanyPage";
+// import PendingApprovalsPage from "../../features/admin/recruiters/PendingApprovalsPage";
 
+import AdminLoginPage from "@/pages/admin/AdminLoginPage";
+import RequireAuth from "@/auth/routes/RequireAuth";
+import RoleRoute from "@/auth/routes/RoleRoute";
+import RedirectIfAuth from "@/auth/routes/RedirectIfAuth";
+import Dashboard from "@/pages/admin/Dashboard";
+import AdminLayout from "@/layouts/admin/AdminLayout";
+import RecruiterListPage from "@/pages/admin/RecruiterListPage";
+import AdminReviewCompanyPage from "@/pages/admin/AdminReviewCompanyPage";
+import PendingApprovalsPage from "@/pages/admin/PendingApprovalsPage";
+import AdminApprovePage from "@/pages/admin/AdminApprovePage";
 
 const adminRoutes = [
   {
     path: "/admin",
     element: (
-      <RequireAuth>
+
+    //   <RequireAuth>
         <AdminLayout />
-     </RequireAuth>
+    //  </RequireAuth>
+
     ),
     children: [
       {
