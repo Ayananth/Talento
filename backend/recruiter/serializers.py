@@ -5,28 +5,65 @@ from .models import RecruiterProfile
 class RecruiterDraftCreateSerializer(serializers.Serializer):
     """
     Used when recruiter submits company profile details for the first time
-    (or completely overwrites the existing draft).
     """
 
-    company_name = serializers.CharField(required=True)
-    website = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    company_name = serializers.CharField(required=True, max_length=255)
+    website = serializers.URLField(required=False, allow_null=True)
     industry = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     company_size = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    about_company = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    about_company = serializers.CharField(
+        required=False, allow_blank=True, allow_null=True
+    )
+
     phone = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    support_email = serializers.EmailField(required=False, allow_null=True)
+
+    support_email = serializers.EmailField(required=True)
+
     location = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     address = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    linkedin = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    facebook = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    twitter = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
+    linkedin = serializers.URLField(required=False, allow_null=True)
+    facebook = serializers.URLField(required=False, allow_null=True)
+    twitter = serializers.URLField(required=False, allow_null=True)
 
-    # File fields (draft) – CloudinaryFields on the model
+    # Draft file fields
     draft_logo = serializers.ImageField(required=False, allow_null=True)
-    draft_business_registration_doc = serializers.FileField(required=False, allow_null=True)
+    draft_business_registration_doc = serializers.FileField(
+        required=False, allow_null=True
+    )
 
+    # -------------------- Field-level validations --------------------
 
+    def validate_about_company(self, value):
+        if value and len(value.strip()) < 30:
+            raise serializers.ValidationError(
+                "Company description must be at least 30 characters."
+            )
+        return value
+
+    def validate_phone(self, value):
+        if value:
+            digits = "".join(filter(str.isdigit, value))
+            if len(digits) < 10:
+                raise serializers.ValidationError("Invalid phone number.")
+        return value
+
+    def validate_draft_logo(self, file):
+        if file:
+            if file.size > 2 * 1024 * 1024:
+                raise serializers.ValidationError(
+                    "Logo size must be less than 2MB."
+                )
+        return file
+
+    def validate_draft_business_registration_doc(self, file):
+        if file:
+            if file.size > 5 * 1024 * 1024:
+                raise serializers.ValidationError(
+                    "Document size must be less than 5MB."
+                )
+        return file
 
 class AdminRecruiterListSerializer(serializers.ModelSerializer):
     request_type = serializers.SerializerMethodField()
