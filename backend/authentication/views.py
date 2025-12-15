@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.decorators import api_view #for FBV, remove if not used
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .serializers import MyTokenObtainPairSerializer, PasswordResetRequestSerializer, UserSerializer, ResetPasswordSerializer
+from .serializers import MyTokenObtainPairSerializer, PasswordResetRequestSerializer, UserSerializer, ResetPasswordSerializer,AdminUserListSerializer,  AdminUserDetailSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.urls import reverse
@@ -30,9 +30,19 @@ from core.permissions import IsAdmin, IsRecruiter, IsJobseeker
 from .utils import generate_email_verification_token
 from .tasks import send_verification_email, send_password_reset_email_task
 
+
+
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.filters import SearchFilter, OrderingFilter
+
+from core.permissions import IsAdmin
+
+
 USER = get_user_model()
 token_generator = PasswordResetTokenGenerator()
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+
+
 
 
 
@@ -367,3 +377,47 @@ class GoogleLoginAPIView(APIView):
         except Exception as exc:
             print(f"detail: {str(exc)}")
             return Response({"detail": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+
+
+
+# ------------------------------------------------
+#-----------------admin--------------------------
+# -----------------------------------------------
+
+
+class AdminUserListView(ListAPIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = AdminUserListSerializer
+    queryset = USER.objects.all()
+
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = [
+        "email",
+        "username",
+    ]
+
+    ordering_fields = [
+        "email",
+        "username",
+        "role",
+        "is_active",
+    ]
+
+    ordering = ["email"]
+
+
+
+class AdminUserDetailView(RetrieveAPIView):
+    """
+    GET /api/admin/users/<id>/
+    """
+    serializer_class = AdminUserDetailSerializer
+    permission_classes = [IsAdmin]
+    queryset = USER.objects.all()

@@ -10,6 +10,10 @@ from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
 
 
+from profiles.models import JobSeekerProfile
+from recruiter.models import RecruiterProfile
+
+
 
 
 
@@ -113,3 +117,90 @@ class ResetPasswordSerializer(serializers.Serializer):
 class GoogleAuthSerializer(serializers.Serializer):
     id_token = serializers.CharField(write_only=True)
     role = serializers.ChoiceField(choices=["jobseeker", "recruiter"])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#------------------- Admin----------------------
+
+
+
+
+
+
+class AdminUserListSerializer(serializers.ModelSerializer):
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
+
+    class Meta:
+        model = USER
+        fields = [
+            "id",
+            "email",
+            "username",
+            "role",
+            "role_display",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "is_email_verified",
+        ]
+
+
+
+
+
+
+class JobSeekerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobSeekerProfile
+        fields = [
+            "fullname",
+            "headline",
+            "experience_years",
+            "open_to_work",
+        ]
+
+
+class RecruiterProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecruiterProfile
+        fields = [
+            "company_name",
+            "status",
+            "verified_at",
+        ]
+
+
+class AdminUserDetailSerializer(serializers.ModelSerializer):
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
+
+    jobseeker_profile = JobSeekerProfileSerializer(read_only=True)
+    recruiter_profile = RecruiterProfileSerializer(read_only=True)
+
+    class Meta:
+        model = USER
+        fields = [
+            "id",
+            "email",
+            "username",
+            "role",
+            "role_display",
+            "is_active",
+            "is_email_verified",
+            "is_staff",
+
+            "jobseeker_profile",
+            "recruiter_profile",
+        ]
+
+
