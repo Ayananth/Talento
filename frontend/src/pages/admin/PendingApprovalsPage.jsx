@@ -20,13 +20,14 @@ export default function PendingApprovalsPage() {
 
   const fetchData = async (pageNum, orderingValue = ordering) => {
     const response = await getPendingList(pageNum, orderingValue);
+    console.log("response: " , response)
 
     const mapped = response.results.map((item) => ({
       id: item.id,
       user: item.username,
       company: item.company_name,
       status: item.status,
-      mode: item.request_type?.toLowerCase(),
+      request_type: item.request_type?.toLowerCase(),
       submitted: new Date(item.updated_at).toLocaleString(),
     }));
 
@@ -77,6 +78,13 @@ export default function PendingApprovalsPage() {
     },
 
     {
+      label: "Request Type",
+      key: "request_type",
+      sortable: true,
+      orderingKey: "request_type",
+    },
+
+    {
       label: "Status",
       key: "status",
       sortable: true,
@@ -91,6 +99,8 @@ export default function PendingApprovalsPage() {
     },
   ];
 
+  console.log("data", data)
+
 
   return (
     <div className="p-4 md:p-6">
@@ -104,7 +114,7 @@ export default function PendingApprovalsPage() {
         rowKey="id"
         actions={(row) => (
           <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={()=> navigate(`1`)}>
+          onClick={()=> navigate(`${row.id}`)}>
             View
           </button>
         )}

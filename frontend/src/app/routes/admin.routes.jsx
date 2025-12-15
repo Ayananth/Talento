@@ -17,7 +17,7 @@ const adminRoutes = [
     path: "/admin",
     element: (
 
-    //   <RequireAuth>
+      <RequireAuth>
         <AdminLayout />
     //  </RequireAuth>
 
@@ -26,11 +26,11 @@ const adminRoutes = [
       {
         element: <RoleRoute allowedRoles={["admin"]} />,
         children: [
-          { path: "home", element: <Dashboard /> },
+          { index:true , element: <Dashboard /> },
           { path: "recruiters", element: <RecruiterListPage /> },
           { path: "recruiter/changes", element: <AdminReviewCompanyPage /> },
           { path: "recruiter/approvals", element: <PendingApprovalsPage /> },
-          { path: "recruiter/approvals/1", element: <AdminApprovePage /> },
+          { path: "recruiter/approvals/:id", element: <AdminApprovePage /> },
 
         ]
       }

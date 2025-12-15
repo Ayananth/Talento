@@ -5,10 +5,12 @@ export default function FirstTimeCompanyView({ data }) {
 
   const {
     user,
+    email,
     pending_data,
     draft_logo,
     draft_business_registration_doc,
     status,
+    request_type
   } = data;
 
   return (
@@ -19,13 +21,20 @@ export default function FirstTimeCompanyView({ data }) {
         <h1 className="text-3xl font-bold mb-3">Company Registration Request</h1>
 
         <p className="text-gray-700">
-          Recruiter: <span className="font-semibold">{user.email}</span>
+          Recruiter: <span className="font-semibold">{email}</span>
         </p>
 
         <p className="mt-2">
           Status:{" "}
           <span className="bg-yellow-200 px-3 py-1 rounded-lg font-medium">
             {status}
+          </span>
+        </p>
+
+        <p className="mt-2">
+          Request Type:{" "}
+          <span className="bg-yellow-200 px-3 py-1 rounded-lg font-medium">
+            {request_type}
           </span>
         </p>
       </div>

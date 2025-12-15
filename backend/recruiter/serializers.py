@@ -121,7 +121,7 @@ class RecruiterProfileSerializer(serializers.ModelSerializer):
             "rejection_reason",
             "has_published_data",
             "status",
-            "pending_data"
+            "pending_data",
         ]
         read_only_fields = (
             "id",
@@ -132,3 +132,25 @@ class RecruiterProfileSerializer(serializers.ModelSerializer):
 
     def get_has_published_data(self, obj):
         return obj.has_published_data()
+    
+
+
+
+class AdminRecruiterDetailSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username")
+    email = serializers.CharField(source="user.email")
+    request_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RecruiterProfile
+        fields = "__all__"
+
+
+    def get_request_type(self, obj):
+        if obj.is_first_submission():
+            return "New"
+        elif obj.is_editing():
+            return "Edit"
+        return None
+
+    

@@ -57,7 +57,7 @@ export default function RecruiterOnboardingPage() {
       );
 
       // let RecruiterRedirect decide next screen
-      navigate("/recruiter");
+      navigate(0);
     } catch (err) {
       console.error(err);
       setErrors(err.response?.data || {});
