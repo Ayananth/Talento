@@ -30,7 +30,15 @@ export default function FirstTimeCompanyView({ data }) {
       setApproving(true);
 
       await api.patch(`/v1/recruiter/profile/${id}/approve/`);
-      navigate("/admin/recruiter/approvals");
+      navigate("/admin/recruiter/approvals", {
+        state: {
+          toast: {
+            type: "success",
+            message: "Recruiter approved successfully",
+          },
+        },
+      });
+
 
     } catch (error) {
       console.error("Approval failed:", error);
@@ -54,9 +62,15 @@ const handleReject = async () => {
       reason: rejectReason,
     });
 
-    alert("Recruiter profile rejected");
+  navigate("/admin/recruiter/approvals", {
+    state: {
+      toast: {
+        type: "error",
+        message: "Recruiter rejected successfully",
+      },
+    },
+  });
 
-    navigate("/admin/recruiter/approvals");
 
   } catch (error) {
     console.error("Reject failed:", error);

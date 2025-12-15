@@ -5,6 +5,7 @@ import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import ResponsiveTable from "@//components/admin/ResponsiveTable";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 
 
@@ -17,6 +18,9 @@ export default function PendingApprovalsPage() {
   const totalPages = Math.ceil(count / pageSize);
   const { loading: authLoading } = useAuth();
   const navigate = useNavigate()
+  const location = useLocation();
+  const [toast, setToast] = useState(null);
+
 
   const fetchData = async (pageNum, orderingValue = ordering) => {
     const response = await getPendingList(pageNum, orderingValue);
@@ -52,6 +56,22 @@ export default function PendingApprovalsPage() {
 
     setPage(1); // reset page
   };
+
+
+useEffect(() => {
+  if (location.state?.toast) {
+    setToast(location.state.toast);
+
+    // Clear router state so it doesn't reappear on refresh
+    window.history.replaceState({}, document.title);
+
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }
+}, [location.state]);
 
 
 
@@ -107,6 +127,19 @@ export default function PendingApprovalsPage() {
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
         Pending Approvals
       </h2>
+
+      {toast && (
+        <div
+          className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium
+            ${toast.type === "success"
+              ? "bg-green-100 text-green-800 border border-green-200"
+              : "bg-red-100 text-red-800 border border-red-200"}
+          `}
+        >
+          {toast.message}
+        </div>
+      )}
+
 
       <ResponsiveTable
         data={data}
