@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 export default function FirstTimeCompanyView({ data }) {
   const [rejectReason, setRejectReason] = useState("");
   const [approving, setApproving] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -37,6 +38,38 @@ export default function FirstTimeCompanyView({ data }) {
       setApproving(false);
     }
   };
+
+const handleReject = async () => {
+  if (rejecting) return;
+
+  if (!rejectReason.trim()) {
+    alert("Please enter a rejection reason");
+    return;
+  }
+
+  try {
+    setRejecting(true);
+
+    await api.patch(`/v1/recruiter/profile/${id}/reject/`, {
+      reason: rejectReason,
+    });
+
+    alert("Recruiter profile rejected");
+
+    navigate("/admin/recruiter/approvals");
+
+  } catch (error) {
+    console.error("Reject failed:", error);
+
+    alert(
+      error.response?.data?.detail ||
+      "Failed to reject recruiter. Please try again."
+    );
+  } finally {
+    setRejecting(false);
+  }
+};
+
 
 
 
@@ -143,14 +176,21 @@ export default function FirstTimeCompanyView({ data }) {
             placeholder="Enter rejection reason..."
             className="border rounded-xl px-3 py-2 mb-3 w-full"
             value={rejectReason}
+            disabled={rejecting}
             onChange={(e) => setRejectReason(e.target.value)}
           />
-          <button
-            onClick={() => alert("Reject Clicked")}
-            className="bg-red-600 text-white px-6 py-3 rounded-xl shadow hover:bg-red-700 transition"
-          >
-            Reject Company
-          </button>
+      <button
+        onClick={handleReject}
+        disabled={rejecting}
+        className={`px-6 py-3 rounded-xl shadow transition text-white
+          ${rejecting
+            ? "bg-red-400 cursor-not-allowed"
+            : "bg-red-600 hover:bg-red-700"}
+        `}
+      >
+        {rejecting ? "Rejecting..." : "Reject Company"}
+      </button>
+
         </div>
 
       </div>
