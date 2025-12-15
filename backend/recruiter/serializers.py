@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import RecruiterProfile
 
+from .utils.cloudinary import generate_signed_raw_url
 
 class RecruiterDraftCreateSerializer(serializers.Serializer):
     """
@@ -140,6 +141,8 @@ class AdminRecruiterDetailSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username")
     email = serializers.CharField(source="user.email")
     request_type = serializers.SerializerMethodField()
+    signed_business_doc_url = serializers.SerializerMethodField()
+    signed_business_doc_download_url = serializers.SerializerMethodField()
 
     class Meta:
         model = RecruiterProfile
@@ -152,5 +155,26 @@ class AdminRecruiterDetailSerializer(serializers.ModelSerializer):
         elif obj.is_editing():
             return "Edit"
         return None
+    
+    def get_signed_business_doc_url(self, obj):
+        if not obj.draft_business_registration_doc:
+            return None
+
+        return generate_signed_raw_url(
+            obj.draft_business_registration_doc.public_id,
+            expires_in=300,   # 5 minutes
+            force_download=False,
+        )
+
+    def get_signed_business_doc_download_url(self, obj):
+        if not obj.draft_business_registration_doc:
+            return None
+
+        return generate_signed_raw_url(
+            obj.draft_business_registration_doc.public_id,
+            expires_in=300,
+            force_download=True,
+        )
+
 
     

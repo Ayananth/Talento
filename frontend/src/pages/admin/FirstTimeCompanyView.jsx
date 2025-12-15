@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
 
 export default function FirstTimeCompanyView({ data }) {
   const [rejectReason, setRejectReason] = useState("");
@@ -10,8 +11,13 @@ export default function FirstTimeCompanyView({ data }) {
     draft_logo,
     draft_business_registration_doc,
     status,
-    request_type
+    request_type,
+    signed_business_doc_url
   } = data;
+
+
+  const documentUrl = getCloudinaryUrl(draft_business_registration_doc);
+
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -69,20 +75,27 @@ export default function FirstTimeCompanyView({ data }) {
         </div>
 
         {/* Draft Business Document */}
-        <div className="mb-6">
-          <div className="font-semibold text-gray-700">Business Document:</div>
-          {draft_business_registration_doc ? (
-            <a
-              href={draft_business_registration_doc}
-              target="_blank"
-              className="text-blue-600 underline mt-1 inline-block"
-            >
-              View Document
-            </a>
-          ) : (
-            <div className="text-gray-500 mt-1">No document uploaded</div>
-          )}
-        </div>
+{     /* Draft Business Document */}
+<div className="mb-6">
+  <div className="font-semibold text-gray-700">
+    Business Document:
+  </div>
+
+  {signed_business_doc_url ? (
+    <a
+      href={signed_business_doc_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 underline"
+    >
+      View Document
+    </a>
+  ) : (
+    <span className="text-gray-500">No document uploaded</span>
+  )}
+</div>
+
+
       </div>
 
       {/* ACTION BUTTONS */}
