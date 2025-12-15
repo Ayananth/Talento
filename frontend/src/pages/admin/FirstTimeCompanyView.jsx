@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
+import api from "@/apis/api"
+import { useNavigate } from "react-router-dom";
+
 
 export default function FirstTimeCompanyView({ data }) {
   const [rejectReason, setRejectReason] = useState("");
+  const [approving, setApproving] = useState(false);
+  const navigate = useNavigate();
 
   const {
+    id,
     user,
     email,
     pending_data,
@@ -14,6 +20,24 @@ export default function FirstTimeCompanyView({ data }) {
     request_type,
     signed_business_doc_url
   } = data;
+
+
+  const handleApprove = async () => {
+    if (approving) return;
+
+    try {
+      setApproving(true);
+
+      await api.patch(`/v1/recruiter/profile/${id}/approve/`);
+      navigate("/admin/recruiter/approvals");
+
+    } catch (error) {
+      console.error("Approval failed:", error);
+    } finally {
+      setApproving(false);
+    }
+  };
+
 
 
   const documentUrl = getCloudinaryUrl(draft_business_registration_doc);
@@ -101,12 +125,18 @@ export default function FirstTimeCompanyView({ data }) {
       {/* ACTION BUTTONS */}
       <div className="mt-10 flex flex-col md:flex-row gap-5">
 
-        <button
-          onClick={() => alert("Approve Clicked")}
-          className="bg-green-600 text-white px-6 py-3 rounded-xl shadow hover:bg-green-700 transition"
-        >
-          Approve Company
-        </button>
+      <button
+        onClick={handleApprove}
+        disabled={approving}
+        className={`px-6 py-3 rounded-xl shadow transition text-white
+          ${approving
+            ? "bg-green-400 cursor-not-allowed"
+            : "bg-green-600 hover:bg-green-700"}
+        `}
+      >
+        {approving ? "Approving..." : "Approve Company"}
+      </button>
+
 
         <div className="flex flex-col w-full md:w-auto">
           <textarea
