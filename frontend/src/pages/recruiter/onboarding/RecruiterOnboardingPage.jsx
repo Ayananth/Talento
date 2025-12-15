@@ -1,22 +1,17 @@
+import { HelpCircle, Mail, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import {
-  Upload,
-  FileText,
-  X,
-  Image as ImageIcon,
-  HelpCircle,
-  Mail,
-  ShieldCheck
-} from "lucide-react";
-import {  isValidEmail,isValidURL,validateFile,  MAX_LOGO_SIZE,  MAX_DOC_SIZE,} from "../../../utils/recruiter/utils"
-import { createRecruiter } from "@/apis/recruiter/apis";
-import api from "../../../apis/api";
-import {useNavigate} from 'react-router-dom'
+import api from "@/apis/api";
+
 import RecruiterProfileForm from "@/components/recruiter/forms/RecruiterProfileForm";
 
-
 export default function RecruiterOnboardingPage() {
-  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  /* ---------------- Initial empty data ---------------- */
+
+  const initialData = {
     company_name: "",
     website: "",
     industry: "",
@@ -31,130 +26,47 @@ export default function RecruiterOnboardingPage() {
     twitter: "",
     logo: null,
     business_registration_doc: null,
-  });
 
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  /* -------------------- Handlers -------------------- */
-
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-
-    if (files) {
-      const file = files[0];
-      let error = null;
-
-      if (name === "logo") {
-        error = validateFile(
-          file,
-          ["image/jpeg", "image/png", "image/webp"],
-          MAX_LOGO_SIZE
-        );
-      }
-
-      if (name === "business_registration_doc") {
-        error = validateFile(
-          file,
-          ["application/pdf", "image/jpeg", "image/png"],
-          MAX_DOC_SIZE
-        );
-      }
-
-      if (error) {
-        setErrors((prev) => ({ ...prev, [name]: error }));
-        return;
-      }
-
-      setErrors((prev) => ({ ...prev, [name]: null }));
-      setFormData((prev) => ({ ...prev, [name]: file }));
-      return;
-    }
-
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // required by reusable form
+    existing_logo: null,
+    existing_doc: null,
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  /* ---------------- Submit ---------------- */
 
-  const newErrors = {};
+  const handleSubmit = async (formData, setErrors) => {
+    setLoading(true);
 
-  if (!formData.company_name.trim()) {
-    newErrors.company_name = "Company name is required";
-  }
+    try {
+      const payload = new FormData();
 
-  if (!formData.support_email || !isValidEmail(formData.support_email)) {
-    newErrors.support_email = "Valid support email is required";
-  }
+      Object.entries(formData).forEach(([key, value]) => {
+        if (
+          value !== null &&
+          value !== "" &&
+          !["existing_logo", "existing_doc"].includes(key)
+        ) {
+          payload.append(key, value);
+        }
+      });
 
-  if (formData.website && !isValidURL(formData.website)) {
-    newErrors.website = "Invalid website URL";
-  }
+      await api.post(
+        "/v1/recruiter/profile/draft/create/",
+        payload,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-  ["linkedin", "facebook", "twitter"].forEach((field) => {
-    if (formData[field] && !isValidURL(formData[field])) {
-      newErrors[field] = "Invalid URL";
+      // let RecruiterRedirect decide next screen
+      navigate("/recruiter");
+    } catch (err) {
+      console.error(err);
+      setErrors(err.response?.data || {});
+    } finally {
+      setLoading(false);
     }
-  });
+  };
 
-  if (formData.about_company && formData.about_company.length < 30) {
-    newErrors.about_company =
-      "Company description must be at least 30 characters";
-  }
-
-  if (formData.phone && formData.phone.replace(/\D/g, "").length < 8) {
-    newErrors.phone = "Invalid phone number";
-  }
-
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
-
-  setErrors({});
-  setLoading(true);
-
-  try {
-    const payload = new FormData();
-
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null && value !== "") {
-        payload.append(key, value);
-      }
-    });
-
-
-    const response = await api.post(
-      "/v1/recruiter/profile/draft/create/",
-      payload,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    console.log("Recruiter draft created:", response.data);
-
-    navigate("/recruiter");  
-
-    alert("Profile submitted for verification");
-
-  } catch (error) {
-    console.error(error);
-
-    if (error.response?.data) {
-      setErrors(error.response.data);
-    } else {
-      alert("Something went wrong. Please try again.");
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
-  /* -------------------- UI -------------------- */
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-gray-100">
@@ -180,79 +92,12 @@ const handleSubmit = async (e) => {
       {/* FORM */}
       <main className="flex-1 max-w-4xl mx-auto mt-10 px-4 pb-16 w-full">
         <div className="bg-white rounded-2xl shadow-sm border p-8">
-          <form onSubmit={handleSubmit} className="space-y-10">
-
-            <Section title="Company Information">
-              <Grid>
-                <Input name="company_name" placeholder="Company Name *" value={formData.company_name} onChange={handleChange} error={errors.company_name} />
-                <Input name="website" placeholder="Website" value={formData.website} onChange={handleChange} error={errors.website} />
-                <Input name="industry" placeholder="Industry" value={formData.industry} onChange={handleChange} />
-                <Input name="company_size" placeholder="Company Size" value={formData.company_size} onChange={handleChange} />
-                <Input name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="md:col-span-2" />
-              </Grid>
-
-              <Textarea
-                name="about_company"
-                placeholder="About your company"
-                value={formData.about_company}
-                onChange={handleChange}
-                error={errors.about_company}
-              />
-
-              <FileUploadField
-                label="Company Logo"
-                name="logo"
-                type="image"
-                file={formData.logo}
-                error={errors.logo}
-                onChange={handleChange}
-                onRemove={() => setFormData((p) => ({ ...p, logo: null }))}
-              />
-            </Section>
-
-            <Section title="Contact Information">
-              <Grid>
-                <Input name="support_email" placeholder="Support Email *" value={formData.support_email} onChange={handleChange} error={errors.support_email} />
-                <Input name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} error={errors.phone} />
-              </Grid>
-            </Section>
-
-            <Section title="Address">
-              <Textarea name="address" placeholder="Full Address" value={formData.address} onChange={handleChange} />
-            </Section>
-
-            <Section title="Social Links">
-              <Grid>
-                <Input name="linkedin" placeholder="LinkedIn URL" value={formData.linkedin} onChange={handleChange} error={errors.linkedin} />
-                <Input name="facebook" placeholder="Facebook URL" value={formData.facebook} onChange={handleChange} error={errors.facebook} />
-                <Input name="twitter" placeholder="Twitter / X URL" value={formData.twitter} onChange={handleChange} error={errors.twitter} />
-              </Grid>
-            </Section>
-
-            <Section title="Business Verification">
-              <FileUploadField
-                label="Business Registration Document (PDF/Image)"
-                name="business_registration_doc"
-                file={formData.business_registration_doc}
-                error={errors.business_registration_doc}
-                onChange={handleChange}
-                onRemove={() =>
-                  setFormData((p) => ({ ...p, business_registration_doc: null }))
-                }
-              />
-            </Section>
-
-            <div className="pt-6 border-t flex justify-end">
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-600 text-white px-8 py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loading ? "Submitting..." : "Submit for Verification"}
-              </button>
-            </div>
-
-          </form>
+          <RecruiterProfileForm
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            submitText="Submit for Verification"
+            loading={loading}
+          />
         </div>
       </main>
 
@@ -265,81 +110,14 @@ const handleSubmit = async (e) => {
           <span>© {new Date().getFullYear()} Talento</span>
         </div>
       </footer>
-
-      <InputStyles />
     </div>
   );
 }
 
-/* -------------------- Reusable Components -------------------- */
-
-const Section = ({ title, children }) => (
-  <section>
-    <h2 className="text-lg font-semibold mb-4">{title}</h2>
-    {children}
-  </section>
-);
-
-const Grid = ({ children }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{children}</div>
-);
-
-const Input = ({ error, className = "", ...props }) => (
-  <div className={className}>
-    <input {...props} className="input" />
-    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-  </div>
-);
-
-const Textarea = ({ error, ...props }) => (
-  <div>
-    <textarea {...props} rows="4" className="input mt-4" />
-    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-  </div>
-);
-
-const FileUploadField = ({ label, name, file, error, onChange, onRemove, type }) => (
-  <div className="mt-4">
-    <label className="block text-sm font-medium mb-2">{label}</label>
-
-    {!file ? (
-      <label className="flex items-center justify-center gap-3 border-2 border-dashed rounded-xl p-6 cursor-pointer hover:border-blue-500">
-        {type === "image" ? <ImageIcon /> : <FileText />}
-        <span className="text-sm text-gray-600">Click to upload</span>
-        <Upload size={16} />
-        <input type="file" name={name} className="hidden" onChange={onChange} />
-      </label>
-    ) : (
-      <div className="flex items-center justify-between border rounded-lg px-4 py-3 bg-gray-50">
-        <span className="text-sm">{file.name}</span>
-        <button type="button" onClick={onRemove} className="text-red-500">
-          <X size={16} />
-        </button>
-      </div>
-    )}
-
-    {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
-  </div>
-);
+/* ---------------- Footer helper ---------------- */
 
 const FooterLink = ({ icon, text }) => (
   <div className="flex items-center gap-1">
     {icon} {text}
   </div>
-);
-
-const InputStyles = () => (
-  <style>{`
-    .input {
-      width: 100%;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.6rem;
-      padding: 0.6rem 0.75rem;
-      outline: none;
-    }
-    .input:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 1px #2563eb;
-    }
-  `}</style>
 );
