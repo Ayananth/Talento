@@ -12,6 +12,7 @@ import {  isValidEmail,isValidURL,validateFile,  MAX_LOGO_SIZE,  MAX_DOC_SIZE,} 
 import { createRecruiter } from "@/apis/recruiter/apis";
 import api from "../../../apis/api";
 import {useNavigate} from 'react-router-dom'
+import RecruiterProfileForm from "@/components/recruiter/forms/RecruiterProfileForm";
 
 
 export default function RecruiterOnboardingPage() {
@@ -136,7 +137,7 @@ const handleSubmit = async (e) => {
 
     console.log("Recruiter draft created:", response.data);
 
-    navigate("/recruiter/verification-pending");
+    navigate("/recruiter");  
 
     alert("Profile submitted for verification");
 

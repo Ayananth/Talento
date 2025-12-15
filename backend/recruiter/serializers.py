@@ -95,6 +95,8 @@ class AdminRecruiterListSerializer(serializers.ModelSerializer):
 
 
 class RecruiterProfileSerializer(serializers.ModelSerializer):
+    has_published_data = serializers.SerializerMethodField()
+
     class Meta:
         model = RecruiterProfile
         fields = [
@@ -116,6 +118,10 @@ class RecruiterProfileSerializer(serializers.ModelSerializer):
             "verified_at",
             "created_at",
             "updated_at",
+            "rejection_reason",
+            "has_published_data",
+            "status",
+            "pending_data"
         ]
         read_only_fields = (
             "id",
@@ -123,3 +129,6 @@ class RecruiterProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
+
+    def get_has_published_data(self, obj):
+        return obj.has_published_data()

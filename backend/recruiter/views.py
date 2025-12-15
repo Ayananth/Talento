@@ -305,3 +305,12 @@ class AdminRecruiterListView(BaseAdminRecruiterListView):
 class PendingRecruiterListView(BaseAdminRecruiterListView):
     def get_queryset(self):
         return RecruiterProfile.objects.filter(status="pending")
+    
+
+class RecruiterProfileDetailView(generics.RetrieveAPIView):
+    serializer_class = RecruiterProfileSerializer
+    permission_classes = [IsAuthenticated, IsRecruiter]
+
+    def get_object(self):
+        return self.request.user.recruiter_profile
+

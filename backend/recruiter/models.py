@@ -18,7 +18,7 @@ class RecruiterProfile(models.Model):
     )
 
     # Basic Company Info
-    company_name = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
     website = models.URLField(max_length=255, blank=True, null=True)
     industry = models.CharField(max_length=255, blank=True, null=True)
     company_size = models.CharField(max_length=50, blank=True, null=True)
