@@ -6,12 +6,13 @@ app_name = "recruiter"
 urlpatterns = [
     path("profile/draft/create/", views.RecruiterProfileDraftCreateView.as_view(), name="recruiter-profile-draft-create"),
     path("profile/draft/update/", views.RecruiterProfileDraftUpdateView.as_view(), name="recruiter-profile-draft-update"),
+    path("profile/", views.RecruiterProfileDetailView.as_view(), name="recruiter-profile"),
 
     path(
-        "recruiter/profile/<int:pk>/reject/", views.AdminRejectRecruiterProfileView.as_view(), name="admin-reject-recruiter-profile",
+        "profile/<int:pk>/reject/", views.AdminRejectRecruiterProfileView.as_view(), name="admin-reject-recruiter-profile",
     ),
     path(
-        "recruiter/profile/<int:pk>/approve/", views.AdminApproveRecruiterProfileView.as_view(), name="admin-approve-recruiter-profile",
+        "profile/<int:pk>/approve/", views.AdminApproveRecruiterProfileView.as_view(), name="admin-approve-recruiter-profile",
     ),
 
     path("recruiters/", views.AdminRecruiterListView.as_view(), name="admin-recruiters-list"),
@@ -23,6 +24,8 @@ urlpatterns = [
         views.AdminRecruiterProfileDetailView.as_view(),
         name="admin-recruiter-detail",
     ),
+
+
 
 
 

@@ -1,15 +1,94 @@
 import React, { useState } from "react";
+import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
+import api from "@/apis/api"
+import { useNavigate } from "react-router-dom";
+
 
 export default function FirstTimeCompanyView({ data }) {
   const [rejectReason, setRejectReason] = useState("");
+  const [approving, setApproving] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const navigate = useNavigate();
 
   const {
+    id,
     user,
+    email,
     pending_data,
     draft_logo,
     draft_business_registration_doc,
     status,
+    request_type,
+    signed_business_doc_url
   } = data;
+
+
+  const handleApprove = async () => {
+    if (approving) return;
+
+    try {
+      setApproving(true);
+
+      await api.patch(`/v1/recruiter/profile/${id}/approve/`);
+      navigate("/admin/recruiter/approvals", {
+        state: {
+          toast: {
+            type: "success",
+            message: "Recruiter approved successfully",
+          },
+        },
+      });
+
+
+    } catch (error) {
+      console.error("Approval failed:", error);
+    } finally {
+      setApproving(false);
+    }
+  };
+
+const handleReject = async () => {
+  if (rejecting) return;
+
+  if (!rejectReason.trim()) {
+    alert("Please enter a rejection reason");
+    return;
+  }
+
+  try {
+    setRejecting(true);
+
+    await api.patch(`/v1/recruiter/profile/${id}/reject/`, {
+      reason: rejectReason,
+    });
+
+  navigate("/admin/recruiter/approvals", {
+    state: {
+      toast: {
+        type: "error",
+        message: "Recruiter rejected successfully",
+      },
+    },
+  });
+
+
+  } catch (error) {
+    console.error("Reject failed:", error);
+
+    alert(
+      error.response?.data?.detail ||
+      "Failed to reject recruiter. Please try again."
+    );
+  } finally {
+    setRejecting(false);
+  }
+};
+
+
+
+
+  const documentUrl = getCloudinaryUrl(draft_business_registration_doc);
+
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -19,13 +98,20 @@ export default function FirstTimeCompanyView({ data }) {
         <h1 className="text-3xl font-bold mb-3">Company Registration Request</h1>
 
         <p className="text-gray-700">
-          Recruiter: <span className="font-semibold">{user.email}</span>
+          Recruiter: <span className="font-semibold">{email}</span>
         </p>
 
         <p className="mt-2">
           Status:{" "}
           <span className="bg-yellow-200 px-3 py-1 rounded-lg font-medium">
             {status}
+          </span>
+        </p>
+
+        <p className="mt-2">
+          Request Type:{" "}
+          <span className="bg-yellow-200 px-3 py-1 rounded-lg font-medium">
+            {request_type}
           </span>
         </p>
       </div>
@@ -60,45 +146,65 @@ export default function FirstTimeCompanyView({ data }) {
         </div>
 
         {/* Draft Business Document */}
-        <div className="mb-6">
-          <div className="font-semibold text-gray-700">Business Document:</div>
-          {draft_business_registration_doc ? (
-            <a
-              href={draft_business_registration_doc}
-              target="_blank"
-              className="text-blue-600 underline mt-1 inline-block"
-            >
-              View Document
-            </a>
-          ) : (
-            <div className="text-gray-500 mt-1">No document uploaded</div>
-          )}
-        </div>
+{     /* Draft Business Document */}
+<div className="mb-6">
+  <div className="font-semibold text-gray-700">
+    Business Document:
+  </div>
+
+  {signed_business_doc_url ? (
+    <a
+      href={signed_business_doc_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 underline"
+    >
+      View Document
+    </a>
+  ) : (
+    <span className="text-gray-500">No document uploaded</span>
+  )}
+</div>
+
+
       </div>
 
       {/* ACTION BUTTONS */}
       <div className="mt-10 flex flex-col md:flex-row gap-5">
 
-        <button
-          onClick={() => alert("Approve Clicked")}
-          className="bg-green-600 text-white px-6 py-3 rounded-xl shadow hover:bg-green-700 transition"
-        >
-          Approve Company
-        </button>
+      <button
+        onClick={handleApprove}
+        disabled={approving}
+        className={`px-6 py-3 rounded-xl shadow transition text-white
+          ${approving
+            ? "bg-green-400 cursor-not-allowed"
+            : "bg-green-600 hover:bg-green-700"}
+        `}
+      >
+        {approving ? "Approving..." : "Approve Company"}
+      </button>
+
 
         <div className="flex flex-col w-full md:w-auto">
           <textarea
             placeholder="Enter rejection reason..."
             className="border rounded-xl px-3 py-2 mb-3 w-full"
             value={rejectReason}
+            disabled={rejecting}
             onChange={(e) => setRejectReason(e.target.value)}
           />
-          <button
-            onClick={() => alert("Reject Clicked")}
-            className="bg-red-600 text-white px-6 py-3 rounded-xl shadow hover:bg-red-700 transition"
-          >
-            Reject Company
-          </button>
+      <button
+        onClick={handleReject}
+        disabled={rejecting}
+        className={`px-6 py-3 rounded-xl shadow transition text-white
+          ${rejecting
+            ? "bg-red-400 cursor-not-allowed"
+            : "bg-red-600 hover:bg-red-700"}
+        `}
+      >
+        {rejecting ? "Rejecting..." : "Reject Company"}
+      </button>
+
         </div>
 
       </div>

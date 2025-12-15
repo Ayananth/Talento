@@ -8,8 +8,8 @@ const LoginPage = ({role="jobseeker"}) => {
 
   const redirectMap = {
   jobseeker: "/",
-  recruiter: "/recruiter/home",
-  admin: "/admin/home",
+  recruiter: "/recruiter",
+  admin: "/admin",
 };
 
 const redirectAfterLogin = redirectMap[role] ?? "/";

@@ -6,7 +6,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
 
   const menuItems = [
-    { name: "Dashboard", path: "/admin/home" },
+    { name: "Dashboard", path: "/admin" },
     { name: "Approvals", path: "/admin/recruiter/approvals" },
     { name: "Recruiters", path: "/admin/recruiters" },
     { name: "Companies", path: "/admin/companies" },

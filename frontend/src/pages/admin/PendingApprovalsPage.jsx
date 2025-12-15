@@ -5,6 +5,7 @@ import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import ResponsiveTable from "@//components/admin/ResponsiveTable";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 
 
@@ -17,16 +18,20 @@ export default function PendingApprovalsPage() {
   const totalPages = Math.ceil(count / pageSize);
   const { loading: authLoading } = useAuth();
   const navigate = useNavigate()
+  const location = useLocation();
+  const [toast, setToast] = useState(null);
+
 
   const fetchData = async (pageNum, orderingValue = ordering) => {
     const response = await getPendingList(pageNum, orderingValue);
+    console.log("response: " , response)
 
     const mapped = response.results.map((item) => ({
       id: item.id,
       user: item.username,
       company: item.company_name,
       status: item.status,
-      mode: item.request_type?.toLowerCase(),
+      request_type: item.request_type?.toLowerCase(),
       submitted: new Date(item.updated_at).toLocaleString(),
     }));
 
@@ -53,6 +58,22 @@ export default function PendingApprovalsPage() {
   };
 
 
+useEffect(() => {
+  if (location.state?.toast) {
+    setToast(location.state.toast);
+
+    // Clear router state so it doesn't reappear on refresh
+    window.history.replaceState({}, document.title);
+
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }
+}, [location.state]);
+
+
 
   const columns = [
     {
@@ -77,6 +98,13 @@ export default function PendingApprovalsPage() {
     },
 
     {
+      label: "Request Type",
+      key: "request_type",
+      sortable: true,
+      orderingKey: "request_type",
+    },
+
+    {
       label: "Status",
       key: "status",
       sortable: true,
@@ -91,6 +119,8 @@ export default function PendingApprovalsPage() {
     },
   ];
 
+  console.log("data", data)
+
 
   return (
     <div className="p-4 md:p-6">
@@ -98,13 +128,26 @@ export default function PendingApprovalsPage() {
         Pending Approvals
       </h2>
 
+      {toast && (
+        <div
+          className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium
+            ${toast.type === "success"
+              ? "bg-green-100 text-green-800 border border-green-200"
+              : "bg-red-100 text-red-800 border border-red-200"}
+          `}
+        >
+          {toast.message}
+        </div>
+      )}
+
+
       <ResponsiveTable
         data={data}
         columns={columns}
         rowKey="id"
         actions={(row) => (
           <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={()=> navigate(`1`)}>
+          onClick={()=> navigate(`${row.id}`)}>
             View
           </button>
         )}

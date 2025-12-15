@@ -5,7 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 
 from .models import RecruiterProfile
-from .serializers import RecruiterDraftCreateSerializer, AdminRecruiterListSerializer, RecruiterProfileSerializer
+from .serializers import RecruiterDraftCreateSerializer, AdminRecruiterListSerializer, RecruiterProfileSerializer, AdminRecruiterDetailSerializer
 from core.permissions import IsRecruiter, IsAdmin
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -33,8 +33,16 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         user = request.user
+        print(f"{request.user=}")
 
         profile, _ = RecruiterProfile.objects.get_or_create(user=user)
+
+        if profile.status in ["approved"]:
+            return Response(
+                {"detail": "Profile already submitted"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
         data = serializer.validated_data.copy()
 
@@ -50,7 +58,7 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
             profile.draft_business_registration_doc = draft_doc
 
         profile.status = "pending"
-        profile.rejection_reason = ""
+        profile.rejection_reason = None
         profile.save()
 
         return Response(
@@ -258,7 +266,7 @@ class AdminRecruiterProfileDetailView(generics.RetrieveAPIView):
     Admin view to fetch full details of a recruiter
     """
 
-    serializer_class = RecruiterProfileSerializer
+    serializer_class = AdminRecruiterDetailSerializer
     queryset = RecruiterProfile.objects.all()
     permission_classes = [IsAuthenticated, IsAdmin]
 
@@ -297,3 +305,12 @@ class AdminRecruiterListView(BaseAdminRecruiterListView):
 class PendingRecruiterListView(BaseAdminRecruiterListView):
     def get_queryset(self):
         return RecruiterProfile.objects.filter(status="pending")
+    
+
+class RecruiterProfileDetailView(generics.RetrieveAPIView):
+    serializer_class = RecruiterProfileSerializer
+    permission_classes = [IsAuthenticated, IsRecruiter]
+
+    def get_object(self):
+        return self.request.user.recruiter_profile
+

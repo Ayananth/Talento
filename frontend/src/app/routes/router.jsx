@@ -21,13 +21,16 @@ import authRoutes from "./auth.routes";
 import jobseekerRoutes from "./jobseeker.routes";
 import commonRoutes from "./common.routes.jsx";
 import adminRoutes from "./admin.routes"
+import recruiterRoutes from "./recruiter.routes.jsx";
 
 
 const router = createBrowserRouter([
   ...authRoutes,
   ...jobseekerRoutes,
   ...commonRoutes,
-  ...adminRoutes
+  ...adminRoutes,
+  ...recruiterRoutes
+
 
 ]);
 
