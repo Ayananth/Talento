@@ -2,6 +2,10 @@ import AuthenticationLayout from '../../layouts/common/AuthenticationLayout'
 import LoginPage from '../../pages/common/LoginPage';
 import SignupPage from '@/pages/common/SignupPage';
 import EmailVerificationPage from '@/pages/common/EmailVerificationPage';
+import ForgotPasswordPage from '@/pages/common/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/common/ResetPasswordPage'
+import EmailSuccessPage from '@/pages/common/EmailSuccessPage'
+import EmailFailedPage from '@/pages/common/EmailFailedPage'
 
 const authRoutes = [
   {
@@ -28,10 +32,10 @@ const authRoutes = [
 
 
     { path: "/email-verification", element: <EmailVerificationPage /> },
-    // { path: "/forgot-password", element: <ForgotPasswordPage /> },
-    // { path: "/reset-password", element: <ResetPasswordPage /> },
-    // { path: "/email-verified-success", element: <EmailSuccessPage /> },
-    // { path: "/email-verified-failed", element: <EmailFailedPage /> },
+    { path: "/forgot-password", element: <ForgotPasswordPage /> },
+    { path: "/reset-password", element: <ResetPasswordPage /> },
+    { path: "/email-verified-success", element: <EmailSuccessPage /> },
+    { path: "/email-verified-failed", element: <EmailFailedPage /> },
 
 
 
