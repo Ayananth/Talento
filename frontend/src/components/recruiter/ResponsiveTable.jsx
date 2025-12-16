@@ -88,47 +88,47 @@ export default function ResponsiveTable({
       {/* =========================================================
           MOBILE CARD VIEW (below md)
       ========================================================= */}
-      <div className="md:hidden p-3 space-y-3">
-        {data.map((row, index) => (
-          <div
-            key={row[rowKey]}
-            className="border rounded-lg p-3 bg-white shadow-sm hover:shadow-md"
-          >
-            {columns.map((col) => {
-              const isAsc = ordering === col.key;
-              const isDesc = ordering === `-${col.key}`;
+    <div className="md:hidden p-3 space-y-3">
+      {data.map((row, index) => (
+        <div
+          key={row[rowKey]}
+          className="border rounded-lg p-3 bg-white shadow-sm hover:shadow-md"
+        >
+          {columns.map((col) => {
+            const isAsc = ordering === col.key;
+            const isDesc = ordering === `-${col.key}`;
 
-              return (
-                <p key={col.key} className="text-sm text-gray-700 mb-2">
-                  <span className="font-semibold">{col.label}: </span>
+            return (
+              <div key={col.key} className="mb-2 text-sm text-gray-700">
+                <span className="font-semibold">{col.label}: </span>
 
-                  {/* If sortable, allow clicking on label */}
-                  {col.sortable ? (
-                    <span
-                      onClick={() => onSort(col.orderingKey || col.key)}
-                      className="cursor-pointer underline"
-                    >
-                      {col.render ? col.render(row, index) : row[col.key]}
-                      {isAsc && <span> ↑</span>}
-                      {isDesc && <span> ↓</span>}
-                    </span>
-                  ) : (
-                    <span>
-                      {col.render ? col.render(row, index) : row[col.key]}
-                    </span>
-                  )}
-                </p>
-              );
-            })}
-
-            {actions && (
-              <div className="mt-3">
-                {actions(row, index)}
+                {col.sortable ? (
+                  <span
+                    onClick={() => onSort(col.orderingKey || col.key)}
+                    className="cursor-pointer underline"
+                  >
+                    {col.render ? col.render(row, index) : row[col.key]}
+                    {isAsc && <span> ↑</span>}
+                    {isDesc && <span> ↓</span>}
+                  </span>
+                ) : (
+                  <span>
+                    {col.render ? col.render(row, index) : row[col.key]}
+                  </span>
+                )}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+            );
+          })}
+
+          {actions && (
+            <div className="mt-3">
+              {actions(row, index)}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+
 
     </div>
   );
