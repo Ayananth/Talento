@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.decorators import api_view #for FBV, remove if not used
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .serializers import MyTokenObtainPairSerializer, PasswordResetRequestSerializer, UserSerializer, ResetPasswordSerializer
+from .serializers import MyTokenObtainPairSerializer, PasswordResetRequestSerializer, UserSerializer, ResetPasswordSerializer,AdminUserListSerializer,  AdminUserDetailSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.urls import reverse
@@ -25,14 +25,27 @@ from google.auth.transport import requests as google_requests
 import os
 from core.permissions import IsAdmin, IsRecruiter, IsJobseeker
 
+from rest_framework.exceptions import AuthenticationFailed
+
+
 
 
 from .utils import generate_email_verification_token
 from .tasks import send_verification_email, send_password_reset_email_task
 
+
+
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.filters import SearchFilter, OrderingFilter
+
+from core.permissions import IsAdmin
+
+
 USER = get_user_model()
 token_generator = PasswordResetTokenGenerator()
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+
+
 
 
 
@@ -43,6 +56,12 @@ class SignUpView(APIView):
 
         try:
             user = USER.objects.get(email=email)
+            if user.is_blocked:
+                return Response(
+                    {"error": "User is blocked. Please contact the support team!"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    )
+
             if not user.is_email_verified:
                 token = generate_email_verification_token(user)
                 verify_url = request.build_absolute_uri(
@@ -90,6 +109,12 @@ class MyTokenObtainPairView(TokenObtainPairView):
             return Response({"detail": "Invalid credentials"}, status=400)
         
         user = serializer.user
+        if user.is_blocked:
+            return Response(
+                {"error": "User is blocked. Please contact the support team!"},
+                status=status.HTTP_400_BAD_REQUEST,
+                )
+
         refresh = MyTokenObtainPairSerializer.get_token(user)
         response = Response(
             {"access": str(refresh.access_token)},
@@ -153,6 +178,8 @@ class VerifyEmailView(APIView):
 
             user_id = access_token["user_id"]
             user = USER.objects.get(id=user_id)
+
+
 
             if user.is_active:
                 return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_SUCCESS_URL)
@@ -230,6 +257,12 @@ class PasswordResetRequestView(APIView):
         email = serliazer.validated_data["email"].lower().strip()
         try:
             user = USER.objects.get(email=email)
+            if user.is_blocked:
+                return Response(
+                    {"error": "User is blocked. Please contact the support team!"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    )
+
             if not user.is_active or not user.is_email_verified:
                 return Response(
                     {"detail": "If an account with that email exists, we sent password reset instructions."},
@@ -316,7 +349,6 @@ class GoogleLoginAPIView(APIView):
             # Find or create user
             try:
                 user = USER.objects.get(email__iexact=email)
-
                 if user.role and user.role != role:
                     print("Role mismatch. You already registered")
                     return Response(
@@ -367,3 +399,47 @@ class GoogleLoginAPIView(APIView):
         except Exception as exc:
             print(f"detail: {str(exc)}")
             return Response({"detail": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+
+
+
+# ------------------------------------------------
+#-----------------admin--------------------------
+# -----------------------------------------------
+
+
+class AdminUserListView(ListAPIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = AdminUserListSerializer
+    queryset = USER.objects.all()
+
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = [
+        "email",
+        "username",
+    ]
+
+    ordering_fields = [
+        "email",
+        "username",
+        "role",
+        "is_active",
+    ]
+
+    ordering = ["email"]
+
+
+
+class AdminUserDetailView(RetrieveAPIView):
+    """
+    GET /api/admin/users/<id>/
+    """
+    serializer_class = AdminUserDetailSerializer
+    permission_classes = [IsAdmin]
+    queryset = USER.objects.all()

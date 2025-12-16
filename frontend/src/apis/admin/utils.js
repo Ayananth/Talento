@@ -9,3 +9,5 @@ export const getRecruiterDetails = async (id) => {
     throw error;
   }
 };
+
+

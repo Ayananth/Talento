@@ -31,11 +31,12 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=USER_TYPES, default='jobseeker')
     is_active = models.BooleanField(default=True)
+    is_blocked = models.BooleanField(default=False) 
     is_staff = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
     google_sub = models.CharField(max_length=255, blank=True, null=True, unique=True)
-    # date_joined = models.DateTimeField(auto_now_add=True)
-    # last_login = models.
+    date_joined = models.DateTimeField(auto_now_add=True)
+    last_login = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []  # no username needed

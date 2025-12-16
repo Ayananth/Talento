@@ -11,6 +11,8 @@ import RecruiterListPage from "@/pages/admin/RecruiterListPage";
 import AdminReviewCompanyPage from "@/pages/admin/AdminReviewCompanyPage";
 import PendingApprovalsPage from "@/pages/admin/PendingApprovalsPage";
 import AdminApprovePage from "@/pages/admin/AdminApprovePage";
+import AdminUsersPage from "../../pages/admin/users/AdminUsersPage";
+import AdminUserDetailPage from "../../pages/admin/users/AdminUserDetailPage";
 
 const adminRoutes = [
   {
@@ -31,6 +33,13 @@ const adminRoutes = [
           { path: "recruiter/changes", element: <AdminReviewCompanyPage /> },
           { path: "recruiter/approvals", element: <PendingApprovalsPage /> },
           { path: "recruiter/approvals/:id", element: <AdminApprovePage /> },
+
+
+          { path: "users", element: <AdminUsersPage /> },
+
+          {
+            path: "users/:id",element: <AdminUserDetailPage />,
+          }
 
         ]
       }
