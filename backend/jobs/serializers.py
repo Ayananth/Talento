@@ -112,4 +112,48 @@ class JobCloseSerializer(serializers.ModelSerializer):
                 "Job is already closed."
             )
         return attrs
+    
 
+
+class PublicJobListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = [
+            "id",
+            "title",
+            "job_type",
+            "work_mode",
+            "experience_level",
+            "location_city",
+            "location_country",
+            "salary_min",
+            "salary_max",
+            "salary_currency",
+            "published_at",
+        ]
+
+
+class PublicJobDetailSerializer(serializers.ModelSerializer):
+    skills = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Job
+        fields = [
+            "id",
+            "title",
+            "description",
+            "job_type",
+            "work_mode",
+            "experience_level",
+            "location_city",
+            "location_state",
+            "location_country",
+            "salary_min",
+            "salary_max",
+            "salary_currency",
+            "published_at",
+            "skills",
+        ]
+
+    def get_skills(self, obj):
+        return [skill.name for skill in obj.skills.all()]

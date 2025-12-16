@@ -11,6 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from jobs.filters import RecruiterJobFilter
 from jobs.pagination import RecruiterJobPagination
+from datetime import timedelta
 
 
 
@@ -29,6 +30,7 @@ class JobPublishView(UpdateAPIView):
     def perform_update(self, serializer):
         serializer.instance.status = Job.Status.PUBLISHED
         serializer.instance.published_at = timezone.now()
+        serializer.instance.expires_at = timezone.now() + timedelta(days=90)
         serializer.instance.save()
 
 
