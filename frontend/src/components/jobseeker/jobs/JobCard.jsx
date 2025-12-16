@@ -2,6 +2,10 @@ import { motion } from "framer-motion";
 import { MapPin, Clock } from "lucide-react";
 import { Button } from "flowbite-react";
 
+
+
+
+
 export default function JobCard({ job }) {
   return (
     <motion.div
