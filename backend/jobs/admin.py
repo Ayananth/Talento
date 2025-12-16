@@ -1,7 +1,9 @@
 from django.contrib import admin
-from .model import application, skill, job
+from jobs.models.job import Job
+from jobs.models.skill import JobSkill
+from jobs.models.application import JobApplication
 
-admin.site.register(application.JobApplication)
-admin.site.register(skill.JobSkill)
-admin.site.register(job.Job)
 
+admin.site.register(Job)
+admin.site.register(JobSkill)
+admin.site.register(JobApplication)

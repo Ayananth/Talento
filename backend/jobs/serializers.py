@@ -6,7 +6,8 @@ from jobs.models.skill import JobSkill
 class JobCreateSerializer(serializers.ModelSerializer):
     skills = serializers.ListField(
         child=serializers.CharField(),
-        required=False
+        required=False,
+        write_only=True
     )
 
     class Meta:
@@ -57,3 +58,17 @@ class JobCreateSerializer(serializers.ModelSerializer):
             job.skills.add(skill)
 
         return job
+
+
+
+class JobPublishSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = []
+
+    def validate(self, attrs):
+        if self.instance.status != Job.Status.DRAFT:
+            raise serializers.ValidationError(
+                "Only draft jobs can be published."
+            )
+        return attrs

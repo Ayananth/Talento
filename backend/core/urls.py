@@ -26,5 +26,6 @@ urlpatterns = [
     path("v1/profile/", include("profiles.urls", namespace="profile")),
     path("v1/recruiter/", include("recruiter.urls", namespace="recruiter")),
     path("v1/admin/", include("admin.urls", namespace="custom_admin")),
+    path("v1/jobs/", include("jobs.urls", namespace="jobs")),
 
 ]
