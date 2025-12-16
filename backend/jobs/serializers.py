@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from jobs.models.job import Job
+from jobs.models.application import JobApplication
 from jobs.models.skill import JobSkill
+from django.utils import timezone
 
 
 class JobCreateSerializer(serializers.ModelSerializer):
@@ -157,3 +159,43 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
 
     def get_skills(self, obj):
         return [skill.name for skill in obj.skills.all()]
+
+
+
+
+# =========================================
+# application
+# ====================================
+
+
+
+
+class JobApplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobApplication
+        fields = ["resume", "cover_letter"]
+
+    def validate(self, attrs):
+        job = self.context["job"]
+        user = self.context["request"].user
+
+        if job.status != Job.Status.PUBLISHED:
+            raise serializers.ValidationError("This job is not accepting applications.")
+
+        if job.expires_at and job.expires_at <= timezone.now():
+            raise serializers.ValidationError("This job has expired.")
+
+        if JobApplication.objects.filter(job=job, applicant=user).exists():
+            raise serializers.ValidationError("You have already applied to this job.")
+
+        return attrs
+
+    def create(self, validated_data):
+        job = self.context["job"]
+        user = self.context["request"].user
+
+        return JobApplication.objects.create(
+            job=job,
+            applicant=user,
+            **validated_data
+        )

@@ -2,6 +2,7 @@
 from django.urls import path
 from jobs.views.recruiter import JobCreateView, JobPublishView, RecruiterJobListView, JobUpdateView, JobCloseView
 from jobs.views.public import PublicJobListView, PublicJobDetailView
+from jobs.views.jobseeker import JobApplyView
 
 app_name = "jobs"
 
@@ -21,6 +22,12 @@ urlpatterns = [
 
  path("jobs/public/", PublicJobListView.as_view(), name="public-job-list"),
 path("jobs/public/<int:pk>/", PublicJobDetailView.as_view(), name="public-job-detail"),
+
+    path(
+        "jobs/<int:job_id>/apply/",
+        JobApplyView.as_view(),
+        name="job-apply"
+    ),
 
 ]
  

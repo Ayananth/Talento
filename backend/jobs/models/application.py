@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from cloudinary.models import CloudinaryField
 
 User = settings.AUTH_USER_MODEL
 
@@ -24,7 +25,10 @@ class JobApplication(models.Model):
         related_name="applications"
     )
 
-    resume = models.FileField(upload_to="resumes/")
+    resume = CloudinaryField(
+        resource_type="raw",
+        folder="talento-dev/resumes/"
+    )    
     cover_letter = models.TextField(blank=True)
 
     status = models.CharField(
