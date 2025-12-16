@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "@/apis/api";
 
+
 import RecruiterOnboardingPage from "../../pages/recruiter/onboarding/RecruiterOnboardingPage";
 import VerificationPendingPage from "../../pages/recruiter/onboarding/VerificationPendingPage";
 import VerificationRejectedPage from "../../pages/recruiter/onboarding/VerificationRejectedPage";
 import RecruiterDashboard from "@/pages/recruiter/RecruiterDashboard";
+import RecruiterLayout from "../../layouts/recruiter/RecruiterLayout";
 
 export default function RecruiterRedirect() {
   const [loading, setLoading] = useState(true);
@@ -74,7 +76,11 @@ export default function RecruiterRedirect() {
    * (even if an edit is pending or rejected)
    */
   if (profile.has_published_data) {
-    return <RecruiterDashboard />;
+    return (
+      <RecruiterLayout>
+        <RecruiterDashboard />
+      </RecruiterLayout>
+      )
   }
 
   /**

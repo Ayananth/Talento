@@ -1,22 +1,28 @@
 import RecruiterRedirect from "@/auth/routes/RecruiterRedirect";
 import ApprovedRecruiterGuard from "@/auth/routes/ApprovedRecruiterGuard";
-import RecruiterEditAfterRejectionPage from "../../pages/recruiter/onboarding/RecruiterProfileEditAfterRejectionPage";
+import RecruiterEditAfterRejectionPage from "@/pages/recruiter/onboarding/RecruiterProfileEditAfterRejectionPage";
 import RecruiterDashboard from "@/pages/recruiter/RecruiterDashboard";
-import RequireAuth from "../../auth/routes/RequireAuth"
+import RequireAuth from "@/auth/routes/RequireAuth";
+import RecruiterLayout from "@/layouts/recruiter/RecruiterLayout";
 
 const recruiterRoutes = [
   {
     path: "recruiter",
-    element: <RequireAuth/>,
+    element: <RequireAuth />,
     children: [
       /**
-       * DEFAULT entry after login
+       * Default entry after login
        * /recruiter
        */
       {
         index: true,
         element: <RecruiterRedirect />,
       },
+
+      /**
+       * Accessible even if not approved
+       * /recruiter/profile/resubmit
+       */
       {
         path: "profile/resubmit",
         element: <RecruiterEditAfterRejectionPage />,
@@ -31,13 +37,18 @@ const recruiterRoutes = [
         element: <ApprovedRecruiterGuard />,
         children: [
           {
-            path: "dashboard",
-            element: <RecruiterDashboard />,
+            element: <RecruiterLayout />,
+            children: [
+              {
+                path: "dashboard",
+                element: <RecruiterDashboard />,
+              },
+              // {
+              //   path: "jobs",
+              //   element: <RecruiterJobsPage />,
+              // },
+            ],
           },
-        //   {
-        //     path: "jobs",
-        //     element: <RecruiterJobsPage />,
-        //   },
         ],
       },
     ],
