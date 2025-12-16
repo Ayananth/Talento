@@ -72,3 +72,22 @@ class JobPublishSerializer(serializers.ModelSerializer):
                 "Only draft jobs can be published."
             )
         return attrs
+
+
+
+
+class RecruiterJobListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = [
+            "id",
+            "title",
+            "status",
+            "job_type",
+            "work_mode",
+            "experience_level",
+            "location_city",
+            "location_country",
+            "created_at",
+            "published_at",
+        ]

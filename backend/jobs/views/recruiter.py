@@ -1,9 +1,15 @@
-from rest_framework.generics import CreateAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, UpdateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
-from jobs.serializers import JobCreateSerializer, JobPublishSerializer
+from jobs.serializers import JobCreateSerializer, JobPublishSerializer, RecruiterJobListSerializer
 from core.permissions import IsRecruiter
 from jobs.models.job import Job
 from django.utils import timezone
+
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
+from jobs.filters import RecruiterJobFilter
+from jobs.pagination import RecruiterJobPagination
+
 
 
 class JobCreateView(CreateAPIView):
@@ -22,4 +28,21 @@ class JobPublishView(UpdateAPIView):
         serializer.instance.status = Job.Status.PUBLISHED
         serializer.instance.published_at = timezone.now()
         serializer.instance.save()
+
+
+class RecruiterJobListView(ListAPIView):
+    serializer_class = RecruiterJobListSerializer
+    permission_classes = [IsAuthenticated, IsRecruiter]
+    pagination_class = RecruiterJobPagination
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = RecruiterJobFilter
+    ordering_fields = ["created_at", "published_at"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        return Job.objects.filter(
+            recruiter=self.request.user
+        )
+
 
