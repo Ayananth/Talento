@@ -25,6 +25,9 @@ from google.auth.transport import requests as google_requests
 import os
 from core.permissions import IsAdmin, IsRecruiter, IsJobseeker
 
+from rest_framework.exceptions import AuthenticationFailed
+
+
 
 
 from .utils import generate_email_verification_token
@@ -53,6 +56,12 @@ class SignUpView(APIView):
 
         try:
             user = USER.objects.get(email=email)
+            if user.is_blocked:
+                return Response(
+                    {"error": "User is blocked. Please contact the support team!"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    )
+
             if not user.is_email_verified:
                 token = generate_email_verification_token(user)
                 verify_url = request.build_absolute_uri(
@@ -100,6 +109,12 @@ class MyTokenObtainPairView(TokenObtainPairView):
             return Response({"detail": "Invalid credentials"}, status=400)
         
         user = serializer.user
+        if user.is_blocked:
+            return Response(
+                {"error": "User is blocked. Please contact the support team!"},
+                status=status.HTTP_400_BAD_REQUEST,
+                )
+
         refresh = MyTokenObtainPairSerializer.get_token(user)
         response = Response(
             {"access": str(refresh.access_token)},
@@ -163,6 +178,8 @@ class VerifyEmailView(APIView):
 
             user_id = access_token["user_id"]
             user = USER.objects.get(id=user_id)
+
+
 
             if user.is_active:
                 return redirect(settings.FRONTEND_URL + settings.EMAIL_VERIFICATION_SUCCESS_URL)
@@ -240,6 +257,12 @@ class PasswordResetRequestView(APIView):
         email = serliazer.validated_data["email"].lower().strip()
         try:
             user = USER.objects.get(email=email)
+            if user.is_blocked:
+                return Response(
+                    {"error": "User is blocked. Please contact the support team!"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    )
+
             if not user.is_active or not user.is_email_verified:
                 return Response(
                     {"detail": "If an account with that email exists, we sent password reset instructions."},
@@ -326,7 +349,6 @@ class GoogleLoginAPIView(APIView):
             # Find or create user
             try:
                 user = USER.objects.get(email__iexact=email)
-
                 if user.role and user.role != role:
                     print("Role mismatch. You already registered")
                     return Response(

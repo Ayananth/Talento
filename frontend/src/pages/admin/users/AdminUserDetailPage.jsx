@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAdminUserDetails } from "@/apis/admin/users";
+import { formatDateTime } from "../../../utils/common/utils";
 
 export default function AdminUserDetailPage() {
   const { id } = useParams();
@@ -71,6 +72,9 @@ export default function AdminUserDetailPage() {
           label="Email Verified"
           value={user.is_email_verified ? "Yes" : "No"}
         />
+        <Info label="Date Joined" value={formatDateTime(user.date_joined)} />
+        <Info label="Last Login" value={formatDateTime(user.last_login)} />
+
       </Card>
 
       {/* ROLE SPECIFIC */}

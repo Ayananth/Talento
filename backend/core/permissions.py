@@ -5,16 +5,16 @@ class IsRecruiter(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated and user.role == 'recruiter')
+        return bool(user and user.is_authenticated and user.role == 'recruiter' and not user.is_blocked)
 
 class IsJobseeker(BasePermission):
     message = "You must be an jobseeker."
 
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated and user.role == 'jobseeker')
+        return bool(user and user.is_authenticated and user.role == 'jobseeker' and not user.is_blocked)
 
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated and user.is_superuser)
+        return bool(user and user.is_authenticated and user.is_superuser and not user.is_blocked)

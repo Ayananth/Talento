@@ -153,6 +153,7 @@ class AdminUserListSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
             "is_email_verified",
+
         ]
 
 
@@ -198,6 +199,8 @@ class AdminUserDetailSerializer(serializers.ModelSerializer):
             "is_active",
             "is_email_verified",
             "is_staff",
+            "date_joined",
+            "last_login",
 
             "jobseeker_profile",
             "recruiter_profile",
