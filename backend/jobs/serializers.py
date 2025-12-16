@@ -91,3 +91,25 @@ class RecruiterJobListSerializer(serializers.ModelSerializer):
             "created_at",
             "published_at",
         ]
+
+
+class JobUpdateSerializer(JobCreateSerializer):
+    """
+    Same fields as create,
+    but used only for updating draft jobs.
+    """
+    pass
+
+
+class JobCloseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = []
+
+    def validate(self, attrs):
+        if self.instance.status == Job.Status.CLOSED:
+            raise serializers.ValidationError(
+                "Job is already closed."
+            )
+        return attrs
+
