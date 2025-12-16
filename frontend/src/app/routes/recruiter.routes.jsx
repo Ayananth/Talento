@@ -4,6 +4,8 @@ import RecruiterEditAfterRejectionPage from "@/pages/recruiter/onboarding/Recrui
 import RecruiterDashboard from "@/pages/recruiter/RecruiterDashboard";
 import RequireAuth from "@/auth/routes/RequireAuth";
 import RecruiterLayout from "@/layouts/recruiter/RecruiterLayout";
+import CreateJobForm from "../../components/recruiter/forms/CreateJobForm";
+import RecruiterJobsListPage from "../../components/recruiter/RecruiterJobsListPage";
 
 const recruiterRoutes = [
   {
@@ -14,10 +16,10 @@ const recruiterRoutes = [
        * Default entry after login
        * /recruiter
        */
-      {
-        index: true,
-        element: <RecruiterRedirect />,
-      },
+      // {
+      //   index: true,
+      //   element: <RecruiterRedirect />,
+      // },
 
       /**
        * Accessible even if not approved
@@ -34,7 +36,7 @@ const recruiterRoutes = [
        * /recruiter/jobs
        */
       {
-        element: <ApprovedRecruiterGuard />,
+        // element: <ApprovedRecruiterGuard />,
         children: [
           {
             element: <RecruiterLayout />,
@@ -43,10 +45,14 @@ const recruiterRoutes = [
                 path: "dashboard",
                 element: <RecruiterDashboard />,
               },
-              // {
-              //   path: "jobs",
-              //   element: <RecruiterJobsPage />,
-              // },
+              {
+                path: "jobs/create",
+                element: <CreateJobForm />,
+              },
+              {
+                path: "jobs",
+                element: <RecruiterJobsListPage />,
+              },
             ],
           },
         ],

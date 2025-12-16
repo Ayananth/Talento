@@ -6,12 +6,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
 
   const menuItems = [
-    { name: "Dashboard", path: "/admin" },
-    { name: "Profile", path: "/admin/recruiter/approvals" },
+    { name: "Dashboard", path: "/recruiter/dashboard" },
+    { name: "Profile", path: "/recruiter/profile" },
     { name: "Jobs", path: "/recruiter/jobs" },
-    { name: "Applications", path: "/admin/companies" },
-    { name: "Shortlisted", path: "/admin/users" },
-    { name: "Settings", path: "/admin/job-listings" },
+    { name: "Applications", path: "/recruiter/applications" },
+    { name: "Shortlisted", path: "/recruiter/shortlisted" },
+    { name: "Settings", path: "/recruiter/settings" },
   ];
 
   return (
