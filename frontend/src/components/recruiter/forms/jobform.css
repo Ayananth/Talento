@@ -1,0 +1,19 @@
+.input {
+  @apply w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500;
+}
+
+.label {
+  @apply block mb-1 text-sm font-medium text-slate-700;
+}
+
+.section-title {
+  @apply text-lg font-semibold text-slate-900 mb-6;
+}
+
+.btn-primary {
+  @apply px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.btn-secondary {
+  @apply px-6 py-2 rounded-lg border border-slate-300 hover:bg-slate-50;
+}
