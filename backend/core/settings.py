@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     "cloudinary_storage",
     "recruiter",
     "django_filters",
+    # "admin",
+    "jobs"
 ]
 
 MIDDLEWARE = [
