@@ -33,3 +33,9 @@ export const unblockUser = async ()=> {
 }
 
 
+
+
+
+export const toggleUserBlock = (userId, block) =>
+  api.patch(`/v1/admin/users/${userId}/block/`, { block });
+

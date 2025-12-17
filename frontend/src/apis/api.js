@@ -24,22 +24,39 @@ api.interceptors.response.use(
 
   async (error) => {
     const originalRequest = error.config;
+    const status = error.response?.status;
 
-    if (error.response?.status !== 401) {
+    // BLOCKED / FORBIDDEN → FORCE LOGOUT
+    if (status === 403) {
+      console.log("User blocked or forbidden → force logout");
+      clearTokens();
+
+      //  avoid infinite loop
+      if (!originalRequest._forcedLogout) {
+        originalRequest._forcedLogout = true;
+        window.location.href = "/login";
+      }
+
       return Promise.reject(error);
     }
 
-    // Prevent infinite loop
+    //  ACCESS TOKEN EXPIRED
+    if (status !== 401) {
+      return Promise.reject(error);
+    }
+
+    // Prevent infinite retry loop
     if (originalRequest._retry) {
       clearTokens();
+      window.location.href = "/login";
       return Promise.reject(error);
     }
+
     originalRequest._retry = true;
 
     try {
       console.log("Attempting access token refresh...");
 
-      // Refresh token is sent automatically via cookie
       const response = await axios.post(
         `${API_BASE_URL}/v1/auth/token/refresh/`,
         {},
@@ -47,19 +64,19 @@ api.interceptors.response.use(
       );
 
       const newAccess = response.data.access;
-
       saveTokens({ access: newAccess });
 
-      // Retry original request with new access token
       originalRequest.headers.Authorization = `Bearer ${newAccess}`;
       return api(originalRequest);
 
     } catch (err) {
-      console.log("Auto refresh failed → logging out.");
+      console.log("Refresh failed → logging out");
       clearTokens();
+      window.location.href = "/login";
       return Promise.reject(err);
     }
   }
 );
+
 
 export default api;

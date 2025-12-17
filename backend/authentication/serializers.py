@@ -153,6 +153,7 @@ class AdminUserListSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
             "is_email_verified",
+            "is_blocked"
 
         ]
 
