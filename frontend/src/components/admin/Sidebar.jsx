@@ -10,7 +10,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Approvals", path: "/admin/recruiter/approvals" },
     { name: "Recruiters", path: "/admin/recruiters" },
     { name: "Companies", path: "/admin/companies" },
-    { name: "Job Listings", path: "/admin/job-listings" },
+    { name: "Job Listings", path: "/admin/jobs" },
     { name: "Users", path: "/admin/users" },
   ];
 

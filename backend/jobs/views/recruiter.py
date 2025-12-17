@@ -1,7 +1,7 @@
 from rest_framework.generics import CreateAPIView, UpdateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from jobs.serializers import JobCreateSerializer, JobPublishSerializer, RecruiterJobListSerializer, JobUpdateSerializer, JobCloseSerializer
-from core.permissions import IsRecruiter
+from core.permissions import IsRecruiter, IsAdmin
 from jobs.models.job import Job
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
@@ -85,7 +85,4 @@ class JobCloseView(UpdateAPIView):
         job = self.get_object()
         job.status = Job.Status.CLOSED
         job.save()
-
-
-
 
