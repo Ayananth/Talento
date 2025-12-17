@@ -44,5 +44,16 @@ export const createJob = async (payload) => {
 };
 
 export const deleteJob = async (jobId) => {
-  await api.delete(`/v1/jobs/recruiter/jobs/${jobId}/`);
+  await api.delete(`/v1/jobs/recruiter/jobs/${jobId}/delete/`);
 };
+
+export const getRecruiterJobDetail = async (id) => {
+  const res = await api.get(`/v1/jobs/recruiter/jobs/${id}/`);
+  return res.data;
+};
+
+export const updateJob = async (id, payload) => {
+  const res = await api.put(`/v1/jobs/recruiter/jobs/${id}/update/`, payload);
+  return res.data;
+};
+

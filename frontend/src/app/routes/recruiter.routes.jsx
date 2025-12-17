@@ -6,6 +6,8 @@ import RequireAuth from "@/auth/routes/RequireAuth";
 import RecruiterLayout from "@/layouts/recruiter/RecruiterLayout";
 import CreateJobForm from "../../components/recruiter/forms/CreateJobForm";
 import RecruiterJobsListPage from "../../components/recruiter/RecruiterJobsListPage";
+import RecruiterJobDetailPage from "../../pages/recruiter/RecruiterJobDetailPage";
+import RecruiterJobEditPage from "../../pages/recruiter/RecruiterJobEditPage";
 
 const recruiterRoutes = [
   {
@@ -53,6 +55,14 @@ const recruiterRoutes = [
                 path: "jobs",
                 element: <RecruiterJobsListPage />,
               },
+              {
+                path: "jobs/:id",
+                element: <RecruiterJobDetailPage/>
+              },
+              {
+                path: "jobs/:id/edit",
+                element: <RecruiterJobEditPage/>
+              }
             ],
           },
         ],

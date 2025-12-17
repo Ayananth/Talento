@@ -1,34 +1,80 @@
 # jobs/urls.py
 from django.urls import path
-from jobs.views.recruiter import RecruiterJobCreateView, RecruiterJobListView, RecruiterJobUpdateView
+from jobs.views.recruiter import (
+    RecruiterJobCreateView,
+    RecruiterJobListView,
+    RecruiterJobDetailView,
+    RecruiterJobUpdateView,
+    RecruiterJobDeleteView,
+)
 from jobs.views.public import PublicJobListView, PublicJobDetailView
 from jobs.views.jobseeker import JobApplyView
 
 app_name = "jobs"
 
 urlpatterns = [
-    path("jobs/", RecruiterJobCreateView.as_view(), name="job-create"),
-    # path("jobs/<int:pk>/publish/", JobPublishView.as_view(), name="job-publish"),
+    # ---------------------------
+    # RECRUITER
+    # ---------------------------
+
+    # Create job
+    path(
+        "jobs/",
+        RecruiterJobCreateView.as_view(),
+        name="job-create"
+    ),
+
+    # List recruiter jobs
     path(
         "recruiter/jobs/",
         RecruiterJobListView.as_view(),
         name="recruiter-job-list"
     ),
 
-    # path("jobs/<int:pk>/", JobUpdateView.as_view(), name="job-update"),
-    # path("jobs/<int:pk>/close/", JobCloseView.as_view(), name="job-close"),
-    path("recruiter/jobs/<int:pk>/", RecruiterJobUpdateView.as_view()),
+    # View job detail (recruiter)
+    path(
+        "recruiter/jobs/<int:pk>/",
+        RecruiterJobDetailView.as_view(),
+        name="recruiter-job-detail"
+    ),
 
+    # Update job
+    path(
+        "recruiter/jobs/<int:pk>/update/",
+        RecruiterJobUpdateView.as_view(),
+        name="recruiter-job-update"
+    ),
 
+    # Close / delete job (soft delete)
+    path(
+        "recruiter/jobs/<int:pk>/delete/",
+        RecruiterJobDeleteView.as_view(),
+        name="recruiter-job-delete"
+    ),
 
- path("jobs/public/", PublicJobListView.as_view(), name="public-job-list"),
-path("jobs/public/<int:pk>/", PublicJobDetailView.as_view(), name="public-job-detail"),
+    # ---------------------------
+    # PUBLIC
+    # ---------------------------
+
+    path(
+        "jobs/public/",
+        PublicJobListView.as_view(),
+        name="public-job-list"
+    ),
+
+    path(
+        "jobs/public/<int:pk>/",
+        PublicJobDetailView.as_view(),
+        name="public-job-detail"
+    ),
+
+    # ---------------------------
+    # JOBSEEKER
+    # ---------------------------
 
     path(
         "jobs/<int:job_id>/apply/",
         JobApplyView.as_view(),
         name="job-apply"
     ),
-
 ]
- 

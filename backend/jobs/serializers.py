@@ -106,6 +106,44 @@ class RecruiterJobSerializer(serializers.ModelSerializer):
             job.skills.add(skill)
 
 
+
+
+
+class RecruiterJobDetailSerializer(serializers.ModelSerializer):
+    skills = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Job
+        fields = [
+            "id",
+            "title",
+            "description",
+            "job_type",
+            "work_mode",
+            "experience_level",
+            "location_city",
+            "location_state",
+            "location_country",
+            "salary_min",
+            "salary_max",
+            "salary_currency",
+            "salary_hidden",
+            "openings",
+            "skills",
+            "status",
+            "is_active",
+            "published_at",
+            "expires_at",
+            "created_at",
+            "view_count",
+        ]
+
+    def get_skills(self, obj):
+        return [s.name for s in obj.skills.all()]
+
+
+
+
 class JobCreateSerializer(serializers.ModelSerializer):
     skills = serializers.ListField(
         child=serializers.CharField(),

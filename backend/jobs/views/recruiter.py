@@ -1,6 +1,6 @@
-from rest_framework.generics import CreateAPIView, UpdateAPIView,DestroyAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, UpdateAPIView,DestroyAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
-from jobs.serializers import  RecruiterJobSerializer, JobCreateSerializer, JobPublishSerializer, RecruiterJobListSerializer, JobUpdateSerializer, JobCloseSerializer
+from jobs.serializers import  RecruiterJobSerializer, JobCreateSerializer, JobPublishSerializer, RecruiterJobListSerializer, JobUpdateSerializer, JobCloseSerializer, RecruiterJobDetailSerializer
 from core.permissions import IsRecruiter, IsAdmin
 from jobs.models.job import Job
 from django.utils import timezone
@@ -16,6 +16,7 @@ from jobs.filters import RecruiterJobFilter
 from jobs.pagination import RecruiterJobPagination
 from datetime import timedelta
 from django.core.exceptions import PermissionDenied
+from rest_framework.views import APIView
 
 
 
@@ -44,20 +45,49 @@ class RecruiterJobUpdateView(UpdateAPIView):
 
     def get_queryset(self):
         return self.queryset.filter(recruiter=self.request.user)
+    
+    def perform_update(self, serializer):
+        job = self.get_object()
 
+        if not job.is_active or job.status == Job.Status.CLOSED:
+            raise ValidationError("Closed jobs cannot be edited.")
+
+        serializer.save()
+
+
+class RecruiterJobDetailView(RetrieveAPIView):
+    serializer_class = RecruiterJobDetailSerializer
+    permission_classes = [IsAuthenticated, IsRecruiter]
+
+    def get_queryset(self):
+        return Job.objects.filter(recruiter=self.request.user)
+
+
+
+class RecruiterJobDeleteView(APIView):
+    permission_classes = [IsAuthenticated, IsRecruiter]
 
     def delete(self, request, pk):
-        job = get_object_or_404(Job, pk=pk, recruiter=request.user)
+        job = get_object_or_404(
+            Job,
+            pk=pk,
+            recruiter=request.user
+        )
+
         if not job.is_active or job.status == Job.Status.CLOSED:
             return Response(
                 {"detail": "Job is already closed."},
                 status=400
             )
+
         job.is_active = False
         job.status = Job.Status.CLOSED
         job.save()
 
         return Response(status=204)
+
+    
+    
 # class JobPublishView(UpdateAPIView):
 #     serializer_class = JobPublishSerializer
 #     permission_classes = [IsAuthenticated, IsRecruiter]
