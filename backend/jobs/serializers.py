@@ -92,6 +92,10 @@ class RecruiterJobListSerializer(serializers.ModelSerializer):
             "location_country",
             "created_at",
             "published_at",
+            "expires_at",
+            "view_count",
+            "is_active"
+
         ]
 
 

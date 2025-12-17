@@ -1,38 +1,49 @@
 import ResponsiveTable from "@/components/recruiter/ResponsiveTable";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getRecruiterJobs } from "@/apis/recruiter/apis";
 
 
-const mockJobs = [
-  {
-    id: 1,
-    title: "Senior Backend Engineer",
-    status: "published",
-    applications_count: 12,
-    view_count: 340,
-    expires_at: "2025-01-10",
-    is_active: true,
-    location_city: "Kochi",
-    location_state: "Kerala",
-    location_country: "India",
-  },
-  {
-    id: 2,
-    title: "React Developer",
-    status: "draft",
-    applications_count: 0,
-    view_count: 22,
-    expires_at: null,
-    is_active: false,
-    location_city: "Remote",
-    location_country: "India",
-  },
-];
 
 
 export default function RecruiterJobsListPage() {
-  const [ordering, setOrdering] = useState("-created_at");
+const [jobs, setJobs] = useState([]);
+const [ordering, setOrdering] = useState("-created_at");
+const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate()
+
+useEffect(() => {
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+
+      const res = await getRecruiterJobs(1, ordering);
+
+      const mapped = res.results.map((job) => ({
+        id: job.id,
+        title: job.title,
+        status: job.status,
+        applications_count: job.applications_count ?? 0,
+        view_count: job.view_count ?? 0,
+        expires_at: job.expires_at,
+        is_active: job.is_active,
+        location_city: job.location_city,
+        location_state: job.location_state,
+        location_country: job.location_country,
+      }));
+
+      setJobs(mapped);
+    } catch (err) {
+      console.error("Failed to load recruiter jobs", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchJobs();
+}, [ordering]);
+
 
   const columns = [
     {
@@ -132,11 +143,22 @@ export default function RecruiterJobsListPage() {
         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
           + Post New Job
         </button>
+{/* <button
+  disabled={!canPostJobs}
+  className={`px-4 py-2 rounded-lg text-white
+    ${canPostJobs
+      ? "bg-blue-600 hover:bg-blue-700"
+      : "bg-gray-400 cursor-not-allowed"}
+  `}
+>
+  + Post New Job
+</button> */}
+
       </div>
 
       {/* TABLE */}
       <ResponsiveTable
-        data={mockJobs}
+        data={jobs}
         columns={columns}
         ordering={ordering}
         onSort={(key) =>
@@ -146,6 +168,12 @@ export default function RecruiterJobsListPage() {
         }
         actions={actions}
       />
+{loading && (
+  <p className="text-sm text-gray-500">
+    Loading jobs…
+  </p>
+)}
+
     </div>
   );
 }

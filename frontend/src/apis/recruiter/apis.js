@@ -21,3 +21,18 @@ const createRecruiter = async (payload)=> {
 export {
     createRecruiter
 }
+
+
+
+export const getRecruiterJobs = async (page = 1, ordering = "") => {
+  const params = {
+    page,
+    ...(ordering && { ordering }),
+  };
+
+  const res = await api.get("/v1/jobs/recruiter/jobs/", {
+    params,
+  });
+
+  return res.data;
+};
