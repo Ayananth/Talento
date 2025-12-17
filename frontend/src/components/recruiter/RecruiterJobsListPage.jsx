@@ -162,11 +162,19 @@ const actions = (row) => (
     </button>
 
 <button
+  disabled={!row.is_active || row.status === "closed"}
   onClick={() => setDeleteJobId(row.id)}
-  className="text-red-600 text-sm hover:underline"
+  className={`text-sm
+    ${
+      row.is_active && row.status !== "closed"
+        ? "text-red-600 hover:underline"
+        : "text-gray-400 cursor-not-allowed"
+    }
+  `}
 >
   Close
 </button>
+
 
   </div>
 );
