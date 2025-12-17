@@ -394,6 +394,7 @@ class JobSeekerResumeView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
+        print("resume upload request received!")
         profile = JobSeekerProfile.objects.get(user=request.user)
         serializer = JobSeekerResumeSerializer(data=request.data)
 

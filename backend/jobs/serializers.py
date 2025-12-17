@@ -292,6 +292,12 @@ class PublicJobListSerializer(serializers.ModelSerializer):
 
 class PublicJobDetailSerializer(serializers.ModelSerializer):
     skills = serializers.SerializerMethodField()
+    logo = serializers.SerializerMethodField()
+    company_name = serializers.CharField(source = 'recruiter.recruiter_profile.company_name')
+    company_about = serializers.CharField(source = 'recruiter.recruiter_profile.about_company')
+    company_size = serializers.CharField(source = 'recruiter.recruiter_profile.company_size')
+    company_website = serializers.URLField(source = 'recruiter.recruiter_profile.website')
+
 
     class Meta:
         model = Job
@@ -310,7 +316,21 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
             "salary_currency",
             "published_at",
             "skills",
+            "logo",
+            "company_name",
+            "company_about",
+            "company_size",
+            "company_website"
+
         ]
+
+    def get_logo(self, obj):
+        recruiter_profile = getattr(obj.recruiter, "recruiter_profile", None)
+        print(f"{recruiter_profile=}")
+        if recruiter_profile and recruiter_profile.logo:
+            return recruiter_profile.logo.url
+        return None
+
 
     def get_skills(self, obj):
         return [skill.name for skill in obj.skills.all()]

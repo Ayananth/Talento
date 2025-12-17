@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { getRecruiterJobs, deleteJob } from "@/apis/recruiter/apis";
 import ConfirmModal from "../common/ConfirmModal";
 import Toast from "@/components/common/Toast";
+import Pagination from "../common/Pagination";
+import { PAGE_SIZE } from "../../constants/constants";
 
 
 
@@ -18,6 +20,11 @@ const [deleteJobId, setDeleteJobId] = useState(null);
 const [deleteLoading, setDeleteLoading] = useState(false);
 const [toast, setToast] = useState(null);
 
+const [page, setPage] = useState(1);
+const [count, setCount] = useState(0);
+const pageSize = PAGE_SIZE;
+const totalPages = Math.ceil(count / pageSize);  
+
 
 
   const navigate = useNavigate()
@@ -26,7 +33,7 @@ const fetchJobs = async () => {
   try {
     setLoading(true);
 
-    const res = await getRecruiterJobs(1, ordering);
+    const res = await getRecruiterJobs({ page, ordering })
 
     const mapped = res.results.map((job) => ({
       id: job.id,
@@ -42,6 +49,7 @@ const fetchJobs = async () => {
     }));
 
     setJobs(mapped);
+    setCount(res.count)
   } catch (err) {
     console.error("Failed to load recruiter jobs", err);
   } finally {
@@ -51,7 +59,7 @@ const fetchJobs = async () => {
 
 useEffect(() => {
   fetchJobs();
-}, [ordering]);
+}, [ordering, page]);
 
 const handleDeleteJob = async () => {
   try {
@@ -211,13 +219,21 @@ const actions = (row) => (
         data={jobs}
         columns={columns}
         ordering={ordering}
-        onSort={(key) =>
-          setOrdering((prev) =>
-            prev === key ? `-${key}` : key
-          )
-        }
+        onSort={(key) => {
+          setOrdering((prev) => (prev === key ? `-${key}` : key));
+          setPage(1);
+        }}
+
         actions={actions}
       />
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(num) => setPage(num)}
+            />
+
+
+
 {loading && (
   <p className="text-sm text-gray-500">
     Loading jobs…

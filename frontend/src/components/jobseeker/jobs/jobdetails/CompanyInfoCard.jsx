@@ -1,24 +1,37 @@
-import { MapPin, Phone, Mail } from "lucide-react";
+import {
+  ExternalLink,
+  Users,
+  MapPin,
+  Briefcase,
+  Phone,
+  Mail,
+  Calendar,
+} from "lucide-react";
 
 export default function CompanyInfoCard({
-  companyName = "AliThemes",
-  location = "New York, US",
-  openJobs = 2,
-  address = "205 North Michigan Avenue, Suite 810 Chicago, 60601, USA",
-  phone = "(123) 456-7890",
-  email = "contact@evara.com",
-  logoUrl,
+  companyName,
+  companyAbout,
+  companySize,
+  companyWebsite,
+  logo,
+
+  // FUTURE BACKEND FIELDS (dummy for now)
+  industry = "Software Development",
+  location = "India",
+  foundedYear = "2020",
+  email = "contact@company.com",
+  phone = "+91 98765 43210",
+  openJobs = 3,
 }) {
   return (
-    <div className="border border-slate-200 rounded-2xl p-6 bg-white">
+    <div className="border border-slate-200 rounded-2xl p-6 bg-white space-y-6">
       
       {/* HEADER */}
-      <div className="flex items-start gap-4">
-        {/* LOGO */}
-        <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden">
-          {logoUrl ? (
+      <div className="flex items-center gap-4">
+        <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+          {logo ? (
             <img
-              src={logoUrl}
+              src={logo}
               alt={companyName}
               className="w-full h-full object-cover"
             />
@@ -27,51 +40,78 @@ export default function CompanyInfoCard({
           )}
         </div>
 
-        {/* NAME + META */}
         <div>
           <h3 className="text-lg font-semibold text-slate-900">
             {companyName}
           </h3>
 
-          <div className="mt-1 flex items-center gap-1 text-sm text-slate-500">
-            <MapPin size={14} />
-            {location}
-          </div>
-
-          <a
-            href="#"
-            className="mt-1 inline-block text-sm text-blue-600 hover:underline"
-          >
-            {openJobs} Open Jobs
-          </a>
+          {companySize && (
+            <p className="mt-1 flex items-center gap-1 text-sm text-slate-500">
+              <Users size={14} />
+              {companySize} employees
+            </p>
+          )}
         </div>
       </div>
 
-      {/* DIVIDER */}
-      <hr className="my-6 border-slate-200" />
+      {/* ABOUT */}
+      {companyAbout && (
+        <p className="text-sm text-slate-600 leading-relaxed">
+          {companyAbout}
+        </p>
+      )}
 
-      {/* MAP PLACEHOLDER */}
-      <div className="h-40 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-sm">
-        Map Preview
+      {/* META DETAILS */}
+      <div className="space-y-3 text-sm text-slate-600">
+        <div className="flex items-center gap-2">
+          <Briefcase size={16} className="text-slate-400" />
+          <span>Industry:</span>
+          <span className="font-medium">{industry}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <MapPin size={16} className="text-slate-400" />
+          <span>Location:</span>
+          <span className="font-medium">{location}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Calendar size={16} className="text-slate-400" />
+          <span>Founded:</span>
+          <span className="font-medium">{foundedYear}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Mail size={16} className="text-slate-400" />
+          <span>Email:</span>
+          <span className="font-medium">{email}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Phone size={16} className="text-slate-400" />
+          <span>Phone:</span>
+          <span className="font-medium">{phone}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Briefcase size={16} className="text-slate-400" />
+          <span>Open Jobs:</span>
+          <span className="font-medium">{openJobs}</span>
+        </div>
       </div>
 
-      {/* CONTACT INFO */}
-      <ul className="mt-6 space-y-4 text-sm text-slate-600">
-        <li className="flex items-start gap-2">
-          <MapPin size={16} className="mt-0.5 text-slate-400" />
-          <span>{address}</span>
-        </li>
-
-        <li className="flex items-center gap-2">
-          <Phone size={16} className="text-slate-400" />
-          {phone}
-        </li>
-
-        <li className="flex items-center gap-2">
-          <Mail size={16} className="text-slate-400" />
-          {email}
-        </li>
-      </ul>
+      {/* WEBSITE */}
+      {companyWebsite && (
+        <a
+          href={companyWebsite}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+        >
+          Visit website
+          <ExternalLink size={14} />
+        </a>
+      )}
     </div>
   );
 }
