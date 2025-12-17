@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "@/apis/api";
+import { Outlet } from "react-router-dom";
 
 
 import RecruiterOnboardingPage from "../../pages/recruiter/onboarding/RecruiterOnboardingPage";
@@ -78,9 +79,9 @@ export default function RecruiterRedirect() {
   if (profile.has_published_data) {
     return (
       <RecruiterLayout>
-        <RecruiterDashboard />
+        <Outlet />
       </RecruiterLayout>
-      )
+    );
   }
 
   /**
