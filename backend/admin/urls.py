@@ -26,6 +26,13 @@ path(
     name="admin-jobs-list",
 ),
 
+path(
+    "recruiters/<int:pk>/job-posting/",
+    views.AdminRecruiterJobPostingView.as_view(),
+    name="admin-job-toggle",
+),
+
+
 
 
 ]

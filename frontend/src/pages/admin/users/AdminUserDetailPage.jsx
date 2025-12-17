@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
 
-import { getAdminUserDetails } from "@/apis/admin/users";
+import { getAdminUserDetails, toggleRecruiterJobPosting } from "@/apis/admin/users";
+
 import { toggleUserBlock } from "@/apis/admin/users";
 import { formatDateTime } from "@/utils/common/utils";
 
@@ -62,6 +63,10 @@ export default function AdminUserDetailPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
+  const [jobPostingConfirmOpen, setJobPostingConfirmOpen] = useState(false);
+  const [jobPostingLoading, setJobPostingLoading] = useState(false);
+
+
   const location = useLocation();
 
   /* ---------------------------------------------------
@@ -119,6 +124,36 @@ export default function AdminUserDetailPage() {
 
   if (!user) return null;
 
+
+  const handleToggleJobPosting = async () => {
+    try {
+      setJobPostingLoading(true);
+
+      const recruiterId = user.recruiter_profile.id;
+
+      await toggleRecruiterJobPosting(
+        recruiterId,
+        !user.recruiter_profile.can_post_jobs
+      );
+
+      // Update UI locally
+      setUser((prev) => ({
+        ...prev,
+        recruiter_profile: {
+          ...prev.recruiter_profile,
+          can_post_jobs: !prev.recruiter_profile.can_post_jobs,
+        },
+      }));
+
+      setJobPostingConfirmOpen(false);
+    } catch (err) {
+      console.error("Failed to toggle job posting", err);
+    } finally {
+      setJobPostingLoading(false);
+    }
+  };
+
+
   /* ---------------------------------------------------
      RENDER
   --------------------------------------------------- */
@@ -164,22 +199,49 @@ export default function AdminUserDetailPage() {
       </Card>
 
       {/* ROLE SPECIFIC */}
-      {user.role === "recruiter" && user.recruiter_profile && (
-        <Card title="Recruiter Profile">
-          <Info
-            label="Company Name"
-            value={user.recruiter_profile.company_name || "—"}
-          />
-          <Info
-            label="Verification Status"
-            value={user.recruiter_profile.status}
-          />
-          <Info
-            label="Verified At"
-            value={user.recruiter_profile.verified_at || "—"}
-          />
-        </Card>
-      )}
+{user.role === "recruiter" && user.recruiter_profile && (
+  <Card title="Recruiter Profile">
+    <Info
+      label="Company Name"
+      value={user.recruiter_profile.company_name || "—"}
+    />
+
+    <Info
+      label="Verification Status"
+      value={user.recruiter_profile.status}
+    />
+
+    <Info
+      label="Job Posting Access"
+      value={
+        user.recruiter_profile.can_post_jobs ? (
+          <StatusBadge text="Enabled" color="green" />
+        ) : (
+          <StatusBadge text="Disabled" color="red" />
+        )
+      }
+    />
+
+    {/* ACTION BUTTON */}
+    <div className="pt-4">
+      <button
+        onClick={() => setJobPostingConfirmOpen(true)}
+        className={`px-4 py-2 text-sm rounded text-white
+          ${
+            user.recruiter_profile.can_post_jobs
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-green-600 hover:bg-green-700"
+          }
+        `}
+      >
+        {user.recruiter_profile.can_post_jobs
+          ? "Disable Job Posting"
+          : "Enable Job Posting"}
+      </button>
+    </div>
+  </Card>
+)}
+
 
       {user.role === "jobseeker" && user.jobseeker_profile && (
         <Card title="Jobseeker Profile">
@@ -225,6 +287,26 @@ export default function AdminUserDetailPage() {
             : "Are you sure you want to block this user? They will be logged out immediately."
         }
       />
+
+<ConfirmModal
+  open={jobPostingConfirmOpen}
+  loading={jobPostingLoading}
+  onClose={() => {
+    if (!jobPostingLoading) setJobPostingConfirmOpen(false);
+  }}
+  onConfirm={handleToggleJobPosting}
+  title={
+    user.recruiter_profile.can_post_jobs
+      ? "Disable Job Posting"
+      : "Enable Job Posting"
+  }
+  description={
+    user.recruiter_profile.can_post_jobs
+      ? "This recruiter will not be able to post new jobs. Existing jobs will remain unchanged."
+      : "This recruiter will be allowed to post new jobs."
+  }
+/>
+
     </div>
   );
 }

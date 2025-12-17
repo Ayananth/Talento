@@ -8,8 +8,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const menuItems = [
     { name: "Dashboard", path: "/admin" },
     { name: "Approvals", path: "/admin/recruiter/approvals" },
-    { name: "Recruiters", path: "/admin/recruiters" },
-    { name: "Companies", path: "/admin/companies" },
+    // { name: "Recruiters", path: "/admin/recruiters" },
+    // { name: "Companies", path: "/admin/companies" },
     { name: "Job Listings", path: "/admin/jobs" },
     { name: "Users", path: "/admin/users" },
   ];

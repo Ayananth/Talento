@@ -16,3 +16,6 @@ export const getAdminJobDetails = async (id) => {
   const res = await api.get(`/v1/admin/jobs/${id}`);
   return res.data;
 };
+
+
+

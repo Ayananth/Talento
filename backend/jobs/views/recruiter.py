@@ -12,12 +12,21 @@ from rest_framework.filters import OrderingFilter
 from jobs.filters import RecruiterJobFilter
 from jobs.pagination import RecruiterJobPagination
 from datetime import timedelta
-
+from django.core.exceptions import PermissionDenied
 
 
 class JobCreateView(CreateAPIView):
     serializer_class = JobCreateSerializer
     permission_classes = [IsAuthenticated, IsRecruiter]
+    def perform_create(self, serializer):
+        recruiter = self.request.user.recruiter_profile
+
+        if not recruiter.can_post_jobs:
+            raise PermissionDenied(
+                "Job posting has been disabled by admin."
+            )
+
+        serializer.save(recruiter=self.request.user)
 
 class JobPublishView(UpdateAPIView):
     serializer_class = JobPublishSerializer

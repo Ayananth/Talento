@@ -11,6 +11,9 @@ from rest_framework.filters import OrderingFilter
 from .filters import AdminJobFilter
 from rest_framework.permissions import IsAuthenticated
 from jobs.models.job import Job
+from recruiter.models import RecruiterProfile
+from django.shortcuts import get_object_or_404
+
 
 
 
@@ -74,5 +77,29 @@ class AdminJobDetailView(generics.RetrieveAPIView):
     serializer_class = AdminJobDetailSerializer
     permission_classes = [IsAdmin]
     queryset = Job.objects.all()
+
+
+
+class AdminRecruiterJobPostingView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def patch(self, request, pk):
+        recruiter = get_object_or_404(RecruiterProfile, pk=pk)
+        can_post = request.data.get("can_post_jobs")
+
+        if can_post is None:
+            return Response(
+                {"detail": "can_post_jobs is required"},
+                status=400
+            )
+
+        recruiter.can_post_jobs = can_post
+        recruiter.save()
+
+        return Response({
+            "id": recruiter.id,
+            "can_post_jobs": recruiter.can_post_jobs
+        })
+
 
 

@@ -177,9 +177,11 @@ class RecruiterProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecruiterProfile
         fields = [
+            "id",
             "company_name",
             "status",
             "verified_at",
+            "can_post_jobs"
         ]
 
 
