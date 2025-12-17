@@ -1,8 +1,57 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getAdminUserDetails } from "@/apis/admin/users";
-import { formatDateTime } from "../../../utils/common/utils";
+import { useLocation } from "react-router-dom";
 
+
+import { getAdminUserDetails } from "@/apis/admin/users";
+import { toggleUserBlock } from "@/apis/admin/users";
+import { formatDateTime } from "@/utils/common/utils";
+
+/* ---------------------------------------------------
+   CONFIRMATION MODAL
+--------------------------------------------------- */
+function ConfirmModal({
+  open,
+  title,
+  description,
+  onClose,
+  onConfirm,
+  loading,
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <p className="text-sm text-gray-600 mt-2">{description}</p>
+
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className={`px-4 py-2 text-sm rounded text-white
+              ${loading ? "bg-gray-400" : "bg-red-600 hover:bg-red-700"}`}
+          >
+            {loading ? "Please wait…" : "Confirm"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------
+   MAIN PAGE
+--------------------------------------------------- */
 export default function AdminUserDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -10,6 +59,14 @@ export default function AdminUserDetailPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const location = useLocation();
+
+  /* ---------------------------------------------------
+     FETCH USER
+  --------------------------------------------------- */
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -27,6 +84,31 @@ export default function AdminUserDetailPage() {
     fetchUser();
   }, [id, navigate]);
 
+  /* ---------------------------------------------------
+     BLOCK / UNBLOCK
+  --------------------------------------------------- */
+  const handleConfirmBlock = async () => {
+    if (!user) return;
+
+    try {
+      setActionLoading(true);
+
+      await toggleUserBlock(id, !user.is_blocked);
+
+      // Update UI locally (no refetch needed)
+      setUser((prev) => ({
+        ...prev,
+        is_blocked: !prev.is_blocked,
+      }));
+
+      setConfirmOpen(false);
+    } catch (err) {
+      console.error("Failed to update user status", err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 text-gray-500">
@@ -37,6 +119,9 @@ export default function AdminUserDetailPage() {
 
   if (!user) return null;
 
+  /* ---------------------------------------------------
+     RENDER
+  --------------------------------------------------- */
   return (
     <div className="p-6 max-w-4xl mx-auto">
 
@@ -58,23 +143,24 @@ export default function AdminUserDetailPage() {
         <Info label="Email" value={user.email} />
         <Info label="Username" value={user.username || "—"} />
         <Info label="Role" value={user.role_display} />
+
         <Info
           label="Account Status"
           value={
-            user.is_active ? (
-              <StatusBadge text="Active" color="green" />
-            ) : (
+            user.is_blocked ? (
               <StatusBadge text="Blocked" color="red" />
+            ) : (
+              <StatusBadge text="Active" color="green" />
             )
           }
         />
+
         <Info
           label="Email Verified"
           value={user.is_email_verified ? "Yes" : "No"}
         />
         <Info label="Date Joined" value={formatDateTime(user.date_joined)} />
         <Info label="Last Login" value={formatDateTime(user.last_login)} />
-
       </Card>
 
       {/* ROLE SPECIFIC */}
@@ -111,25 +197,34 @@ export default function AdminUserDetailPage() {
       {/* ACTIONS */}
       <div className="mt-8 flex gap-4">
         <button
+          onClick={() => setConfirmOpen(true)}
           className={`px-6 py-2 rounded text-white
             ${
-              user.is_active
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700"
+              user.is_blocked
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-red-600 hover:bg-red-700"
             }
           `}
-          onClick={() =>
-            alert(
-              user.is_active
-                ? "Block user (next step)"
-                : "Unblock user (next step)"
-            )
-          }
         >
-          {user.is_active ? "Block User" : "Unblock User"}
+          {user.is_blocked ? "Unblock User" : "Block User"}
         </button>
       </div>
 
+      {/* CONFIRM MODAL */}
+      <ConfirmModal
+        open={confirmOpen}
+        loading={actionLoading}
+        onClose={() => {
+          if (!actionLoading) setConfirmOpen(false);
+        }}
+        onConfirm={handleConfirmBlock}
+        title={user.is_blocked ? "Unblock User" : "Block User"}
+        description={
+          user.is_blocked
+            ? "Are you sure you want to unblock this user?"
+            : "Are you sure you want to block this user? They will be logged out immediately."
+        }
+      />
     </div>
   );
 }

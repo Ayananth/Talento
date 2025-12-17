@@ -202,6 +202,7 @@ class AdminUserDetailSerializer(serializers.ModelSerializer):
             "is_staff",
             "date_joined",
             "last_login",
+            "is_blocked",
 
             "jobseeker_profile",
             "recruiter_profile",
