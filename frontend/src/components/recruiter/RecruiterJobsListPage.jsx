@@ -1,7 +1,11 @@
 import ResponsiveTable from "@/components/recruiter/ResponsiveTable";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRecruiterJobs } from "@/apis/recruiter/apis";
+import { getRecruiterJobs, deleteJob } from "@/apis/recruiter/apis";
+import ConfirmModal from "../common/ConfirmModal";
+import Toast from "@/components/common/Toast";
+
+
 
 
 
@@ -10,39 +14,70 @@ export default function RecruiterJobsListPage() {
 const [jobs, setJobs] = useState([]);
 const [ordering, setOrdering] = useState("-created_at");
 const [loading, setLoading] = useState(true);
+const [deleteJobId, setDeleteJobId] = useState(null);
+const [deleteLoading, setDeleteLoading] = useState(false);
+const [toast, setToast] = useState(null);
+
+
 
   const navigate = useNavigate()
 
+const fetchJobs = async () => {
+  try {
+    setLoading(true);
+
+    const res = await getRecruiterJobs(1, ordering);
+
+    const mapped = res.results.map((job) => ({
+      id: job.id,
+      title: job.title,
+      status: job.status,
+      applications_count: job.applications_count ?? 0,
+      view_count: job.view_count ?? 0,
+      expires_at: job.expires_at,
+      is_active: job.is_active,
+      location_city: job.location_city,
+      location_state: job.location_state,
+      location_country: job.location_country,
+    }));
+
+    setJobs(mapped);
+  } catch (err) {
+    console.error("Failed to load recruiter jobs", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 useEffect(() => {
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
-
-      const res = await getRecruiterJobs(1, ordering);
-
-      const mapped = res.results.map((job) => ({
-        id: job.id,
-        title: job.title,
-        status: job.status,
-        applications_count: job.applications_count ?? 0,
-        view_count: job.view_count ?? 0,
-        expires_at: job.expires_at,
-        is_active: job.is_active,
-        location_city: job.location_city,
-        location_state: job.location_state,
-        location_country: job.location_country,
-      }));
-
-      setJobs(mapped);
-    } catch (err) {
-      console.error("Failed to load recruiter jobs", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   fetchJobs();
 }, [ordering]);
+
+const handleDeleteJob = async () => {
+  try {
+    setDeleteLoading(true);
+    await deleteJob(deleteJobId);
+
+    setDeleteJobId(null);
+    await fetchJobs();
+    
+
+    setToast({
+      type: "success",
+      message: "Job deleted successfully",
+    });
+  } catch (err) {
+    console.error("Failed to delete job", err);
+    setDeleteJobId(null);
+    setToast({
+      type: "Failed",
+      message: "Failed to delete",
+    });
+  } finally {
+    setDeleteLoading(false);
+  }
+};
+
 
 
   const columns = [
@@ -110,25 +145,32 @@ useEffect(() => {
     },
   ];
 
-  const actions = (row) => (
-    <div className="flex gap-2">
-      <button className="text-blue-600 text-sm hover:underline">
-        View
-      </button>
+const actions = (row) => (
+  <div className="flex gap-2">
+    <button
+      onClick={() => navigate(`/recruiter/jobs/${row.id}`)}
+      className="text-blue-600 text-sm hover:underline"
+    >
+      View
+    </button>
 
-      {row.status === "draft" && (
-        <button className="text-gray-700 text-sm hover:underline">
-          Edit
-        </button>
-      )}
+    <button
+      onClick={() => navigate(`/recruiter/jobs/${row.id}/edit`)}
+      className="text-gray-700 text-sm hover:underline"
+    >
+      Edit
+    </button>
 
-      {row.status === "published" && (
-        <button className="text-red-600 text-sm hover:underline">
-          Close
-        </button>
-      )}
-    </div>
-  );
+<button
+  onClick={() => setDeleteJobId(row.id)}
+  className="text-red-600 text-sm hover:underline"
+>
+  Close
+</button>
+
+  </div>
+);
+
 
   return (
     <div className="p-6 space-y-6">
@@ -172,7 +214,35 @@ useEffect(() => {
   <p className="text-sm text-gray-500">
     Loading jobs…
   </p>
+
+
 )}
+
+{deleteJobId && (
+  <ConfirmModal
+    open={true}
+    loading={deleteLoading}
+    title="Delete Job"
+    description="Are you sure you want to delete this job? This action cannot be undone."
+    onClose={() => {
+      if (!deleteLoading) setDeleteJobId(null);
+    }}
+    onConfirm={handleDeleteJob}
+  />
+)}
+
+
+{toast && (
+  <Toast
+    message={toast.message}
+    type={toast.type}
+    onClose={() => setToast(null)}
+  />
+)}
+
+
+
+
 
     </div>
   );
