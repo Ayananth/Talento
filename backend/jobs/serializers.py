@@ -261,6 +261,8 @@ class JobCloseSerializer(serializers.ModelSerializer):
 
 
 class PublicJobListSerializer(serializers.ModelSerializer):
+    logo = serializers.SerializerMethodField()
+    company_name = serializers.CharField(source = 'recruiter.recruiter_profile.company_name')
     class Meta:
         model = Job
         fields = [
@@ -275,7 +277,17 @@ class PublicJobListSerializer(serializers.ModelSerializer):
             "salary_max",
             "salary_currency",
             "published_at",
+            "logo",
+            'company_name'
+
         ]
+
+    def get_logo(self, obj):
+        recruiter_profile = getattr(obj.recruiter, "recruiter_profile", None)
+        print(f"{recruiter_profile=}")
+        if recruiter_profile and recruiter_profile.logo:
+            return recruiter_profile.logo.url
+        return None
 
 
 class PublicJobDetailSerializer(serializers.ModelSerializer):

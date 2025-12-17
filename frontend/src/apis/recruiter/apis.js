@@ -1,37 +1,30 @@
-
-import api from '../api'
-
-const createRecruiter = async (payload)=> {
-
-    const response = await api.post(
-      "/v1/recruiter/profile/draft/create/",
-      payload,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    return response
+import api from "../api";
 
 
-}
+export const createRecruiter = async (payload) => {
+  const response = await api.post(
+    "/v1/recruiter/profile/draft/create/",
+    payload,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 
-export {
-    createRecruiter
-}
+  return response;
+};
 
 
-
-export const getRecruiterJobs = async (page = 1, ordering = "") => {
-  const params = {
-    page,
-    ...(ordering && { ordering }),
-  };
-
+export const getRecruiterJobs = async ({
+  page = 1,
+  ordering = "",
+} = {}) => {
   const res = await api.get("/v1/jobs/recruiter/jobs/", {
-    params,
+    params: {
+      page,
+      ...(ordering && { ordering }),
+    },
   });
 
   return res.data;
@@ -53,7 +46,9 @@ export const getRecruiterJobDetail = async (id) => {
 };
 
 export const updateJob = async (id, payload) => {
-  const res = await api.put(`/v1/jobs/recruiter/jobs/${id}/update/`, payload);
+  const res = await api.put(
+    `/v1/jobs/recruiter/jobs/${id}/update/`,
+    payload
+  );
   return res.data;
 };
-
