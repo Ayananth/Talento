@@ -60,3 +60,31 @@ export const getRecruiterProfile = async () => {
   return res.data;
 };
 
+export const updateRecruiterProfileDraft = async (payload) => {
+  const res = await api.patch(
+    "/v1/recruiter/profile/draft/update/",
+    payload,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return res.data;
+};
+
+
+
+export const createRecruiterProfileDraft = async (payload) => {
+  const res = await api.post(
+    "/v1/recruiter/profile/draft/create/",
+    payload,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return res.data;
+};
+

@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { Upload, Building2 } from "lucide-react";
-import { getRecruiterProfile } from "../../apis/recruiter/apis";
-import "./profile.css";
+import {
+  getRecruiterProfile,
+  createRecruiterProfileDraft,
+  updateRecruiterProfileDraft,
+} from "../../apis/recruiter/apis";
 import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
+import "./profile.css";
 
 const emptyProfile = {
   status: "",
@@ -11,7 +15,7 @@ const emptyProfile = {
   industry: "",
   company_size: "",
   about_company: "",
-  address: "", 
+  address: "",
   phone: "",
   support_email: "",
   location: "",
@@ -30,28 +34,36 @@ function Field({ label, children }) {
 
 export default function RecruiterProfilePage() {
   const [form, setForm] = useState(emptyProfile);
+  const [original, setOriginal] = useState(emptyProfile); // published snapshot
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
+  /* ----------------------------------
+     Fetch published profile
+  ---------------------------------- */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const data = await getRecruiterProfile();
 
-        setForm({
+        const mapped = {
           status: data.status || "",
           company_name: data.company_name || "",
           website: data.website || "",
           industry: data.industry || "",
           company_size: data.company_size || "",
           about_company: data.about_company || "",
-address: data.address || "",
+          address: data.address || "",
           phone: data.phone || "",
           support_email: data.support_email || "",
           location: data.location || "",
           linkedin: data.linkedin || "",
           logo: data.logo || null,
-        });
+        };
+
+        setForm(mapped);
+        setOriginal(mapped);
       } catch (err) {
         console.error("Failed to load recruiter profile", err);
       } finally {
@@ -62,16 +74,83 @@ address: data.address || "",
     fetchProfile();
   }, []);
 
+  /* ----------------------------------
+     Change handler
+  ---------------------------------- */
   const onChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  /* ----------------------------------
+     BUILD PAYLOADS
+  ---------------------------------- */
+
+  // ✅ FULL payload for CREATE (required fields must exist)
+  const buildCreatePayload = () => {
+    const payload = new FormData();
+
+    Object.keys(form).forEach((key) => {
+      if (key !== "status" && form[key] !== null) {
+        payload.append(key, form[key]);
+      }
+    });
+
+    return payload;
+  };
+
+  // ✅ PARTIAL payload for UPDATE (only changed fields)
+  const buildUpdatePayload = () => {
+    const payload = new FormData();
+
+    Object.keys(form).forEach((key) => {
+      if (
+        key !== "status" &&
+        form[key] !== original[key] &&
+        form[key] !== null
+      ) {
+        payload.append(key, form[key]);
+      }
+    });
+
+    return payload;
+  };
+
+  /* ----------------------------------
+     Submit Draft (CREATE or UPDATE)
+  ---------------------------------- */
+  const submitDraft = async () => {
+    setSubmitting(true);
+    try {
+      if (form.status === "pending") {
+        // UPDATE existing draft
+        const payload = buildUpdatePayload();
+
+        if ([...payload.keys()].length === 0) {
+          alert("No changes to submit");
+          setSubmitting(false);
+          return;
+        }
+
+        await updateRecruiterProfileDraft(payload);
+      } else {
+        // CREATE new draft (approved / rejected)
+        const payload = buildCreatePayload();
+        await createRecruiterProfileDraft(payload);
+      }
+
+      alert("Profile changes submitted for admin approval");
+      setIsEditing(false);
+      setForm({ ...form, status: "pending" });
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data || "Failed to submit changes");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) {
-    return (
-      <div className="p-6 text-gray-500">
-        Loading recruiter profile…
-      </div>
-    );
+    return <div className="p-6 text-gray-500">Loading profile…</div>;
   }
 
   return (
@@ -83,19 +162,22 @@ address: data.address || "",
             Company Profile
           </h1>
           <p className="text-sm text-gray-500">
-            Manage your recruiter company information
+            Changes require admin approval
           </p>
         </div>
-<div className="flex items-center gap-3">
-  <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100">
-    {form.status}
-  </span>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="px-4 py-2 rounded-lg bg-black text-white text-sm"
-        >
-          {isEditing ? "Cancel" : "Edit Profile"}
-        </button>
+
+        <div className="flex items-center gap-3">
+          <span className="px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+            {form.status}
+          </span>
+
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            disabled={form.status === "pending"}
+            className="px-4 py-2 rounded-lg bg-black text-white text-sm disabled:opacity-50"
+          >
+            {isEditing ? "Cancel" : "Edit Profile"}
+          </button>
         </div>
       </div>
 
@@ -116,14 +198,17 @@ address: data.address || "",
           </div>
 
           {isEditing && (
-            <button className="px-3 py-2 border rounded-lg text-sm">
-              <Upload className="inline h-4 w-4 mr-1" />
-              Upload Logo
-            </button>
+            <input
+              type="file"
+              name="draft_logo"
+              onChange={(e) =>
+                setForm({ ...form, draft_logo: e.target.files[0] })
+              }
+            />
           )}
         </div>
 
-        {/* Basic info */}
+        {/* Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Field label="Company Name">
             <input
@@ -180,7 +265,6 @@ address: data.address || "",
           </Field>
         </div>
 
-
         {/* Address */}
         <div className="mt-6">
           <Field label="Address">
@@ -190,7 +274,7 @@ address: data.address || "",
               value={form.address}
               onChange={onChange}
               disabled={!isEditing}
-              rows={4}
+              rows={3}
             />
           </Field>
         </div>
@@ -250,8 +334,12 @@ address: data.address || "",
             >
               Discard
             </button>
-            <button className="px-4 py-2 rounded-lg bg-black text-white text-sm">
-              Save & Submit for Review
+            <button
+              onClick={submitDraft}
+              disabled={submitting}
+              className="px-4 py-2 rounded-lg bg-black text-white text-sm disabled:opacity-50"
+            >
+              {submitting ? "Submitting..." : "Submit for Approval"}
             </button>
           </div>
         )}

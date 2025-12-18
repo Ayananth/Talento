@@ -29,6 +29,7 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
+        print("Request received")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -37,11 +38,11 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
 
         profile, _ = RecruiterProfile.objects.get_or_create(user=user)
 
-        if profile.status in ["approved"]:
-            return Response(
-                {"detail": "Profile already submitted"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # if profile.status in ["approved"]:
+        #     return Response(
+        #         {"detail": "Profile already submitted"},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
 
 
         data = serializer.validated_data.copy()
@@ -73,7 +74,6 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
 
 class RecruiterProfileDraftUpdateView(generics.GenericAPIView):
     """
-    PATCH /api/recruiter/profile/draft/update/
 
     - Updates only parts of the draft.
     - Does NOT touch published fields.
