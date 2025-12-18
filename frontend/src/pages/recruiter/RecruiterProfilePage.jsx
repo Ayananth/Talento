@@ -7,6 +7,7 @@ import {
 } from "../../apis/recruiter/apis";
 import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
 import "./profile.css";
+import Toast from "@/components/common/Toast";
 
 const emptyProfile = {
   status: "",
@@ -39,6 +40,7 @@ export default function RecruiterProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
 
   /* ----------------------------------
      Fetch profile
@@ -114,32 +116,47 @@ export default function RecruiterProfilePage() {
   /* ----------------------------------
      Submit draft
   ---------------------------------- */
-  const submitDraft = async () => {
-    setSubmitting(true);
-    try {
-      if (form.status === "pending") {
-        const payload = buildUpdatePayload();
-        if ([...payload.keys()].length === 0) {
-          alert("No changes to submit");
-          setSubmitting(false);
-          return;
-        }
-        await updateRecruiterProfileDraft(payload);
-      } else {
-        const payload = buildCreatePayload();
-        await createRecruiterProfileDraft(payload);
+const submitDraft = async () => {
+  setSubmitting(true);
+  try {
+    if (form.status === "pending") {
+      const payload = buildUpdatePayload();
+
+      if ([...payload.keys()].length === 0) {
+        setToast({
+          message: "No changes to submit",
+          type: "error",
+        });
+        setSubmitting(false);
+        return;
       }
 
-      alert("Profile changes submitted for admin approval");
-      setIsEditing(false);
-      setForm({ ...form, status: "pending", rejection_reason: "" });
-    } catch (err) {
-      console.error(err);
-      alert(err.response?.data || "Failed to submit changes");
-    } finally {
-      setSubmitting(false);
+      await updateRecruiterProfileDraft(payload);
+    } else {
+      const payload = buildCreatePayload();
+      await createRecruiterProfileDraft(payload);
     }
-  };
+
+    setToast({
+      message: "Profile changes submitted for admin approval",
+      type: "success",
+    });
+
+    setIsEditing(false);
+    setForm({ ...form, status: "pending", rejection_reason: "" });
+  } catch (err) {
+    console.error(err);
+    setToast({
+      message:
+        err.response?.data?.detail ||
+        "Failed to submit changes",
+      type: "error",
+    });
+  } finally {
+    setSubmitting(false);
+  }
+};
+
 
   if (loading) {
     return <div className="p-6 text-gray-500">Loading profile…</div>;
@@ -357,6 +374,15 @@ export default function RecruiterProfilePage() {
           </div>
         )}
       </div>
+
+{toast && (
+  <Toast
+    message={toast.message}
+    type={toast.type}
+    onClose={() => setToast(null)}
+  />
+)}
+
     </div>
   );
 }

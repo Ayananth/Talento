@@ -6,6 +6,8 @@ import {
   rejectRecruiterProfile,
 } from "../../apis/admin/recruiters"
 import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
+import Toast from "@/components/common/Toast"; // adjust path if needed
+
 
 /**
  * Highlight class depending on difference between published and pending
@@ -26,6 +28,7 @@ export default function AdminReviewCompanyPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -95,8 +98,14 @@ export default function AdminReviewCompanyPage() {
     setSubmitting(true);
     try {
       await approveRecruiterProfile(data.id);
-      alert("Profile approved successfully");
-      navigate("/admin/recruiter/approvals");
+navigate("/admin/recruiter/approvals", {
+  state: {
+    toast: {
+      message: "Profile approved successfully",
+      type: "success",
+    },
+  },
+});
     } catch (err) {
       console.error(err);
       alert("Failed to approve profile");
@@ -114,8 +123,15 @@ export default function AdminReviewCompanyPage() {
     setSubmitting(true);
     try {
       await rejectRecruiterProfile(data.id, rejectReason);
-      alert("Profile rejected");
-      navigate("/admin/recruiter/approvals");
+navigate("/admin/recruiter/approvals", {
+  state: {
+    toast: {
+      message: "Profile rejected successfully",
+      type: "success",
+    },
+  },
+});
+
     } catch (err) {
       console.error(err);
       alert("Failed to reject profile");
