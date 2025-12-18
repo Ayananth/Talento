@@ -1,13 +1,22 @@
 import { motion } from "framer-motion";
 import { MapPin, Clock } from "lucide-react";
 import { Button } from "flowbite-react";
+import { useNavigate } from "react-router-dom";
 
 export default function JobCard({ job }) {
+  const navigate = useNavigate();
+
+  const goToJobDetail = () => {
+    navigate(`/jobs/${job.id}`);
+  };
+
   return (
     <motion.div
       whileHover={{ y: -6 }}
       transition={{ duration: 0.3 }}
-      className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-lg flex flex-col h-full"
+      onClick={goToJobDetail}
+      className="cursor-pointer bg-white border border-slate-200 rounded-2xl p-6
+                 shadow-sm hover:shadow-lg flex flex-col h-full"
     >
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -27,11 +36,14 @@ export default function JobCard({ job }) {
             {/* Location */}
             <div className="flex items-center text-xs text-slate-500 gap-1">
               <MapPin size={12} />
-              <span className="truncate">{job.location}</span>
+              <span className="truncate">
+                {job.location || "Remote"}
+              </span>
             </div>
           </div>
         </div>
 
+        {/* Optional badge / lightning */}
         <span className="text-green-500 font-bold">⚡</span>
       </div>
 
@@ -45,7 +57,10 @@ export default function JobCard({ job }) {
 
       {/* Meta */}
       <div className="flex items-center gap-4 text-xs text-slate-500 mt-2">
-        <span className="capitalize">{job.type}</span>
+        <span className="capitalize">
+          {job.type} • {job.work_mode}
+        </span>
+
         <span className="flex items-center gap-1">
           <Clock size={12} />
           {job.time}
@@ -53,9 +68,11 @@ export default function JobCard({ job }) {
       </div>
 
       {/* Description */}
-      <p className="mt-4 text-sm text-slate-600 line-clamp-3">
-        {job.description}
-      </p>
+      {job.description && (
+        <p className="mt-4 text-sm text-slate-600 line-clamp-3">
+          {job.description}
+        </p>
+      )}
 
       {/* Skills */}
       {job.skills?.length > 0 && (
@@ -68,6 +85,7 @@ export default function JobCard({ job }) {
               {skill}
             </span>
           ))}
+
           {job.skills.length > 4 && (
             <span className="text-xs text-slate-500">
               +{job.skills.length - 4} more
@@ -78,20 +96,30 @@ export default function JobCard({ job }) {
 
       {/* Footer */}
       <div className="mt-auto flex items-center justify-between pt-6">
-        {/* Salary range */}
-<div className="text-blue-600 font-semibold text-sm">
-  {job.salary_from && job.salary_to ? (
-    <>
-      {job.salary_currency} {job.salary_from.toLocaleString()} –{" "}
-      {job.salary_to.toLocaleString()}
-    </>
-  ) : (
-    <span className="text-slate-400">Salary not disclosed</span>
-  )}
-</div>
+        {/* Salary */}
+        <div className="text-blue-600 font-semibold text-sm">
+          {job.salary_from && job.salary_to ? (
+            <>
+              {job.salary_currency}{" "}
+              {job.salary_from.toLocaleString()} –{" "}
+              {job.salary_to.toLocaleString()}
+            </>
+          ) : (
+            <span className="text-slate-400">
+              Salary not disclosed
+            </span>
+          )}
+        </div>
 
-
-        <Button size="sm" color="light">
+        {/* Apply button (DOES NOT trigger navigation) */}
+        <Button
+          size="sm"
+          color="light"
+          onClick={(e) => {
+            e.stopPropagation(); 
+            navigate(`/jobs/${job.id}`);
+          }}
+        >
           Apply
         </Button>
       </div>

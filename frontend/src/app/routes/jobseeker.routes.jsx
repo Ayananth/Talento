@@ -25,7 +25,8 @@ const jobseekerRoutes = [
     children: [
       { path: "/", element: <JobseekerLandingPage /> },
       {path: "/jobsearch", element: <JobSearchPage/>},
-      {path: "/jobdetail", element: <JobDetailPage/>},
+      {path: "/jobs/:id", element: <JobDetailPage/>},
+
 
     
     ],

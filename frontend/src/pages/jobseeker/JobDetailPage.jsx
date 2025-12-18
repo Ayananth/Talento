@@ -9,22 +9,33 @@ import JobDescription from "../../components/jobseeker/jobs/jobdetails/JobDescri
 import JobActions from "../../components/jobseeker/jobs/jobdetails/JobActions";
 
 import { getJobDetail } from "@/apis/jobseeker/apis";
+import { getCloudinaryUrl } from "@/utils/common/getCloudinaryUrl";
 
 export default function JobDetailPage() {
-  // const { id } = useParams();
-  const id = 2;
+  const { id } = useParams();
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
+  /* ----------------------------------
+     Fetch job detail
+  ---------------------------------- */
   useEffect(() => {
+    // Scroll to top when job changes
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     const fetchJob = async () => {
       try {
         setLoading(true);
+        setError(false);
+
         const res = await getJobDetail(id);
         setJob(res);
       } catch (err) {
         console.error("Failed to fetch job detail", err);
+        setError(true);
+        setJob(null);
       } finally {
         setLoading(false);
       }
@@ -33,38 +44,42 @@ export default function JobDetailPage() {
     fetchJob();
   }, [id]);
 
+  /* ----------------------------------
+     States
+  ---------------------------------- */
   if (loading) {
     return (
-      <section className="py-10 text-center text-gray-500">
+      <section className="py-16 text-center text-gray-500">
         Loading job details…
       </section>
     );
   }
 
-  if (!job) {
+  if (error || !job) {
     return (
-      <section className="py-10 text-center text-gray-500">
-        Job not found
+      <section className="py-16 text-center text-gray-500">
+        Job not found or unavailable.
       </section>
     );
   }
 
+  /* ----------------------------------
+     Render
+  ---------------------------------- */
   return (
     <section className="bg-white py-10">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
           {/* LEFT */}
           <main className="lg:col-span-8 space-y-8">
             <JobHeader
               title={job.title}
               companyName={job.company_name}
-              logo={job.logo}
+              logo={job.logo ? getCloudinaryUrl(job.logo) : null}
               jobType={job.job_type}
               workMode={job.work_mode}
               publishedAt={job.published_at}
             />
-
 
             <JobOverview
               jobType={job.job_type}
@@ -79,7 +94,6 @@ export default function JobDetailPage() {
               locationCountry={job.location_country}
             />
 
-
             <JobDescription
               description={job.description}
               skills={job.skills}
@@ -87,10 +101,8 @@ export default function JobDetailPage() {
 
             <JobActions
               jobId={job.id}
-              isActive={true}          
-              status="published" 
-
-              /* future */
+              isActive={true}
+              status="published"
               hasApplied={false}
               isSaved={false}
             />
@@ -103,18 +115,16 @@ export default function JobDetailPage() {
               companyAbout={job.company_about}
               companySize={job.company_size}
               companyWebsite={job.company_website}
-              logo={job.logo}
+              logo={job.logo ? getCloudinaryUrl(job.logo) : null}
 
-            /* dummy props — backend later */
+              /* placeholders for now */
               industry="Software Development"
               location="India"
               foundedYear="2020"
-              email="contact@200company.com"
+              email="contact@company.com"
               phone="+91 98765 43210"
               openJobs={3}
             />
-
-
 
             <SimilarJobs jobId={job.id} />
           </aside>
