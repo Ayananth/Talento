@@ -8,32 +8,55 @@ import CreateJobForm from "../../components/recruiter/forms/CreateJobForm";
 import RecruiterJobsListPage from "../../components/recruiter/RecruiterJobsListPage";
 import RecruiterJobDetailPage from "../../pages/recruiter/RecruiterJobDetailPage";
 import RecruiterJobEditPage from "../../pages/recruiter/RecruiterJobEditPage";
+import RecruiterProfilePage from "../../pages/recruiter/RecruiterProfilePage";
 
 const recruiterRoutes = [
-{
-  path: "recruiter",
-  element: <RequireAuth />,
-  children: [
-    {
-      element: <RecruiterRedirect />,
-      children: [
-        {
-          index: true,
-          element: <RecruiterDashboard />,
-        },
-        {
-          path: "dashboard",
-          element: <RecruiterDashboard />,
-        },
-        {
-          path: "jobs",
-          element: <RecruiterJobsListPage />,
-        },
-      ],
-    },
-  ],
-}
+  {
+    path: "recruiter",
+    element: <RequireAuth />,
+    children: [
+      {
+        element: <RecruiterRedirect />,
+        children: [
+          {
+            index: true,
+            element: <RecruiterDashboard />,
+          },
+          {
+            path: "dashboard",
+            element: <RecruiterDashboard />,
+          },
+          {
+            path: "jobs",
+            element: <RecruiterJobsListPage />,
+          },
 
+          {
+            path: "jobs/create",
+
+            element: <CreateJobForm />,
+          },
+
+          {
+            path: "jobs/:id",
+
+            element: <RecruiterJobDetailPage />,
+          },
+
+          {
+            path: "jobs/:id/edit",
+
+            element: <RecruiterJobEditPage />,
+          },
+          {
+            path: "profile",
+
+            element: <RecruiterProfilePage />,
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 export default recruiterRoutes;

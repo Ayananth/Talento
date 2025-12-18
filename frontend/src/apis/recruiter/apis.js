@@ -52,3 +52,11 @@ export const updateJob = async (id, payload) => {
   );
   return res.data;
 };
+
+
+
+export const getRecruiterProfile = async () => {
+  const res = await api.get("/v1/recruiter/profile/");
+  return res.data;
+};
+
