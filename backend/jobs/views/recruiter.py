@@ -17,6 +17,7 @@ from jobs.pagination import RecruiterJobPagination
 from datetime import timedelta
 from django.core.exceptions import PermissionDenied
 from rest_framework.views import APIView
+from rest_framework import status
 
 
 
@@ -28,7 +29,13 @@ class RecruiterJobCreateView(CreateAPIView):
         recruiter_profile = self.request.user.recruiter_profile
 
         if not recruiter_profile.can_post_jobs:
-            raise PermissionDenied("Job posting disabled by admin")
+            return Response(
+                {
+                    "code": "JOB_POSTING_DISABLED",
+                    "detail": "Job posting has been disabled by admin."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         serializer.save(
             recruiter=self.request.user,

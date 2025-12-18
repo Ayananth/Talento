@@ -1,12 +1,13 @@
 import React from 'react'
 import { Button, TextInput, Select } from "flowbite-react";
 import { Search, MapPin } from "lucide-react";
-
+import { useNavigate } from 'react-router-dom';
 
 
 import { popularCitiesInIndia } from "@/utils/common/utils";
 
 const SearchBox = () => {
+  const navigate = useNavigate();
   return (
     <div>
           <div className="mt-10 bg-white/90 backdrop-blur-lg shadow-2xl rounded-2xl p-5">
@@ -47,6 +48,7 @@ const SearchBox = () => {
 
               {/* SEARCH BUTTON */}
               <Button
+              onClick={()=> navigate('/jobsearch')}
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700"
               >
