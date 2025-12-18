@@ -96,7 +96,7 @@ export default function AdminReviewCompanyPage() {
     try {
       await approveRecruiterProfile(data.id);
       alert("Profile approved successfully");
-      navigate("/admin/recruiters/approvals");
+      navigate("/admin/recruiter/approvals");
     } catch (err) {
       console.error(err);
       alert("Failed to approve profile");
@@ -115,7 +115,7 @@ export default function AdminReviewCompanyPage() {
     try {
       await rejectRecruiterProfile(data.id, rejectReason);
       alert("Profile rejected");
-      navigate("/admin/recruiters/approvals");
+      navigate("/admin/recruiter/approvals");
     } catch (err) {
       console.error(err);
       alert("Failed to reject profile");

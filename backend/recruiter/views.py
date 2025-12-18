@@ -304,7 +304,7 @@ class AdminRecruiterListView(BaseAdminRecruiterListView):
 
 class PendingRecruiterListView(BaseAdminRecruiterListView):
     def get_queryset(self):
-        return RecruiterProfile.objects.filter(status="pending")
+        return RecruiterProfile.objects.filter(status="pending").order_by('-updated_at')
     
 
 class RecruiterProfileDetailView(generics.RetrieveAPIView):

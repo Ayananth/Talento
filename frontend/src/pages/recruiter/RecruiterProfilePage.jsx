@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Upload, Building2 } from "lucide-react";
+import { Upload, Building2, AlertTriangle } from "lucide-react";
 import {
   getRecruiterProfile,
   createRecruiterProfileDraft,
@@ -10,6 +10,7 @@ import "./profile.css";
 
 const emptyProfile = {
   status: "",
+  rejection_reason: "",
   company_name: "",
   website: "",
   industry: "",
@@ -34,13 +35,13 @@ function Field({ label, children }) {
 
 export default function RecruiterProfilePage() {
   const [form, setForm] = useState(emptyProfile);
-  const [original, setOriginal] = useState(emptyProfile); // published snapshot
+  const [original, setOriginal] = useState(emptyProfile);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   /* ----------------------------------
-     Fetch published profile
+     Fetch profile
   ---------------------------------- */
   useEffect(() => {
     const fetchProfile = async () => {
@@ -49,6 +50,7 @@ export default function RecruiterProfilePage() {
 
         const mapped = {
           status: data.status || "",
+          rejection_reason: data.rejection_reason || "",
           company_name: data.company_name || "",
           website: data.website || "",
           industry: data.industry || "",
@@ -82,65 +84,55 @@ export default function RecruiterProfilePage() {
   };
 
   /* ----------------------------------
-     BUILD PAYLOADS
+     Payload builders
   ---------------------------------- */
-
-  // ✅ FULL payload for CREATE (required fields must exist)
   const buildCreatePayload = () => {
     const payload = new FormData();
-
     Object.keys(form).forEach((key) => {
-      if (key !== "status" && form[key] !== null) {
+      if (key !== "status" && key !== "rejection_reason" && form[key] !== null) {
         payload.append(key, form[key]);
       }
     });
-
     return payload;
   };
 
-  // ✅ PARTIAL payload for UPDATE (only changed fields)
   const buildUpdatePayload = () => {
     const payload = new FormData();
-
     Object.keys(form).forEach((key) => {
       if (
         key !== "status" &&
+        key !== "rejection_reason" &&
         form[key] !== original[key] &&
         form[key] !== null
       ) {
         payload.append(key, form[key]);
       }
     });
-
     return payload;
   };
 
   /* ----------------------------------
-     Submit Draft (CREATE or UPDATE)
+     Submit draft
   ---------------------------------- */
   const submitDraft = async () => {
     setSubmitting(true);
     try {
       if (form.status === "pending") {
-        // UPDATE existing draft
         const payload = buildUpdatePayload();
-
         if ([...payload.keys()].length === 0) {
           alert("No changes to submit");
           setSubmitting(false);
           return;
         }
-
         await updateRecruiterProfileDraft(payload);
       } else {
-        // CREATE new draft (approved / rejected)
         const payload = buildCreatePayload();
         await createRecruiterProfileDraft(payload);
       }
 
       alert("Profile changes submitted for admin approval");
       setIsEditing(false);
-      setForm({ ...form, status: "pending" });
+      setForm({ ...form, status: "pending", rejection_reason: "" });
     } catch (err) {
       console.error(err);
       alert(err.response?.data || "Failed to submit changes");
@@ -153,8 +145,29 @@ export default function RecruiterProfilePage() {
     return <div className="p-6 text-gray-500">Loading profile…</div>;
   }
 
+  const isPending = form.status === "pending";
+  const isRejected = form.status === "rejected";
+
   return (
     <div className="max-w-6xl space-y-6">
+      {/* Rejection Banner */}
+      {isRejected && form.rejection_reason && (
+        <div className="flex gap-3 items-start bg-red-50 border border-red-200 rounded-lg p-4">
+          <AlertTriangle className="text-red-600 mt-1" />
+          <div>
+            <p className="font-semibold text-red-700">
+              Profile Rejected by Admin
+            </p>
+            <p className="text-sm text-red-600 mt-1">
+              {form.rejection_reason}
+            </p>
+            <p className="text-sm text-gray-600 mt-2">
+              Please update the requested fields and resubmit for approval.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -173,7 +186,7 @@ export default function RecruiterProfilePage() {
 
           <button
             onClick={() => setIsEditing(!isEditing)}
-            disabled={form.status === "pending"}
+            disabled={isPending}
             className="px-4 py-2 rounded-lg bg-black text-white text-sm disabled:opacity-50"
           >
             {isEditing ? "Cancel" : "Edit Profile"}
