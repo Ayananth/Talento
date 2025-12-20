@@ -33,3 +33,18 @@ export const unblockUser = async ()=> {
 }
 
 
+
+
+
+export const toggleUserBlock = (userId, block) =>
+  api.patch(`/v1/admin/users/${userId}/block/`, { block });
+
+
+
+export const toggleRecruiterJobPosting = async (id, canPostJobs) => {
+  const res = await api.patch(
+    `/v1/admin/recruiters/${id}/job-posting/`,
+    { can_post_jobs: canPostJobs }
+  );
+  return res.data;
+};

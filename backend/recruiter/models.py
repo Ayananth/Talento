@@ -68,6 +68,7 @@ class RecruiterProfile(models.Model):
     )
     rejection_reason = models.TextField(blank=True, null=True)
     verified_at = models.DateTimeField(blank=True, null=True)
+    can_post_jobs = models.BooleanField(default=True)
 
     pending_data = models.JSONField(blank=True, null=True)
 

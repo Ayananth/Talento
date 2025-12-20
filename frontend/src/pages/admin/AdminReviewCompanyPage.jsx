@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
-import FirstTimeCompanyView from "./FirstTimeCompanyView";
-import SideComparison from "./SideComparison";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  getAdminRecruiterProfile,
+  approveRecruiterProfile,
+  rejectRecruiterProfile,
+} from "../../apis/admin/recruiters"
+import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
+import Toast from "@/components/common/Toast"; // adjust path if needed
+
+
 /**
  * Highlight class depending on difference between published and pending
  */
@@ -13,81 +21,135 @@ const highlightClass = (live, pending) => {
 };
 
 export default function AdminReviewCompanyPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [data, setData] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
-
-  /**
-   * SAMPLE DATA replacing API calls
-   */
-  const SAMPLE_DATA = {
-    user: { email: "hr@technova.com" },
-    status: "pending",
-    submission_type: "edit",
-
-    published_data: {
-      company_name: "TechNova",
-      website: "https://technova.com",
-      industry: "Software Development",
-      company_size: "51-200",
-      logo: "https://via.placeholder.com/120?text=Old+Logo",
-      about_company: "We are a software company building web tools.",
-      phone: "+91 9876543210",
-      support_email: "support@technova.com",
-      location: "Bangalore",
-      address: "HSR Layout",
-      linkedin: "https://linkedin.com/company/technova",
-      business_registration_doc:
-        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    },
-
-    pending_data: {
-      company_name: "TechNova Innovations",
-      industry: "AI & Software",
-      phone: "+91 9999999999",
-      location: "Bangalore, India",
-      about_company: "Updated description with AI projects.",
-    },
-
-    draft_logo: "https://via.placeholder.com/120?text=New+Logo",
-    draft_business_registration_doc:
-      "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-  };
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching data (no API calls)
-    setTimeout(() => {
-      setData(SAMPLE_DATA);
-    }, 500);
-  }, []);
+    const fetchProfile = async () => {
+      try {
+        const res = await getAdminRecruiterProfile(id);
+        setData(res);
+      } catch (err) {
+        console.error("Failed to load recruiter profile", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (!data) return <div className="p-10 text-center">Loading sample data...</div>;
+    fetchProfile();
+  }, [id]);
+
+  if (loading) {
+    return <div className="p-10 text-center">Loading recruiter profile…</div>;
+  }
+
+  if (!data) {
+    return <div className="p-10 text-center">Profile not found</div>;
+  }
 
   const {
-    published_data,
-    pending_data,
-    status,
-    submission_type,
+    company_name,
+    website,
+    industry,
+    company_size,
+    logo,
+    about_company,
+    phone,
+    support_email,
+    location,
+    address,
+    linkedin,
+    facebook,
+    twitter,
+    business_registration_doc,
+    pending_data = {},
     draft_logo,
     draft_business_registration_doc,
-    user,
+    status,
+    request_type,
+    email,
   } = data;
 
-  // return <SideComparison/>
+  const published_data = {
+    company_name,
+    website,
+    industry,
+    company_size,
+    about_company,
+    phone,
+    support_email,
+    location,
+    address,
+    linkedin,
+    facebook,
+    twitter,
+  };
 
-  // return <FirstTimeCompanyView data={data}/>
+  /* -------------------------
+     Approve / Reject
+  ------------------------- */
+  const handleApprove = async () => {
+    setSubmitting(true);
+    try {
+      await approveRecruiterProfile(data.id);
+navigate("/admin/recruiter/approvals", {
+  state: {
+    toast: {
+      message: "Profile approved successfully",
+      type: "success",
+    },
+  },
+});
+    } catch (err) {
+      console.error(err);
+      alert("Failed to approve profile");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectReason.trim()) {
+      alert("Rejection reason is required");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await rejectRecruiterProfile(data.id, rejectReason);
+navigate("/admin/recruiter/approvals", {
+  state: {
+    toast: {
+      message: "Profile rejected successfully",
+      type: "success",
+    },
+  },
+});
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to reject profile");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    
     <div className="p-8 max-w-7xl mx-auto">
-
       {/* Header */}
       <div className="mb-8 p-6 rounded-xl shadow bg-white border">
         <h1 className="text-3xl font-bold mb-2">
-          {pending_data.company_name || published_data.company_name}
+          {pending_data.company_name || company_name}
         </h1>
 
         <p className="text-gray-700">
-          Recruiter: <span className="font-semibold">{user.email}</span>
+          Recruiter: <span className="font-semibold">{email}</span>
         </p>
 
         <p className="text-gray-700 mt-1">
@@ -98,37 +160,34 @@ export default function AdminReviewCompanyPage() {
         </p>
 
         <p className="text-gray-700 mt-1">
-          Submission Type:{" "}
-          <span className="font-semibold">
-            {submission_type === "first" ? "First-Time Registration" : "Edit Request"}
-          </span>
+          Request Type:{" "}
+          <span className="font-semibold">{request_type}</span>
         </p>
       </div>
 
       {/* Comparison Panels */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
         {/* LIVE DATA */}
         <div className="border rounded-xl p-6 bg-gray-50">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">
+          <h2 className="text-xl font-bold mb-4">
             Current Published Data
           </h2>
 
           {Object.entries(published_data).map(([field, value]) => (
             <div key={field} className="mb-4">
-              <div className="font-semibold text-gray-700 capitalize">
+              <div className="font-semibold capitalize">
                 {field.replace(/_/g, " ")}:
               </div>
-              <div className="text-gray-900">{value || "—"}</div>
+              <div>{value || "—"}</div>
             </div>
           ))}
 
           {/* Published Logo */}
           <div className="mb-4">
-            <div className="font-semibold text-gray-700">Logo:</div>
-            {published_data.logo ? (
+            <div className="font-semibold">Logo:</div>
+            {logo ? (
               <img
-                src={published_data.logo}
+                src={getCloudinaryUrl(logo)}
                 alt="logo"
                 className="h-24 mt-2 rounded"
               />
@@ -139,10 +198,10 @@ export default function AdminReviewCompanyPage() {
 
           {/* Published Doc */}
           <div className="mb-4">
-            <div className="font-semibold text-gray-700">Business Document:</div>
-            {published_data.business_registration_doc ? (
+            <div className="font-semibold">Business Document:</div>
+            {business_registration_doc ? (
               <a
-                href={published_data.business_registration_doc}
+                href={getCloudinaryUrl(business_registration_doc)}
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 underline"
@@ -157,7 +216,7 @@ export default function AdminReviewCompanyPage() {
 
         {/* PENDING DATA */}
         <div className="border rounded-xl p-6 bg-white">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">
+          <h2 className="text-xl font-bold mb-4">
             Requested Changes
           </h2>
 
@@ -169,24 +228,20 @@ export default function AdminReviewCompanyPage() {
                 value
               )}`}
             >
-              <div className="font-semibold text-gray-700 capitalize">
+              <div className="font-semibold capitalize">
                 {field.replace(/_/g, " ")}:
               </div>
-              <div className="text-gray-900">{value || "—"}</div>
+              <div>{value || "—"}</div>
             </div>
           ))}
 
-          {/* Pending Logo */}
-          <div
-            className={`mb-4 p-2 rounded ${
-              draft_logo ? "bg-yellow-100" : ""
-            }`}
-          >
-            <div className="font-semibold text-gray-700">Logo (New):</div>
+          {/* Draft Logo */}
+          <div className={`mb-4 p-2 rounded ${draft_logo ? "bg-yellow-100" : ""}`}>
+            <div className="font-semibold">Logo (New):</div>
             {draft_logo ? (
               <img
-                src={draft_logo}
-                alt="pending logo"
+                src={getCloudinaryUrl(draft_logo)}
+                alt="draft logo"
                 className="h-24 mt-2 rounded"
               />
             ) : (
@@ -194,18 +249,16 @@ export default function AdminReviewCompanyPage() {
             )}
           </div>
 
-          {/* Pending Doc */}
+          {/* Draft Doc */}
           <div
             className={`mb-4 p-2 rounded ${
               draft_business_registration_doc ? "bg-yellow-100" : ""
             }`}
           >
-            <div className="font-semibold text-gray-700">
-              Business Document (New):
-            </div>
+            <div className="font-semibold">Business Document (New):</div>
             {draft_business_registration_doc ? (
               <a
-                href={draft_business_registration_doc}
+                href={getCloudinaryUrl(draft_business_registration_doc)}
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 underline"
@@ -219,12 +272,12 @@ export default function AdminReviewCompanyPage() {
         </div>
       </div>
 
-      {/* Dummy Approve & Reject Buttons */}
+      {/* Actions */}
       <div className="mt-10 flex flex-col md:flex-row gap-4 justify-between">
-
         <button
-          onClick={() => alert("Approve Clicked")}
-          className="bg-green-600 text-white px-6 py-3 rounded-xl shadow hover:bg-green-700 transition"
+          disabled={submitting}
+          onClick={handleApprove}
+          className="bg-green-600 text-white px-6 py-3 rounded-xl"
         >
           Approve Changes
         </button>
@@ -237,8 +290,9 @@ export default function AdminReviewCompanyPage() {
             onChange={(e) => setRejectReason(e.target.value)}
           />
           <button
-            onClick={() => alert("Reject Clicked")}
-            className="bg-red-600 text-white px-6 py-3 rounded-xl shadow hover:bg-red-700 transition"
+            disabled={submitting}
+            onClick={handleReject}
+            className="bg-red-600 text-white px-6 py-3 rounded-xl"
           >
             Reject Changes
           </button>

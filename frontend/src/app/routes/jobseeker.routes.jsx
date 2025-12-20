@@ -5,6 +5,9 @@ import Dashboard from "../../pages/jobseeker/Dashboard";
 import DashboardLayout from "@/layouts/jobseeker/DashboardLayout";
 import LandingLayout from "../../layouts/jobseeker/LandingLayout";
 import Profile from "../../pages/jobseeker/Profile";
+import JobseekerLandingPage from "../../pages/jobseeker/JobseekerLandingPage";
+import JobSearchPage from "../../pages/jobseeker/JobSearchPage";
+import JobDetailPage from "../../pages/jobseeker/JobDetailPage";
 
 const jobseekerRoutes = [
   {
@@ -19,7 +22,14 @@ const jobseekerRoutes = [
 
   {
     element: <LandingLayout />,
-    children: [{ path: "/", element: <HomePage /> }],
+    children: [
+      { path: "/", element: <JobseekerLandingPage /> },
+      {path: "/jobsearch", element: <JobSearchPage/>},
+      {path: "/jobs/:id", element: <JobDetailPage/>},
+
+
+    
+    ],
   },
 
   {

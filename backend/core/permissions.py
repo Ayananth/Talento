@@ -18,3 +18,9 @@ class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         user = request.user
         return bool(user and user.is_authenticated and user.is_superuser and not user.is_blocked)
+    
+class IsNotBlocked(BasePermission):
+    message = "Your account has been blocked by admin."
+
+    def has_permission(self, request, view):
+        return not request.user.is_blocked

@@ -153,6 +153,7 @@ class AdminUserListSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
             "is_email_verified",
+            "is_blocked"
 
         ]
 
@@ -176,9 +177,11 @@ class RecruiterProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecruiterProfile
         fields = [
+            "id",
             "company_name",
             "status",
             "verified_at",
+            "can_post_jobs"
         ]
 
 
@@ -201,6 +204,7 @@ class AdminUserDetailSerializer(serializers.ModelSerializer):
             "is_staff",
             "date_joined",
             "last_login",
+            "is_blocked",
 
             "jobseeker_profile",
             "recruiter_profile",

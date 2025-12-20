@@ -13,6 +13,8 @@ import PendingApprovalsPage from "@/pages/admin/PendingApprovalsPage";
 import AdminApprovePage from "@/pages/admin/AdminApprovePage";
 import AdminUsersPage from "../../pages/admin/users/AdminUsersPage";
 import AdminUserDetailPage from "../../pages/admin/users/AdminUserDetailPage";
+import AdminJobsPage from "../../pages/admin/jobs/AdminJobsPage";
+import AdminJobDetailPage from "../../pages/admin/jobs/AdminJobDetailPage";
 
 const adminRoutes = [
   {
@@ -39,6 +41,13 @@ const adminRoutes = [
 
           {
             path: "users/:id",element: <AdminUserDetailPage />,
+          },
+          {
+            path: "jobs/",element: <AdminJobsPage />,
+          },
+          {
+            path: "/admin/jobs/:id",
+            element: <AdminJobDetailPage />,
           }
 
         ]

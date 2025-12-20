@@ -6,6 +6,7 @@ import { PAGE_SIZE } from "@/constants/constants";
 import ResponsiveTable from "@//components/admin/ResponsiveTable";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import Toast from "../../components/common/Toast";
 
 
 
@@ -161,6 +162,16 @@ useEffect(() => {
         totalPages={totalPages}
         onPageChange={(num) => setPage(num)}
       />
+
+      {/* {toast && (
+  <Toast
+    message={toast.message}
+    type={toast.type}
+    onClose={() => setToast(null)}
+    duration={2000}
+  />
+)} */}
+
     </div>
   );
 }
