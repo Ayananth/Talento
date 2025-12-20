@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GistIndex
+
 
 User = settings.AUTH_USER_MODEL
 
@@ -107,6 +109,11 @@ class Job(models.Model):
             models.Index(fields=["created_at"]),
             models.Index(fields=["recruiter"]),
             GinIndex(fields=["search_vector"]),
+            GistIndex(
+                name="job_title_trgm_idx",
+                fields=["title"],
+                opclasses=["gist_trgm_ops"]
+            ),
         ]
 
     def __str__(self):

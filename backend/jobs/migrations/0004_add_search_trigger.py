@@ -11,18 +11,53 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
+
             """
-            CREATE TRIGGER job_search_vector_update
-            BEFORE INSERT OR UPDATE ON jobs_job
-            FOR EACH ROW EXECUTE FUNCTION
-            tsvector_update_trigger(
-                search_vector,
-                'pg_catalog.english',
-                title,
-                description,
-                skills
+            --Function to update search_vector
+            CREATE OR REPLACE FUNCTION update_job_search_vector(job_id INTEGER)
+            RETURNS VOID AS $$
+            BEGIN
+                UPDATE jobs_job j
+                SET search_vector =
+                    to_tsvector(
+                        'english',
+                        j.title || ' ' ||
+                        j.description || ' ' ||
+                        COALESCE(
+                            (
+                                SELECT string_agg(js.name, ' ')
+                                FROM jobs_jobskill js
+                                WHERE js.job_id = j.id
+                            ),
+                            ''
+                        )
+                    )
+                WHERE j.id = job_id;
+            END;
+            $$ LANGUAGE plpgsql;
+
+            --Trigger on jobs_job
+            CREATE TRIGGER job_search_update_on_job
+            AFTER INSERT OR UPDATE
+            ON jobs_job
+            FOR EACH ROW
+            EXECUTE FUNCTION update_job_search_vector(NEW.id);
+
+            --Trigger on jobs_jobskill
+            CREATE TRIGGER job_search_update_on_skill
+            AFTER INSERT OR UPDATE OR DELETE
+            ON jobs_jobskill
+            FOR EACH ROW
+            EXECUTE FUNCTION update_job_search_vector(
+                COALESCE(NEW.job_id, OLD.job_id)
             );
             """,
-            reverse_sql="DROP TRIGGER IF EXISTS job_search_vector_update ON jobs_job;"
+
+            """
+            DROP TRIGGER IF EXISTS job_search_update_on_skill ON jobs_jobskill;
+            DROP TRIGGER IF EXISTS job_search_update_on_job ON jobs_job;
+            DROP FUNCTION IF EXISTS update_job_search_vector(INTEGER);
+            """
+
         )
     ]
