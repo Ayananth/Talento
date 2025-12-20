@@ -1,3 +1,13 @@
+from django.contrib.postgres.search import (
+    SearchQuery,
+    SearchRank,
+    SearchVector,
+    TrigramSimilarity
+    )
+
+from django.db.models import Q
+
+
 from django.utils import timezone
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -11,37 +21,43 @@ from jobs.serializers import PublicJobListSerializer, PublicJobDetailSerializer
 from jobs.filters import PublicJobFilter
 from jobs.pagination import RecruiterJobPagination
 
-
 class PublicJobListView(ListAPIView):
-    print("public job list view")
     serializer_class = PublicJobListSerializer
     pagination_class = RecruiterJobPagination
 
     filter_backends = [
         DjangoFilterBackend,
         OrderingFilter,
-        SearchFilter,
     ]
 
     filterset_class = PublicJobFilter
-    search_fields = ["title", "description"]
     ordering_fields = ["published_at"]
     ordering = ["-published_at"]
 
     def get_queryset(self):
-        print("get query set")
-        print(Job.objects.filter(
-            status=Job.Status.PUBLISHED,
-            is_active=True
-        ))
-        return Job.objects.filter(
+        queryset = Job.objects.filter(
             status=Job.Status.PUBLISHED,
             is_active=True,
         )
-    
 
+        search = self.request.query_params.get("search")
 
+        if search:
+            query = SearchQuery(search)
 
+            queryset = (
+                queryset
+                .annotate(
+                    rank=SearchRank("search_vector", query),
+                    similarity=TrigramSimilarity("title", search),
+                )
+                .filter(
+                    Q(rank__gt=0.1) | Q(similarity__gt=0.3)
+                )
+                .order_by("-rank", "-similarity", "-published_at")
+            )
+
+        return queryset
 
 class PublicJobDetailView(RetrieveAPIView):
     serializer_class = PublicJobDetailSerializer
