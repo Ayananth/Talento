@@ -5,10 +5,9 @@ import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import company_placeholder from '../../../assets/common/image.png' 
 
-export default function JobListingLayout() {
+export default function JobListingLayout({ search, trigger }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
   const [ordering, setOrdering] = useState("-created_at");
@@ -19,26 +18,28 @@ export default function JobListingLayout() {
     try {
       setLoading(true);
 
-      const res = await getJobs({ page, ordering });
-      console.log(res)
+      const res = await getJobs({
+        page,
+        ordering,
+        search,
+      });
 
-const mapped = res.results.map((job) => ({
-  id: job.id,
-  title: job.title,
-  company: job.company_name,
-  logo: job.logo || company_placeholder,
-  location: [job.location_city, job.location_country]
-    .filter(Boolean)
-    .join(", "),
-  type: job.job_type.replace("_", " "),
-  work_mode: job.work_mode,
-  experience_level: job.experience_level,
-  time: new Date(job.published_at).toLocaleDateString(),
-  salary_from: job.salary_min,
-  salary_to: job.salary_max,
-  salary_currency: job.salary_currency,
-}));
-
+      const mapped = res.results.map((job) => ({
+        id: job.id,
+        title: job.title,
+        company: job.company_name,
+        logo: job.logo || company_placeholder,
+        location: [job.location_city, job.location_country]
+          .filter(Boolean)
+          .join(", "),
+        type: job.job_type.replace("_", " "),
+        work_mode: job.work_mode,
+        experience_level: job.experience_level,
+        time: new Date(job.published_at).toLocaleDateString(),
+        salary_from: job.salary_min,
+        salary_to: job.salary_max,
+        salary_currency: job.salary_currency,
+      }));
 
       setJobs(mapped);
       setCount(res.count);
@@ -51,7 +52,7 @@ const mapped = res.results.map((job) => ({
 
   useEffect(() => {
     fetchJobs();
-  }, [page, ordering]);
+  }, [page, ordering, trigger]);
 
   return (
     <section className="bg-white py-10">
