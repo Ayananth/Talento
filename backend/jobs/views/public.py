@@ -21,6 +21,7 @@ from jobs.serializers import PublicJobListSerializer, PublicJobDetailSerializer
 from jobs.filters import PublicJobFilter
 from jobs.pagination import RecruiterJobPagination
 
+
 class PublicJobListView(ListAPIView):
     serializer_class = PublicJobListSerializer
     pagination_class = RecruiterJobPagination
@@ -43,7 +44,7 @@ class PublicJobListView(ListAPIView):
         search = self.request.query_params.get("search")
 
         if search:
-            query = SearchQuery(search)
+            query = SearchQuery(search, search_type="websearch")
 
             queryset = (
                 queryset
@@ -52,12 +53,13 @@ class PublicJobListView(ListAPIView):
                     similarity=TrigramSimilarity("title", search),
                 )
                 .filter(
-                    Q(rank__gt=0.1) | Q(similarity__gt=0.3)
+                    Q(rank__gt=0.01) | Q(similarity__gt=0.2)
                 )
                 .order_by("-rank", "-similarity", "-published_at")
             )
 
         return queryset
+
 
 class PublicJobDetailView(RetrieveAPIView):
     serializer_class = PublicJobDetailSerializer

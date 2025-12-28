@@ -101,7 +101,7 @@ class Migration(migrations.Migration):
             ---------------------------------------------------------
             */
             CREATE TRIGGER job_search_vector_before_save
-            BEFORE INSERT OR UPDATE
+            BEFORE INSERT
             ON jobs_job
             FOR EACH ROW
             EXECUTE FUNCTION job_before_save_search_vector();
