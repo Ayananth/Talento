@@ -60,7 +60,6 @@ class PublicJobListView(ListAPIView):
 
         return queryset
 
-
 class PublicJobDetailView(RetrieveAPIView):
     serializer_class = PublicJobDetailSerializer
     queryset = Job.objects.all()

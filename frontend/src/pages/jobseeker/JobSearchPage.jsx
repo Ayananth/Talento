@@ -7,9 +7,11 @@ const JobSearchPage = () => {
   const [search, setSearch] = useState("");
   const [trigger, setTrigger] = useState(0);
   const [jobCount, setJobCount] = useState(0);
+  const [location, setLocation] = useState("");
+
 
   const handleSearch = () => {
-    setTrigger((prev) => prev + 1); // force refetch
+    setTrigger((prev) => prev + 1); 
   };
 
   return (
@@ -17,12 +19,15 @@ const JobSearchPage = () => {
       <JobSearchSummary
         search={search}
         setSearch={setSearch}
+        setLocation={setLocation}
         onSearch={handleSearch}
         jobCount={jobCount}
+        
       />
       <JobResultsToolbar />
       <JobListingLayout
         search={search}
+        location={location}
         trigger={trigger}
         setJobCount={setJobCount}
       />
