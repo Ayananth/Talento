@@ -5,12 +5,12 @@ import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import company_placeholder from '../../../assets/common/image.png' 
 
-export default function JobListingLayout({ search, trigger, setJobCount }) {
+export default function JobListingLayout({ search, trigger, setJobCount, location, ordering }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
-  const [ordering, setOrdering] = useState("-created_at");
+  // const [ordering, setOrdering] = useState("-published_at");
 
   const totalPages = Math.ceil(count / PAGE_SIZE);
 
@@ -22,6 +22,7 @@ export default function JobListingLayout({ search, trigger, setJobCount }) {
         page,
         ordering,
         search,
+          location,
       });
 
       const mapped = res.results.map((job) => ({

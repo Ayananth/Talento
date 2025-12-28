@@ -1,10 +1,13 @@
 import { TextInput, Select, Button } from "flowbite-react";
 import { MapPin, Search } from "lucide-react";
+import { popularCitiesInIndia } from "../../../utils/common/utils";
 export default function JobSearchSummary({
   jobCount = 22,
   search,
   setSearch,
   onSearch,
+  location,
+  setLocation,
 }) {
   return (
     <section className="bg-slate-50 rounded-3xl py-16 px-6">
@@ -23,19 +26,22 @@ export default function JobSearchSummary({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
 
             {/* LOCATION (optional for later) */}
-            <Select sizing="lg" icon={MapPin}
-                          className="
-                bg-white 
-                text-slate-800 
-                border-slate-300 
-                focus:border-blue-600 
-                focus:ring-blue-600
-              ">
+            <Select
+              sizing="lg"
+              icon={MapPin}
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="bg-white text-slate-800 border-slate-300
+                        focus:border-blue-600 focus:ring-blue-600"
+            >
               <option value="">Location</option>
-              <option value="remote">Remote</option>
-              <option value="kochi">Kochi</option>
-              <option value="bangalore">Bangalore</option>
+              {popularCitiesInIndia.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
             </Select>
+
 
             {/* KEYWORD */}
             <TextInput

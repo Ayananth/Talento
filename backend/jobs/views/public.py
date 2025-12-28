@@ -14,6 +14,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.exceptions import NotFound
 from django.db.models import F
+from django.db.models.functions import Coalesce
 
 
 from jobs.models.job import Job
@@ -21,45 +22,46 @@ from jobs.serializers import PublicJobListSerializer, PublicJobDetailSerializer
 from jobs.filters import PublicJobFilter
 from jobs.pagination import RecruiterJobPagination
 
-
 class PublicJobListView(ListAPIView):
     serializer_class = PublicJobListSerializer
     pagination_class = RecruiterJobPagination
 
-    filter_backends = [
-        DjangoFilterBackend,
-        OrderingFilter,
-    ]
-
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = PublicJobFilter
-    ordering_fields = ["published_at"]
+
+    ordering_fields = [
+        "published_at",
+        "salary_sort",
+    ]
     ordering = ["-published_at"]
 
     def get_queryset(self):
+        ordering_param = self.request.query_params.get("ordering")
+        search = self.request.query_params.get("search")
+
         queryset = Job.objects.filter(
             status=Job.Status.PUBLISHED,
             is_active=True,
+        ).annotate(
+            salary_sort=Coalesce("salary_max", "salary_min", 0)
         )
-
-        search = self.request.query_params.get("search")
 
         if search:
             query = SearchQuery(search, search_type="websearch")
 
-            queryset = (
-                queryset
-                .annotate(
-                    rank=SearchRank("search_vector", query),
-                    similarity=TrigramSimilarity("title", search),
-                )
-                .filter(
-                    Q(rank__gt=0.01) | Q(similarity__gt=0.2)
-                )
-                .order_by("-rank", "-similarity", "-published_at")
+            queryset = queryset.annotate(
+                rank=SearchRank("search_vector", query),
+                similarity=TrigramSimilarity("title", search),
+            ).filter(
+                Q(rank__gt=0.01) | Q(similarity__gt=0.2)
             )
 
-        return queryset
+            if not ordering_param:
+                queryset = queryset.order_by(
+                    "-rank", "-similarity", "-published_at"
+                )
 
+        return queryset
 
 class PublicJobDetailView(RetrieveAPIView):
     serializer_class = PublicJobDetailSerializer
