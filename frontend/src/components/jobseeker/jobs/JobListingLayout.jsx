@@ -5,7 +5,7 @@ import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import company_placeholder from '../../../assets/common/image.png' 
 
-export default function JobListingLayout({ search, trigger }) {
+export default function JobListingLayout({ search, trigger, setJobCount }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -43,6 +43,7 @@ export default function JobListingLayout({ search, trigger }) {
 
       setJobs(mapped);
       setCount(res.count);
+      setJobCount(res.count)
     } catch (err) {
       console.error("Failed to fetch jobs", err);
     } finally {
