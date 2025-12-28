@@ -2,7 +2,7 @@ import api from "../api";
 
 export const getJobs = async ({
   page = 1,
-  ordering = "",
+  ordering = "-published_at",
   search = "",
   location = "",
 } = {}) => {

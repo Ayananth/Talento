@@ -1,13 +1,14 @@
 import { Select, Button } from "flowbite-react";
 import { LayoutGrid, List } from "lucide-react";
+import { JOB_SORT_OPTIONS } from "../../../constants/constants";
 
 export default function JobResultsToolbar({
-  from = 41,
-  to = 60,
-  total = 944,
-  view = "grid",
-  onViewChange = () => {},
-  onReset = () => {},
+  from,
+  to,
+  total,
+  ordering,
+  onOrderingChange,
+  onReset,
 }) {
   return (
     <div className=" max-w-6xl mx-auto text-center border-b border-slate-200 pb-4 mb-6 mt-4">
@@ -45,7 +46,7 @@ export default function JobResultsToolbar({
             <option>Show: 48</option>
           </Select>
 
-          {/* SORT */}
+          {/* SORT
           <Select
             sizing="sm"
             className="bg-white text-slate-700 border-slate-300"
@@ -54,7 +55,21 @@ export default function JobResultsToolbar({
             <option>Oldest Post</option>
             <option>Highest Salary</option>
             <option>Lowest Salary</option>
+          </Select> */}
+
+          <Select
+            sizing="sm"
+            value={ordering}
+            onChange={(e) => onOrderingChange(e.target.value)}
+            className="bg-white text-slate-700 border-slate-300"
+          >
+            {JOB_SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                Sort by: {opt.label}
+              </option>
+            ))}
           </Select>
+
 
           {/* VIEW TOGGLE */}
           {/* <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
