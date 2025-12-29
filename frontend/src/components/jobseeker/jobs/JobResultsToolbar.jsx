@@ -9,7 +9,15 @@ export default function JobResultsToolbar({
   ordering,
   onOrderingChange,
   onReset,
+  onpageSizeChange
 }) {
+
+  function handlePageChange(e) {
+    onpageSizeChange(Number(e.target.value));
+  }
+
+
+
   return (
     <div className=" max-w-6xl mx-auto text-center border-b border-slate-200 pb-4 mb-6 mt-4">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -39,11 +47,12 @@ export default function JobResultsToolbar({
           {/* SHOW COUNT */}
           <Select
             sizing="sm"
+            onChange={handlePageChange}
             className="bg-white text-slate-700 border-slate-300"
           >
-            <option>Show: 12</option>
-            <option>Show: 24</option>
-            <option>Show: 48</option>
+            <option value="12">Show: 12</option>
+            <option value="24">Show: 24</option>
+            <option value="48">Show: 48</option>
           </Select>
 
           {/* SORT

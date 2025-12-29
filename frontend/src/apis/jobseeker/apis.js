@@ -5,6 +5,7 @@ export const getJobs = async ({
   ordering = "-published_at",
   search = "",
   location = "",
+  pageSize = "12"
 } = {}) => {
   const res = await api.get("/v1/jobs/jobs/public/", {
     params: {
@@ -12,6 +13,7 @@ export const getJobs = async ({
       ...(ordering && { ordering }),
       ...(search && { search }),
       ...(location && { location_city: location }),
+      ...(pageSize && {page_size: pageSize})
     },
   });
 

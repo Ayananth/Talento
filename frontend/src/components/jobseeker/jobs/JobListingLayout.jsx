@@ -5,14 +5,14 @@ import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import company_placeholder from '../../../assets/common/image.png' 
 
-export default function JobListingLayout({ search, trigger, setJobCount, location, ordering }) {
+export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
   // const [ordering, setOrdering] = useState("-published_at");
 
-  const totalPages = Math.ceil(count / PAGE_SIZE);
+  const totalPages = Math.ceil(count / pageSize);
 
   const fetchJobs = async () => {
     try {
@@ -23,6 +23,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
         ordering,
         search,
           location,
+          pageSize
       });
 
       const mapped = res.results.map((job) => ({
@@ -54,8 +55,18 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
   };
 
   useEffect(() => {
+    setPage(1);
+  }, [pageSize, ordering, search, location]);
+
+  useEffect(() => {
     fetchJobs();
-  }, [page, ordering, trigger]);
+  }, [page, trigger, pageSize, ordering]);
+
+  useEffect(() => {
+  setPage(1);
+}, [trigger]);
+
+
 
   return (
     <section className="bg-white py-10">
