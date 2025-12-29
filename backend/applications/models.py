@@ -1,5 +1,6 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
+from profiles.models import JobSeekerProfile
 
 class JobApplication(models.Model):
 
@@ -19,7 +20,7 @@ class JobApplication(models.Model):
     )
 
     applicant = models.ForeignKey(
-        "jobseeker.JobSeekerProfile",
+        JobSeekerProfile, 
         on_delete=models.CASCADE,
         related_name="applications"
     )
