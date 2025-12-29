@@ -46,3 +46,30 @@ export const uploadResume = async (file) => {
 
   return res.data;
 };
+
+
+export const applyToJob = async ({ jobId, file, coverLetter }) => {
+  const formData = new FormData();
+
+  formData.append("job", jobId);
+
+  if (file) {
+    formData.append("resume", file);
+  }
+
+  if (coverLetter) {
+    formData.append("cover_letter", coverLetter);
+  }
+
+  const res = await api.post(
+    "/v1/applications/apply/",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return res.data;
+};

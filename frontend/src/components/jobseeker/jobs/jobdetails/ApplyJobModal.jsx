@@ -1,15 +1,31 @@
 import { useEffect, useState } from "react";
-import { getMyResumes, uploadResume } from "../../../../apis/jobseeker/apis";
+import { getMyResumes, uploadResume, applyToJob } from "../../../../apis/jobseeker/apis";
 
 export default function ApplyJobModal({ open, onClose, jobId }) {
-  const [resumeType, setResumeType] = useState("existing");
+  // const [resumeType, setResumeType] = useState("existing");
+  const [resumeType] = useState("upload");
+
+
   const [resumes, setResumes] = useState([]);
   const [selectedResumeId, setSelectedResumeId] = useState(null);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+
 
   useEffect(() => {
     if (open) fetchResumes();
+
+    if (!open) {
+      setError(null);
+      setFieldErrors({});
+      setFile(null);
+      setLoading(false);
+    }
+
+
+
   }, [open]);
 
   const fetchResumes = async () => {
@@ -21,38 +37,84 @@ export default function ApplyJobModal({ open, onClose, jobId }) {
     }
   };
 
-  const handleApply = async () => {
-    try {
-      setLoading(true);
+const handleApply = async () => {
+  try {
+    setError(null);
+    setFieldErrors({});
+    setLoading(true);
 
-      let resumeId = selectedResumeId;
-
-      // Upload new resume if selected
-      if (resumeType === "upload" && file) {
-        const uploaded = await uploadResume(file);
-        resumeId = uploaded.id;
-      }
-
-      if (!resumeId) {
-        alert("Please select or upload a resume");
-        return;
-      }
-
-
-      console.log("Applying job:", {
-        jobId,
-        resumeId,
-      });
-
-      onClose();
-    } catch (err) {
-      console.error("Apply failed", err);
-    } finally {
-      setLoading(false);
+    if (!file) {
+      setError("Please upload a resume to apply.");
+      return;
     }
-  };
+
+    await applyToJob({
+      jobId,
+      file,
+      coverLetter: "",
+    });
+
+    onClose();
+  } catch (err) {
+    const parsed = parseApiError(err);
+    console.log("parsed: ", parsed)
+
+    setError(parsed.message);
+    setFieldErrors(parsed.fields || {});
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
 
   if (!open) return null;
+
+
+const parseApiError = (err) => {
+  // Network error
+  if (!err.response) {
+    return {
+      message: "Network error. Please check your connection.",
+      fields: {},
+    };
+  }
+
+  const data = err.response.data;
+
+  // DRF detail error
+  if (typeof data?.detail === "string") {
+    return {
+      message: data.detail,
+      fields: {},
+    };
+  }
+
+  // DRF field errors (like job, resume, etc.)
+  if (typeof data === "object") {
+    const messages = [];
+
+    Object.keys(data).forEach((key) => {
+      if (Array.isArray(data[key])) {
+        data[key].forEach((msg) => messages.push(msg));
+      }
+    });
+
+    return {
+      message: messages.join(" "),
+      fields: data,
+    };
+  }
+
+  return {
+    message: "Something went wrong. Please try again.",
+    fields: {},
+  };
+};
+
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -116,6 +178,7 @@ export default function ApplyJobModal({ open, onClose, jobId }) {
               <div className="ml-6 mt-3">
                 <input
                   type="file"
+                  disabled={loading}
                   accept=".pdf,.doc,.docx"
                   onChange={(e) => setFile(e.target.files[0])}
                 />
@@ -123,6 +186,20 @@ export default function ApplyJobModal({ open, onClose, jobId }) {
             )}
           </div>
         </div>
+
+        {fieldErrors?.resume && (
+          <p className="mt-2 text-sm text-red-600">
+            {fieldErrors.resume[0]}
+          </p>
+        )}
+
+
+        {error && (
+          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
 
         {/* FOOTER */}
         <div className="mt-8 flex justify-end gap-3">
