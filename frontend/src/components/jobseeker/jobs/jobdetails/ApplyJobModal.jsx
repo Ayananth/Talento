@@ -5,12 +5,13 @@ import toast from "react-hot-toast";
 
 export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
   // const [resumeType, setResumeType] = useState("existing");
-  const [resumeType] = useState("upload");
-
-
+  const [resumeType, setResumeType] = useState("existing");
   const [resumes, setResumes] = useState([]);
-  const [selectedResumeId, setSelectedResumeId] = useState(null);
+  const [selectedResume, setSelectedResume] = useState(null);
   const [file, setFile] = useState(null);
+  const [saveToProfile, setSaveToProfile] = useState(true);
+
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -27,6 +28,7 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
 
     if (!open) {
     setCurrentSalary("");
+    setSaveToProfile(true);
     setExpectedSalary("");
     setNoticePeriod("");
       setCoverLetter("");
@@ -64,11 +66,7 @@ const handleApply = async () => {
     setFieldErrors({});
     setLoading(true);
 
-    if (!file) {
-      setError("Please upload a resume.");
-      return;
-    }
-
+    // ---------- SALARY VALIDATION ----------
     if (!expectedSalary) {
       setError("Expected salary is required.");
       return;
@@ -79,24 +77,53 @@ const handleApply = async () => {
       return;
     }
 
+    // ---------- COVER LETTER VALIDATION ----------
     if (isCoverLetterUnsafe(coverLetter)) {
       setError("Cover letter contains unsafe content.");
       return;
     }
 
-    await applyToJob({
+    let payload = {
       jobId,
-      file,
       coverLetter,
       currentSalary: currentSalary || null,
       expectedSalary,
       noticePeriod,
-    });
+    };
+
+    // ---------- RESUME LOGIC ----------
+    if (resumeType === "existing") {
+      if (!selectedResume) {
+        setError("Please select a resume.");
+        return;
+      }
+
+      payload.resumeId = selectedResume.id;
+    }
+
+    if (resumeType === "upload") {
+      if (!file) {
+        setError("Please upload a resume.");
+        return;
+      }
+
+      // save to profile only if user wants
+      if (saveToProfile) {
+        await uploadResume(file);
+      }
+
+      payload.file = file;
+    }
+
+    // ---------- APPLY ----------
+    await applyToJob(payload);
 
     toast.success("Applied successfully 🎉");
     onApplied?.();
     onClose();
   } catch (err) {
+    console.error("Apply failed", err);
+
     const parsed = parseApiError(err);
     setError(parsed.message);
     setFieldErrors(parsed.fields || {});
@@ -104,6 +131,8 @@ const handleApply = async () => {
     setLoading(false);
   }
 };
+
+
 
 
 
@@ -184,20 +213,22 @@ const parseApiError = (err) => {
                   </p>
                 )}
 
-                {resumes.map((r) => (
-                  <label
-                    key={r.id}
-                    className="flex items-center gap-2 text-sm cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      name="resume"
-                      checked={selectedResumeId === r.id}
-                      onChange={() => setSelectedResumeId(r.id)}
-                    />
-                    {r.file}
-                  </label>
-                ))}
+              {resumes.map((r) => (
+                <label
+                  key={r.id}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name="resume"
+                    checked={selectedResume?.id === r.id}
+                    onChange={() => setSelectedResume(r)}
+                  />
+                  {r.title}
+                  {console.log("selected resume url : ", selectedResume)}
+                </label>
+              ))}
+
               </div>
             )}
           </div>
@@ -213,16 +244,25 @@ const parseApiError = (err) => {
               <span className="font-medium">Upload new resume</span>
             </label>
 
-            {resumeType === "upload" && (
-              <div className="ml-6 mt-3">
+          {resumeType === "upload" && (
+            <div className="ml-6 mt-3 space-y-3">
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+
+              <label className="flex items-center gap-2 text-sm text-slate-700">
                 <input
-                  type="file"
-                  disabled={loading}
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => setFile(e.target.files[0])}
+                  type="checkbox"
+                  checked={saveToProfile}
+                  onChange={(e) => setSaveToProfile(e.target.checked)}
                 />
-              </div>
-            )}
+                Save this resume to my profile
+              </label>
+            </div>
+          )}
+
           </div>
 
 

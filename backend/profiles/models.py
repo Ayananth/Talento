@@ -82,7 +82,7 @@ class JobSeekerResume(models.Model):
     profile = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE, related_name="resumes")
 
     title = models.CharField(max_length=255)
-    file = CloudinaryField(resource_type='raw', folder="talento-dev/resumes/")
+    file = CloudinaryField(resource_type='image', folder="talento-dev/resumes/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     parsed_data = models.JSONField(blank=True, null=True)

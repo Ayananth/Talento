@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import JobApplication
 from jobs.models.job import Job
 import re
+from cloudinary.utils import cloudinary_url
 
 
 DANGEROUS_PATTERN = re.compile(
@@ -116,4 +117,12 @@ class JobApplicationSerializer(serializers.ModelSerializer):
         ]
 
     def get_resume_url(self, obj):
-        return obj.resume.url if obj.resume else None
+        if not obj.resume:
+            return None
+
+        url, _ = cloudinary_url(
+            obj.resume,
+            resource_type="image"
+        )
+        return url
+

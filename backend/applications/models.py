@@ -26,7 +26,7 @@ class JobApplication(models.Model):
     )
 
     resume = CloudinaryField(
-        resource_type="raw",
+        resource_type="image",
         folder="talento/resumes/applications",
         null=True,
         blank=True

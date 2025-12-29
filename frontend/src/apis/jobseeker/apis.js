@@ -50,6 +50,7 @@ export const uploadResume = async (file) => {
 
 export const applyToJob = async ({
   jobId,
+  resumeId,
   file,
   coverLetter,
   currentSalary,
@@ -58,18 +59,42 @@ export const applyToJob = async ({
 }) => {
   const formData = new FormData();
 
+  // 🔑 Required
   formData.append("job", jobId);
-  formData.append("resume", file);
   formData.append("expected_salary", expectedSalary);
 
-  if (coverLetter) formData.append("cover_letter", coverLetter);
-  if (currentSalary) formData.append("current_salary", currentSalary);
-  if (noticePeriod) formData.append("notice_period", noticePeriod);
+  // 🔁 Resume logic (IMPORTANT)
+  if (resumeId) {
+    // Existing resume → backend will copy in Cloudinary
+    formData.append("resume_id", resumeId);
+  } else if (file) {
+    // New resume → backend uploads file
+    formData.append("resume", file);
+  } else {
+    throw new Error("Either resumeId or file must be provided");
+  }
+
+  // Optional fields
+  if (coverLetter) {
+    formData.append("cover_letter", coverLetter);
+  }
+
+  if (currentSalary !== null && currentSalary !== undefined) {
+    formData.append("current_salary", currentSalary);
+  }
+
+  if (noticePeriod) {
+    formData.append("notice_period", noticePeriod);
+  }
 
   const res = await api.post(
     "/v1/applications/apply/",
     formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
 
   return res.data;
