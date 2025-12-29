@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { getMyResumes, uploadResume, applyToJob } from "../../../../apis/jobseeker/apis";
+import toast from "react-hot-toast";
 
-export default function ApplyJobModal({ open, onClose, jobId }) {
+
+export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
   // const [resumeType, setResumeType] = useState("existing");
   const [resumeType] = useState("upload");
 
@@ -53,6 +55,9 @@ const handleApply = async () => {
       file,
       coverLetter: "",
     });
+    toast.dismiss();
+    toast.success("Applied successfully ");
+    onApplied?.();
 
     onClose();
   } catch (err) {

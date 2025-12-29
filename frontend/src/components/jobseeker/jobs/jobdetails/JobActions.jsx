@@ -3,6 +3,7 @@ import { Button } from "flowbite-react";
 import { Bookmark } from "lucide-react";
 import ApplyJobModal from "./ApplyJobModal";
 
+
 export default function JobActions({
   jobId,
   isActive = true,
@@ -13,8 +14,14 @@ export default function JobActions({
 }) {
   const [openApply, setOpenApply] = useState(false);
   const [saved, setSaved] = useState(initialSaved);
+  const [hasAppliedLocal, setHasAppliedLocal] = useState(hasApplied);
 
-  const canApply = isActive && status === "published" && !hasApplied;
+  
+
+
+  const canApply =
+  isActive && status === "published" && !hasAppliedLocal;
+
 
   return (
     <>
@@ -32,7 +39,8 @@ export default function JobActions({
           }`}
           onClick={() => setOpenApply(true)}
         >
-          {hasApplied ? "Applied" : "Apply now"}
+          {hasAppliedLocal ? "Applied" : "Apply now"}
+
         </Button>
 
         {/* SAVE */}
@@ -62,6 +70,7 @@ export default function JobActions({
           jobId={jobId}
           open={openApply}
           onClose={() => setOpenApply(false)}
+          onApplied={() => setHasAppliedLocal(true)}
         />
       )}
     </>
