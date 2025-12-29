@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     "recruiter",
     "django_filters",
     # "admin",
-    "jobs"
+    "jobs",
+    "applications"
 ]
 
 MIDDLEWARE = [

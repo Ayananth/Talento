@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from jobs.models.job import Job
-from jobs.models.application import JobApplication
 from jobs.models.skill import JobSkill
 from django.utils import timezone
 

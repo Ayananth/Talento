@@ -32,7 +32,7 @@ export default function JobDetailPage() {
 
         const res = await getJobDetail(id);
         setJob(res);
-      } catch (err) {
+              } catch (err) {
         console.error("Failed to fetch job detail", err);
         setError(true);
         setJob(null);
@@ -103,7 +103,7 @@ export default function JobDetailPage() {
               jobId={job.id}
               isActive={true}
               status="published"
-              hasApplied={false}
+              hasApplied={job.has_applied}
               isSaved={false}
             />
           </main>

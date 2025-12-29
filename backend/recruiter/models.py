@@ -46,14 +46,14 @@ class RecruiterProfile(models.Model):
     # Business Verification
     business_registration_doc = CloudinaryField(
         "business_registration_document",
-        resource_type='raw', 
+        resource_type='image', 
         folder="talento-dev/recruiters/business",
         blank=True,
         null=True
     )
     draft_business_registration_doc = CloudinaryField(
         "business_registration_document",
-        resource_type='raw', 
+        resource_type='image', 
         folder="talento-dev/recruiters/business/draft",
         blank=True,
         null=True

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from jobs.models.job import Job
-from jobs.models.application import JobApplication
+# from jobs.models.application import JobApplication
 from jobs.models.skill import JobSkill
 from django.utils import timezone
 
@@ -263,6 +263,7 @@ class JobCloseSerializer(serializers.ModelSerializer):
 class PublicJobListSerializer(serializers.ModelSerializer):
     logo = serializers.SerializerMethodField()
     company_name = serializers.CharField(source = 'recruiter.recruiter_profile.company_name')
+    has_applied = serializers.BooleanField(read_only=True)
     class Meta:
         model = Job
         fields = [
@@ -278,7 +279,8 @@ class PublicJobListSerializer(serializers.ModelSerializer):
             "salary_currency",
             "published_at",
             "logo",
-            'company_name'
+            'company_name',
+            "has_applied"
 
         ]
 
@@ -297,6 +299,7 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
     company_about = serializers.CharField(source = 'recruiter.recruiter_profile.about_company')
     company_size = serializers.CharField(source = 'recruiter.recruiter_profile.company_size')
     company_website = serializers.URLField(source = 'recruiter.recruiter_profile.website')
+    has_applied = serializers.BooleanField(read_only=True)
 
 
     class Meta:
@@ -320,7 +323,8 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
             "company_name",
             "company_about",
             "company_size",
-            "company_website"
+            "company_website",
+            "has_applied"
 
         ]
 
@@ -345,32 +349,32 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
 
 
 
-class JobApplySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = JobApplication
-        fields = ["resume", "cover_letter"]
+# class JobApplySerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = JobApplication
+#         fields = ["resume", "cover_letter"]
 
-    def validate(self, attrs):
-        job = self.context["job"]
-        user = self.context["request"].user
+#     def validate(self, attrs):
+#         job = self.context["job"]
+#         user = self.context["request"].user
 
-        if job.status != Job.Status.PUBLISHED:
-            raise serializers.ValidationError("This job is not accepting applications.")
+#         if job.status != Job.Status.PUBLISHED:
+#             raise serializers.ValidationError("This job is not accepting applications.")
 
-        if job.expires_at and job.expires_at <= timezone.now():
-            raise serializers.ValidationError("This job has expired.")
+#         if job.expires_at and job.expires_at <= timezone.now():
+#             raise serializers.ValidationError("This job has expired.")
 
-        if JobApplication.objects.filter(job=job, applicant=user).exists():
-            raise serializers.ValidationError("You have already applied to this job.")
+#         if JobApplication.objects.filter(job=job, applicant=user).exists():
+#             raise serializers.ValidationError("You have already applied to this job.")
 
-        return attrs
+#         return attrs
 
-    def create(self, validated_data):
-        job = self.context["job"]
-        user = self.context["request"].user
+#     def create(self, validated_data):
+#         job = self.context["job"]
+#         user = self.context["request"].user
 
-        return JobApplication.objects.create(
-            job=job,
-            applicant=user,
-            **validated_data
-        )
+#         return JobApplication.objects.create(
+#             job=job,
+#             applicant=user,
+#             **validated_data
+#         )

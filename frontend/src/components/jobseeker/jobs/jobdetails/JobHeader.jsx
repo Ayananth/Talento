@@ -72,13 +72,13 @@ export default function JobHeader({
         </div>
 
         {/* RIGHT */}
-        <Button
+        {/* <Button
           size="lg"
           className="bg-blue-600 hover:bg-blue-700 shrink-0"
           onClick={onApply}
         >
           Apply now
-        </Button>
+        </Button> */}
       </div>
     </div>
   );
