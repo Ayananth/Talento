@@ -15,6 +15,10 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [coverLetter, setCoverLetter] = useState("");
+  const [currentSalary, setCurrentSalary] = useState("");
+  const [expectedSalary, setExpectedSalary] = useState("");
+  const [noticePeriod, setNoticePeriod] = useState("");
+
 
 
 
@@ -22,6 +26,9 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
     if (open) fetchResumes();
 
     if (!open) {
+    setCurrentSalary("");
+    setExpectedSalary("");
+    setNoticePeriod("");
       setCoverLetter("");
       setError(null);
       setFieldErrors({});
@@ -58,14 +65,22 @@ const handleApply = async () => {
     setLoading(true);
 
     if (!file) {
-      setError("Please upload a resume to apply.");
+      setError("Please upload a resume.");
+      return;
+    }
+
+    if (!expectedSalary) {
+      setError("Expected salary is required.");
+      return;
+    }
+
+    if (Number(expectedSalary) <= 0) {
+      setError("Expected salary must be greater than zero.");
       return;
     }
 
     if (isCoverLetterUnsafe(coverLetter)) {
-      setError(
-        "Cover letter contains unsupported or unsafe content."
-      );
+      setError("Cover letter contains unsafe content.");
       return;
     }
 
@@ -73,16 +88,16 @@ const handleApply = async () => {
       jobId,
       file,
       coverLetter,
+      currentSalary: currentSalary || null,
+      expectedSalary,
+      noticePeriod,
     });
-    toast.dismiss();
-    toast.success("Applied successfully ");
-    onApplied?.();
 
+    toast.success("Applied successfully 🎉");
+    onApplied?.();
     onClose();
   } catch (err) {
     const parsed = parseApiError(err);
-    console.log("parsed: ", parsed)
-
     setError(parsed.message);
     setFieldErrors(parsed.fields || {});
   } finally {
@@ -238,6 +253,59 @@ const parseApiError = (err) => {
               </p>
             )}
           </div>
+
+
+<div className="grid grid-cols-1 gap-4">
+
+  {/* CURRENT SALARY */}
+  <div>
+    <label className="block text-sm font-medium text-slate-700">
+      Current Salary in LPA (optional)
+    </label>
+    <input
+      type="number"
+      value={currentSalary}
+      onChange={(e) => setCurrentSalary(e.target.value)}
+      className="mt-1 w-full rounded-lg border p-2"
+      placeholder="e.g. 600000"
+    />
+  </div>
+
+  {/* EXPECTED SALARY */}
+  <div>
+    <label className="block text-sm font-medium text-slate-700">
+      Expected Salary in LPA <span className="text-red-500">*</span>
+    </label>
+    <input
+      type="number"
+      required
+      value={expectedSalary}
+      onChange={(e) => setExpectedSalary(e.target.value)}
+      className="mt-1 w-full rounded-lg border p-2"
+      placeholder="e.g. 800000"
+    />
+    {fieldErrors?.expected_salary && (
+      <p className="text-sm text-red-600">
+        {fieldErrors.expected_salary[0]}
+      </p>
+    )}
+  </div>
+
+  {/* NOTICE PERIOD */}
+  <div>
+    <label className="block text-sm font-medium text-slate-700">
+      Notice Period (optional)
+    </label>
+    <input
+      type="text"
+      value={noticePeriod}
+      onChange={(e) => setNoticePeriod(e.target.value)}
+      className="mt-1 w-full rounded-lg border p-2"
+      placeholder="e.g. 30 days / Immediate"
+    />
+  </div>
+</div>
+
 
         </div>
 

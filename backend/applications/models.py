@@ -33,6 +33,22 @@ class JobApplication(models.Model):
     )
 
     cover_letter = models.TextField(blank=True)
+    
+    current_salary = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Current salary in INR"
+    )
+
+    expected_salary = models.PositiveIntegerField(
+        help_text="Expected salary in INR"
+    )
+
+    notice_period = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Notice period (e.g. 30 days, Immediate)"
+    )
 
     status = models.CharField(
         max_length=20,

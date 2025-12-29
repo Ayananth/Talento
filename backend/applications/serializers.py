@@ -18,7 +18,27 @@ class ApplyJobSerializer(serializers.ModelSerializer):
             "job",
             "resume",
             "cover_letter",
+            "current_salary",
+            "expected_salary",
+            "notice_period",
         ]
+
+    def validate_expected_salary(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                "Expected salary must be greater than zero."
+            )
+        return value
+
+    def validate_notice_period(self, value):
+        if not value:
+            return value
+
+        if len(value) > 50:
+            raise serializers.ValidationError(
+                "Notice period value is too long."
+            )
+        return value
 
     def validate_job(self, job):
         request = self.context["request"]
