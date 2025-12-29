@@ -62,11 +62,21 @@ export default function JobseekerLandingPage() {
           {/* IMAGE 1 */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
-            whileHover={{ y: -6 }}
+            animate={{
+              opacity: 1,
+              y: [0, -10, 0],
+            }}
+            transition={{
+              opacity: { duration: 0.7 },
+              y: {
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              },
+            }}
             className="rounded-3xl overflow-hidden shadow-2xl w-[380px] ml-auto"
           >
+
             <img
               src={heroImg1}
               alt="Team success"
@@ -77,11 +87,21 @@ export default function JobseekerLandingPage() {
           {/* IMAGE 2 */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            whileHover={{ y: -6 }}
+            animate={{
+              opacity: 1,
+              y: [0, 12, 0],
+            }}
+            transition={{
+              opacity: { duration: 0.8, delay: 0.2 },
+              y: {
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
+              },
+            }}
             className="absolute -bottom-20 right-24 rounded-3xl overflow-hidden shadow-2xl w-[360px] border-8 border-blue-600"
           >
+
             <img
               src={heroImg2}
               alt="Hiring discussion"
