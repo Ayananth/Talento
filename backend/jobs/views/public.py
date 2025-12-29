@@ -13,8 +13,9 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.exceptions import NotFound
-from django.db.models import F
+from django.db.models import F,Exists, OuterRef, Value, BooleanField
 from django.db.models.functions import Coalesce
+from applications.models import JobApplication
 
 
 from jobs.models.job import Job
@@ -38,6 +39,7 @@ class PublicJobListView(ListAPIView):
     def get_queryset(self):
         ordering_param = self.request.query_params.get("ordering")
         search = self.request.query_params.get("search")
+        user = self.request.user
 
         queryset = Job.objects.filter(
             status=Job.Status.PUBLISHED,
@@ -61,22 +63,56 @@ class PublicJobListView(ListAPIView):
                     "-rank", "-similarity", "-published_at"
                 )
 
+        if user.is_authenticated and user.role == "jobseeker":
+            queryset = queryset.annotate(
+                has_applied=Exists(
+                    JobApplication.objects.filter(
+                        job=OuterRef("pk"),
+                        applicant=user.jobseeker_profile
+                    )
+                )
+            )
+        else:
+            queryset = queryset.annotate(
+                has_applied=Value(False, output_field=BooleanField())
+            )
+
         return queryset
 
 class PublicJobDetailView(RetrieveAPIView):
     serializer_class = PublicJobDetailSerializer
-    queryset = Job.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+
+        queryset = Job.objects.filter(
+            status=Job.Status.PUBLISHED,
+            is_active=True,
+        )
+
+        queryset = queryset.exclude(
+            expires_at__isnull=False,
+            expires_at__lte=timezone.now()
+        )
+
+        if user.is_authenticated and getattr(user, "role", None) == "jobseeker":
+            queryset = queryset.annotate(
+                has_applied=Exists(
+                    JobApplication.objects.filter(
+                        job=OuterRef("pk"),
+                        applicant=user.jobseeker_profile
+                    )
+                )
+            )
+        else:
+            queryset = queryset.annotate(
+                has_applied=Value(False, output_field=BooleanField())
+            )
+
+        return queryset
 
     def get_object(self):
         job = super().get_object()
-
-        if job.status != Job.Status.PUBLISHED or not job.is_active:
-            raise NotFound("Job not found")
-
-        if job.expires_at and job.expires_at <= timezone.now():
-            raise NotFound("Job expired")
-
-        # Increment view count safely
         Job.objects.filter(id=job.id).update(
             view_count=F("view_count") + 1
         )

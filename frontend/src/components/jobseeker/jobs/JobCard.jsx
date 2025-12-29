@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 export default function JobCard({ job }) {
   const navigate = useNavigate();
 
+  // console.log(job.has_applied)
+
   const goToJobDetail = () => {
     navigate(`/jobs/${job.id}`);
   };
@@ -114,13 +116,14 @@ export default function JobCard({ job }) {
         {/* Apply button (DOES NOT trigger navigation) */}
         <Button
           size="sm"
-          color="light"
+          color={job.has_applied ? "light" : "blue"}
           onClick={(e) => {
             e.stopPropagation(); 
             navigate(`/jobs/${job.id}`);
           }}
+        disabled={job.has_applied}
         >
-          Apply
+          {job.has_applied ? "Applied" : "Apply"}
         </Button>
       </div>
     </motion.div>

@@ -263,6 +263,7 @@ class JobCloseSerializer(serializers.ModelSerializer):
 class PublicJobListSerializer(serializers.ModelSerializer):
     logo = serializers.SerializerMethodField()
     company_name = serializers.CharField(source = 'recruiter.recruiter_profile.company_name')
+    has_applied = serializers.BooleanField(read_only=True)
     class Meta:
         model = Job
         fields = [
@@ -278,7 +279,8 @@ class PublicJobListSerializer(serializers.ModelSerializer):
             "salary_currency",
             "published_at",
             "logo",
-            'company_name'
+            'company_name',
+            "has_applied"
 
         ]
 
@@ -297,6 +299,7 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
     company_about = serializers.CharField(source = 'recruiter.recruiter_profile.about_company')
     company_size = serializers.CharField(source = 'recruiter.recruiter_profile.company_size')
     company_website = serializers.URLField(source = 'recruiter.recruiter_profile.website')
+    has_applied = serializers.BooleanField(read_only=True)
 
 
     class Meta:
@@ -320,7 +323,8 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
             "company_name",
             "company_about",
             "company_size",
-            "company_website"
+            "company_website",
+            "has_applied"
 
         ]
 

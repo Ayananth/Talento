@@ -1,46 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "flowbite-react";
 import { Bookmark } from "lucide-react";
 import ApplyJobModal from "./ApplyJobModal";
-
 
 export default function JobActions({
   jobId,
   isActive = true,
   status = "published",
-
-  hasApplied = false,
+  hasApplied,
   isSaved: initialSaved = false,
 }) {
   const [openApply, setOpenApply] = useState(false);
   const [saved, setSaved] = useState(initialSaved);
   const [hasAppliedLocal, setHasAppliedLocal] = useState(hasApplied);
 
-  
-
+  useEffect(() => {
+    setHasAppliedLocal(hasApplied);
+  }, [hasApplied]);
 
   const canApply =
-  isActive && status === "published" && !hasAppliedLocal;
-
+    isActive && status === "published" && !hasAppliedLocal;
 
   return (
     <>
-      {/* ACTION BAR */}
       <div className="flex flex-wrap items-center gap-4 border border-slate-200 rounded-2xl p-6 bg-white">
 
         {/* APPLY */}
         <Button
           size="lg"
+          color={hasAppliedLocal ? "light" : "blue"}
           disabled={!canApply}
-          className={`${
-            canApply
-              ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-gray-300 cursor-not-allowed"
-          }`}
           onClick={() => setOpenApply(true)}
         >
           {hasAppliedLocal ? "Applied" : "Apply now"}
-
         </Button>
 
         {/* SAVE */}
@@ -56,7 +48,6 @@ export default function JobActions({
           {saved ? "Saved" : "Save job"}
         </Button>
 
-        {/* STATUS MESSAGE */}
         {!isActive && (
           <p className="text-sm text-red-500">
             This job is no longer accepting applications
@@ -65,14 +56,12 @@ export default function JobActions({
       </div>
 
       {/* APPLY MODAL */}
-      {canApply && (
-        <ApplyJobModal
-          jobId={jobId}
-          open={openApply}
-          onClose={() => setOpenApply(false)}
-          onApplied={() => setHasAppliedLocal(true)}
-        />
-      )}
+      <ApplyJobModal
+        jobId={jobId}
+        open={openApply}
+        onClose={() => setOpenApply(false)}
+        onApplied={() => setHasAppliedLocal(true)}
+      />
     </>
   );
 }

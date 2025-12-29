@@ -40,6 +40,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
         salary_from: job.salary_min,
         salary_to: job.salary_max,
         salary_currency: job.salary_currency,
+        has_applied: job.has_applied
       }));
 
       setJobs(mapped);
