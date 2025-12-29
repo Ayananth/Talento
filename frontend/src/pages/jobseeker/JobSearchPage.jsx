@@ -13,6 +13,11 @@ const JobSearchPage = () => {
     JOB_SORT_OPTIONS[0].value // "-published_at"
   );
   const [pageSize, setpageSize] = useState(12)
+  const [page, setPage] = useState(1); 
+  
+  const shownCount =
+    jobCount === 0 ? 0 : Math.min(page * pageSize, jobCount);
+
 
 
 
@@ -34,6 +39,8 @@ const JobSearchPage = () => {
       ordering={ordering}
       onOrderingChange={setOrdering}
       onpageSizeChange={setpageSize}
+      shown={shownCount}
+      jobCount={jobCount}
       // onReset={handleReset}
     />
       <JobListingLayout
@@ -43,6 +50,9 @@ const JobSearchPage = () => {
         trigger={trigger}
         setJobCount={setJobCount}
         pageSize={pageSize}
+        page={page} 
+        setPage={setPage}
+        jobCount={jobCount}
       />
     </div>
   );

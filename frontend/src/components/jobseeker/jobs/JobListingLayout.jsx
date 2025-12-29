@@ -5,10 +5,10 @@ import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import company_placeholder from '../../../assets/common/image.png' 
 
-export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize }) {
+export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize, page, setPage }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  // const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
   // const [ordering, setOrdering] = useState("-published_at");
 

@@ -9,7 +9,9 @@ export default function JobResultsToolbar({
   ordering,
   onOrderingChange,
   onReset,
-  onpageSizeChange
+  onpageSizeChange,
+  shown,
+  jobCount
 }) {
 
   function handlePageChange(e) {
@@ -38,7 +40,7 @@ export default function JobResultsToolbar({
 
         {/* CENTER */}
         <div className="text-sm text-slate-500">
-          Showing {from}–{to} of {total} jobs
+          Showing {shown} of {jobCount} jobs
         </div>
 
         {/* RIGHT */}
