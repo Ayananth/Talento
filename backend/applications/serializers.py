@@ -1,6 +1,13 @@
 from rest_framework import serializers
 from .models import JobApplication
 from jobs.models.job import Job
+import re
+
+
+DANGEROUS_PATTERN = re.compile(
+    r"(<script|</script>|<.*?>|javascript:|onerror=|onload=)",
+    re.IGNORECASE,
+)
 
 
 
@@ -51,6 +58,18 @@ class ApplyJobSerializer(serializers.ModelSerializer):
             )
 
         return file
+    
+    def validate_cover_letter(self, value):
+        if not value:
+            return value
+
+        if DANGEROUS_PATTERN.search(value):
+            raise serializers.ValidationError(
+                "Cover letter contains unsafe content."
+            )
+
+        return value
+
     
 
 

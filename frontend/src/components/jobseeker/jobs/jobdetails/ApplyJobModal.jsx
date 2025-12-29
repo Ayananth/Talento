@@ -14,21 +14,33 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [coverLetter, setCoverLetter] = useState("");
+
 
 
   useEffect(() => {
     if (open) fetchResumes();
 
     if (!open) {
+      setCoverLetter("");
       setError(null);
       setFieldErrors({});
       setFile(null);
       setLoading(false);
     }
 
-
+    
 
   }, [open]);
+
+
+  const DANGEROUS_REGEX =
+    /(<script|<\/script>|<.*?>|javascript:|onerror=|onload=)/i;
+
+  const isCoverLetterUnsafe = (text) => {
+    return DANGEROUS_REGEX.test(text);
+  };
+
 
   const fetchResumes = async () => {
     try {
@@ -50,10 +62,17 @@ const handleApply = async () => {
       return;
     }
 
+    if (isCoverLetterUnsafe(coverLetter)) {
+      setError(
+        "Cover letter contains unsupported or unsafe content."
+      );
+      return;
+    }
+
     await applyToJob({
       jobId,
       file,
-      coverLetter: "",
+      coverLetter,
     });
     toast.dismiss();
     toast.success("Applied successfully ");
@@ -190,6 +209,36 @@ const parseApiError = (err) => {
               </div>
             )}
           </div>
+
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Cover letter (optional)
+            </label>
+
+            <textarea
+              rows={5}
+              value={coverLetter}
+              disabled={loading}
+              onChange={(e) => setCoverLetter(e.target.value)}
+              placeholder="Explain why you're a good fit for this role..."
+              className="w-full rounded-lg border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+
+            <div className="flex justify-between mt-1 text-xs text-slate-500">
+              <span>
+                {coverLetter.length > 0 && `${coverLetter.length} characters`}
+              </span>
+              <span>Optional</span>
+            </div>
+
+            {fieldErrors?.cover_letter && (
+              <p className="mt-1 text-sm text-red-600">
+                {fieldErrors.cover_letter[0]}
+              </p>
+            )}
+          </div>
+
         </div>
 
         {fieldErrors?.resume && (
