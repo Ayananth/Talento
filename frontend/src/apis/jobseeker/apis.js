@@ -5,15 +5,40 @@ export const getJobs = async ({
   ordering = "-published_at",
   search = "",
   location = "",
-  pageSize = "12"
+  pageSize = "12",
+  filters = {},
 } = {}) => {
+  console.log("Filters: ",filters)
   const res = await api.get("/v1/jobs/jobs/public/", {
     params: {
       page,
       ...(ordering && { ordering }),
       ...(search && { search }),
       ...(location && { location_city: location }),
-      ...(pageSize && {page_size: pageSize})
+      ...(pageSize && {page_size: pageSize}),
+
+      ...(filters&& filters.workMode&&filters.workMode.length && {
+        work_mode: filters.workMode.join(","),
+      }),
+
+      ...(filters.jobType.length && {
+        job_type: filters.jobType.join(","),
+      }),
+      ...(filters.experience.length && {
+        experience_level: filters.experience.join(","),
+      }),
+      ...(filters.postedWithin && {
+        published_after: filters.postedWithin,
+      }),
+      ...(filters.salaryMin && {
+        salary_min: filters.salaryMin,
+      }),
+      ...(filters.salaryMax && {
+        salary_max: filters.salaryMax,
+      }),
+
+
+
     },
   });
 

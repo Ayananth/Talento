@@ -23,7 +23,7 @@ const JobFilters = ({ filters, setFilters }) => {
               <div className="space-y-6">
 
                 {/* LOCATION */}
-                <div>
+                {/* <div>
                   <h4 className="text-sm font-semibold text-slate-900 mb-3">
                     Location
                   </h4>
@@ -32,7 +32,7 @@ const JobFilters = ({ filters, setFilters }) => {
                     placeholder="City or country"
                     className="w-full rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500"
                   />
-                </div>
+                </div> */}
 
                 {/* WORK MODE */}
                 <div>
@@ -61,15 +61,13 @@ const JobFilters = ({ filters, setFilters }) => {
                   </h4>
                   <div className="space-y-2 text-sm text-slate-700">
                     {[
-                      "Full-time",
-                      "Part-time",
-                      "Contract",
-                      "Internship",
-                      "Freelance",
+                      "full_time", "part_time", "contract", "internship"
                     ].map((type) => (
                       <label key={type} className="flex items-center gap-2">
                         <input
                           type="checkbox"
+                          checked={filters.jobType.includes(type)}
+                          onChange={() => toggleArrayValue("jobType", type)}
                           className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                         />
                         {type}
@@ -84,10 +82,12 @@ const JobFilters = ({ filters, setFilters }) => {
                     Experience level
                   </h4>
                   <div className="space-y-2 text-sm text-slate-700">
-                    {["Fresher", "Junior", "Mid", "Senior", "Lead"].map((level) => (
+                    {["fresher", "junior", "mid", "senior"].map((level) => (
                       <label key={level} className="flex items-center gap-2">
                         <input
                           type="checkbox"
+                          checked={filters.experience.includes(level)}
+                          onChange={() => toggleArrayValue("experience", level)}
                           className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                         />
                         {level}
@@ -101,7 +101,13 @@ const JobFilters = ({ filters, setFilters }) => {
                   <h4 className="text-sm font-semibold text-slate-900 mb-3">
                     Date posted
                   </h4>
-                  <select className="w-full rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500">
+                  <select 
+              value={filters.postedWithin}
+              onChange={(e) =>
+                setFilters((p) => ({ ...p, postedWithin: e.target.value }))
+              }
+                  
+                  className="w-full rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Any time</option>
                     <option value="1">Last 24 hours</option>
                     <option value="3">Last 3 days</option>
@@ -119,11 +125,19 @@ const JobFilters = ({ filters, setFilters }) => {
                     <input
                       type="number"
                       placeholder="Min"
+                value={filters.salaryMin}
+                onChange={(e) =>
+                  setFilters((p) => ({ ...p, salaryMin: e.target.value }))
+                }
                       className="w-1/2 rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500"
                     />
                     <input
                       type="number"
                       placeholder="Max"
+                value={filters.salaryMax}
+                onChange={(e) =>
+                  setFilters((p) => ({ ...p, salaryMax: e.target.value }))
+                }
                       className="w-1/2 rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
