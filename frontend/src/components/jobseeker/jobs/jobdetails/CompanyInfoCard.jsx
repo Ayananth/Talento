@@ -8,6 +8,8 @@ import {
   Calendar,
 } from "lucide-react";
 
+import company_placeholder from '@/assets/common/image.png' 
+
 export default function CompanyInfoCard({
   companyName,
   companyAbout,
@@ -36,7 +38,7 @@ export default function CompanyInfoCard({
               className="w-full h-full object-cover"
             />
           ) : (
-            <span className="text-slate-400 text-sm">Logo</span>
+            <img src={company_placeholder} alt="" />
           )}
         </div>
 

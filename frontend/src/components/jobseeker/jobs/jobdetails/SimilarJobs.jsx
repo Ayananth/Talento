@@ -79,7 +79,7 @@ const mockJobs = [
     postedAgo: "3 mins ago",
     salary: "$250 / Hour",
     location: "New York, US",
-    logo: "/logos/linkedin.png",
+    // logo: "/logos/linkedin.png",
   },
   {
     title: "Java Software Engineer",
@@ -87,7 +87,7 @@ const mockJobs = [
     postedAgo: "5 mins ago",
     salary: "$500 / Hour",
     location: "Tokyo, Japan",
-    logo: "/logos/labyrinth.png",
+    // logo: "/logos/labyrinth.png",
   },
   {
     title: "Frontend Developer",
@@ -95,6 +95,6 @@ const mockJobs = [
     postedAgo: "8 mins ago",
     salary: "$350 / Hour",
     location: "Remote",
-    logo: "/logos/bing.png",
+    // logo: "/logos/bing.png",
   },
 ];
