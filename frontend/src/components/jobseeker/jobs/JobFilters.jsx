@@ -1,6 +1,8 @@
 import React from 'react'
 
-const JobFilters = ({ filters, setFilters }) => {
+const JobFilters = ({ filters, setFilters, salaryDraft, setSalaryDraft, onApplySalary, onResetSalary }) => {
+
+
 
   const toggleArrayValue = (key, value) => {
     setFilters((prev) => ({
@@ -135,35 +137,66 @@ const EXPERIENCE_LEVELS = [
                   </select>
                 </div>
 
-                {/* SALARY RANGE */}
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-900 mb-3">
-                    Salary range (₹)
-                  </h4>
-                  <div className="flex gap-3">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                value={filters.salaryMin}
-                onChange={(e) =>
-                  setFilters((p) => ({ ...p, salaryMin: e.target.value }))
-                }
-                      className="w-1/2 rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Max"
-                value={filters.salaryMax}
-                onChange={(e) =>
-                  setFilters((p) => ({ ...p, salaryMax: e.target.value }))
-                }
-                      className="w-1/2 rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
+              {/* SALARY RANGE */}
+{/* SALARY RANGE */}
+<div>
+  <h4 className="text-sm font-semibold text-slate-900 mb-2">
+    Salary range (₹)
+  </h4>
+
+  <p className="text-xs text-slate-500 mb-3">
+    Apply salary separately
+  </p>
+
+  <div className="flex gap-3 mb-3">
+    <input
+      type="number"
+      placeholder="Min"
+      value={salaryDraft.min}
+      onChange={(e) =>
+        setSalaryDraft((p) => ({ ...p, min: e.target.value }))
+      }
+      className="w-1/2 rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500"
+    />
+
+    <input
+      type="number"
+      placeholder="Max"
+      value={salaryDraft.max}
+      onChange={(e) =>
+        setSalaryDraft((p) => ({ ...p, max: e.target.value }))
+      }
+      className="w-1/2 rounded-lg border-slate-300 text-sm focus:ring-blue-500 focus:border-blue-500"
+    />
+  </div>
+
+  <div className="flex gap-2">
+    <button
+      onClick={onApplySalary}
+      disabled={
+        salaryDraft.min === filters.salaryMin &&
+        salaryDraft.max === filters.salaryMax
+      }
+      className="flex-1 rounded-lg bg-blue-600 text-white text-sm py-2
+                 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Apply salary
+    </button>
+
+    <button
+      onClick={onResetSalary}
+      className="flex-1 rounded-lg border border-slate-300
+                 text-slate-700 text-sm py-2 hover:bg-slate-50"
+    >
+      Reset
+    </button>
+  </div>
+</div>
+
+
 
                 {/* ACTIONS */}
-                <div className="pt-4 border-t border-slate-200 flex gap-3">
+                {/* <div className="pt-4 border-t border-slate-200 flex gap-3">
                   <button
                     className="w-full rounded-lg bg-blue-600 text-white text-sm py-2 hover:bg-blue-700"
                   >
@@ -174,7 +207,7 @@ const EXPERIENCE_LEVELS = [
                   >
                     Reset
                   </button>
-                </div>
+                </div> */}
 
               </div>
             </div>

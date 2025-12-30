@@ -6,7 +6,9 @@ import { PAGE_SIZE } from "@/constants/constants";
 import company_placeholder from '../../../assets/common/image.png' 
 import JobFilters from "./JobFilters";
 
-export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize, page, setPage, filters, setFilters, searchParams }) {
+export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize, page, setPage, filters, setFilters, searchParams,
+  salaryDraft, setSalaryDraft, onApplySalary, onResetSalary
+ }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   // const [page, setPage] = useState(1);
@@ -83,6 +85,14 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
           <JobFilters 
           filters={filters}
           setFilters={setFilters}
+
+          salaryDraft={salaryDraft} 
+          setSalaryDraft={setSalaryDraft}
+           onApplySalary={onApplySalary}
+          onResetSalary={onResetSalary}
+
+
+
 
           />
 

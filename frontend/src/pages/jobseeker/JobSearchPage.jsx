@@ -28,6 +28,11 @@ const JobSearchPage = () => {
     salaryMax: searchParams.get("salary_max") || "",
   }));
 
+const [salaryDraft, setSalaryDraft] = useState({
+  min: "",
+  max: "",
+});
+
   const shownCount =
     jobCount === 0 ? 0 : Math.min(page * pageSize, jobCount);
 
@@ -85,6 +90,29 @@ useEffect(() => {
         filters={filters}
         setFilters={setFilters}
         searchParams={searchParams}
+
+  salaryDraft={salaryDraft}
+  setSalaryDraft={setSalaryDraft}
+  onApplySalary={() => {
+    setFilters((prev) => ({
+      ...prev,
+      salaryMin: salaryDraft.min,
+      salaryMax: salaryDraft.max,
+    }));
+    setPage(1);
+  }}
+  onResetSalary={() => {
+    setSalaryDraft({ min: "", max: "" });
+    setFilters((prev) => ({
+      ...prev,
+      salaryMin: "",
+      salaryMax: "",
+    }));
+    setPage(1);
+  }}
+
+
+
       />
     </div>
   );
