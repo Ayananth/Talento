@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import JobSearchSummary from "../../components/jobseeker/jobs/JobSearchSummary";
 import JobResultsToolbar from "../../components/jobseeker/jobs/JobResultsToolbar";
 import JobListingLayout from "../../components/jobseeker/jobs/JobListingLayout";
 import { JOB_SORT_OPTIONS } from "../../constants/constants";
+import { useSearchParams } from "react-router-dom";
 
 const JobSearchPage = () => {
   const [search, setSearch] = useState("");
@@ -14,7 +15,19 @@ const JobSearchPage = () => {
   );
   const [pageSize, setpageSize] = useState(12)
   const [page, setPage] = useState(1); 
-  
+  const [searchParams, setSearchParams] = useSearchParams();
+
+
+  const [filters, setFilters] = useState(() => ({
+    location: searchParams.get("location") || "",
+    workMode: searchParams.get("work_mode")?.split(",") || [],
+    jobType: searchParams.get("job_type")?.split(",") || [],
+    experience: searchParams.get("experience")?.split(",") || [],
+    postedWithin: searchParams.get("posted_within") || "",
+    salaryMin: searchParams.get("salary_min") || "",
+    salaryMax: searchParams.get("salary_max") || "",
+  }));
+
   const shownCount =
     jobCount === 0 ? 0 : Math.min(page * pageSize, jobCount);
 
@@ -24,6 +37,22 @@ const JobSearchPage = () => {
   const handleSearch = () => {
     setTrigger((prev) => prev + 1); 
   };
+
+
+useEffect(() => {
+  const params = {};
+
+  if (filters.location) params.location = filters.location;
+  if (filters.workMode.length) params.work_mode = filters.workMode.join(",");
+  if (filters.jobType.length) params.job_type = filters.jobType.join(",");
+  if (filters.experience.length) params.experience = filters.experience.join(",");
+  if (filters.postedWithin) params.posted_within = filters.postedWithin;
+  if (filters.salaryMin) params.salary_min = filters.salaryMin;
+  if (filters.salaryMax) params.salary_max = filters.salaryMax;
+
+  setSearchParams(params, { replace: true });
+}, [filters]);
+
 
   return (
     <div>
@@ -53,6 +82,9 @@ const JobSearchPage = () => {
         page={page} 
         setPage={setPage}
         jobCount={jobCount}
+        filters={filters}
+        setFilters={setFilters}
+        searchParams={searchParams}
       />
     </div>
   );

@@ -4,13 +4,19 @@ import { getJobs } from "../../../apis/jobseeker/apis";
 import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import company_placeholder from '../../../assets/common/image.png' 
+import JobFilters from "./JobFilters";
 
-export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize, page, setPage }) {
+export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize, page, setPage, filters, setFilters, searchParams }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   // const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
   // const [ordering, setOrdering] = useState("-published_at");
+
+
+
+
+
 
   const totalPages = Math.ceil(count / pageSize);
 
@@ -23,7 +29,8 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
         ordering,
         search,
           location,
-          pageSize
+          pageSize,
+          filters,
       });
 
       const mapped = res.results.map((job) => ({
@@ -60,11 +67,11 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
 
   useEffect(() => {
     fetchJobs();
-  }, [page, trigger, pageSize, ordering]);
+  }, [page, trigger, pageSize, ordering, filters]);
 
   useEffect(() => {
   setPage(1);
-}, [trigger]);
+}, [trigger, filters]);
 
 
 
@@ -73,15 +80,11 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* FILTERS */}
-          <aside className="lg:col-span-3">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sticky top-24">
-              <div className="space-y-6">
-                <div className="h-6 w-32 bg-slate-100 rounded"></div>
-                <div className="h-40 bg-slate-50 rounded"></div>
-                <div className="h-32 bg-slate-50 rounded"></div>
-              </div>
-            </div>
-          </aside>
+          <JobFilters 
+          filters={filters}
+          setFilters={setFilters}
+
+          />
 
           {/* JOB LIST */}
           <main className="lg:col-span-9">
@@ -98,7 +101,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {jobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
+                  <JobCard key={job.id} job={job} searchParams={searchParams} />
                 ))}
               </div>
             )}

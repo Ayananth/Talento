@@ -3,13 +3,14 @@ import { MapPin, Clock } from "lucide-react";
 import { Button } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 
-export default function JobCard({ job }) {
+export default function JobCard({ job, searchParams }) {
   const navigate = useNavigate();
 
   // console.log(job.has_applied)
 
   const goToJobDetail = () => {
-    navigate(`/jobs/${job.id}`);
+    navigate(`/jobs/${job.id}?${searchParams.toString()}`);
+
   };
 
   return (
