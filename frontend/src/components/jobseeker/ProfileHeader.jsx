@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { CircleUser } from 'lucide-react';
 import api from "../../apis/api";
 import {
   MapPin,
@@ -12,16 +11,39 @@ import {
 } from "lucide-react";
 import ProfileEditModal from "./ProfileEditModal";
 
+function AvatarPlaceholder({ size = 128 }) {
+  return (
+    <div
+      className="relative overflow-hidden bg-neutral-secondary-medium rounded-full flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
+      <svg
+        className="absolute w-16 h-16 text-body-subtle"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          fillRule="evenodd"
+          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+          clipRule="evenodd"
+        />
+      </svg>
+    </div>
+  );
+}
+
 export default function ProfileHeader() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [imageError, setImageError] = useState(false);
   const [error, setError] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [success, setSuccess] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
-  const baseUrl = "https://res.cloudinary.com/dycb8cbf8/"
+  const baseUrl = "https://res.cloudinary.com/dycb8cbf8/";
 
   const getVal = (val, placeholder) =>
     val && val !== "" && val !== null ? val : placeholder;
@@ -39,50 +61,45 @@ export default function ProfileHeader() {
       });
   }, []);
 
+
+  useEffect(() => {
+    setImageError(false);
+  }, [preview, data?.profile?.profile_image]);
+
+
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(() => {
-        setError("");
-      }, 3000); // Auto hide after 3 seconds
-
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setError(""), 3000);
+      return () => clearTimeout(t);
     }
   }, [error]);
 
   useEffect(() => {
     if (success) {
-      const timer = setTimeout(() => setSuccess(""), 3000);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setSuccess(""), 3000);
+      return () => clearTimeout(t);
     }
   }, [success]);
 
-  // ------------------------ IMAGE UPLOAD HANDLER ------------------------
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setError(""); // Reset previous error
-
-    // ---- VALIDATIONS ----
-
-    // 1. Check file type (ONLY images)
     const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
     if (!validTypes.includes(file.type)) {
       setError("Only image files (JPEG, PNG, WEBP) are allowed.");
       return;
     }
 
-    // 2. Check size (< 3MB)
-    const maxSize = 3 * 1024 * 1024; // 3MB
-    if (file.size > maxSize) {
+    if (file.size > 3 * 1024 * 1024) {
       setError("File size must be less than 3MB.");
       return;
     }
 
-    // Show preview
     setPreview(URL.createObjectURL(file));
     setUploading(true);
+    setError("");
 
     const formData = new FormData();
     formData.append("profile_image", file);
@@ -92,7 +109,6 @@ export default function ProfileHeader() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Update UI with new image
       setData((prev) => ({
         ...prev,
         profile: {
@@ -113,7 +129,7 @@ export default function ProfileHeader() {
 
   if (loading) {
     return (
-      <div className="w-full bg-white rounded-2xl shadow p-6 text-center py-8">
+      <div className="bg-white rounded-2xl shadow p-6 text-center">
         Loading profile...
       </div>
     );
@@ -121,7 +137,7 @@ export default function ProfileHeader() {
 
   if (!data) {
     return (
-      <div className="w-full bg-white rounded-2xl shadow p-6 text-center py-8 text-red-500">
+      <div className="bg-white rounded-2xl shadow p-6 text-center text-red-500">
         Failed to load profile.
       </div>
     );
@@ -150,8 +166,6 @@ export default function ProfileHeader() {
 
   return (
     <div className="w-full bg-white rounded-2xl shadow p-6">
-
-      {/* modal */}
       <ProfileEditModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
@@ -161,14 +175,13 @@ export default function ProfileHeader() {
             ...prev,
             profile: {
               ...prev.profile,
-              ...updated.profile
-            }
+              ...updated.profile,
+            },
           }));
           setSuccess("Profile updated successfully!");
         }}
       />
 
-      {/* ERROR MESSAGE */}
       {error && (
         <div className="bg-red-100 border border-red-300 text-red-700 p-3 rounded-lg mb-4 flex items-center gap-2">
           <AlertCircle size={18} />
@@ -176,71 +189,42 @@ export default function ProfileHeader() {
         </div>
       )}
 
-      {/* success message */}
-
       {success && (
-        <div className="bg-green-100 border border-green-300 text-green-700 p-3 rounded-lg mb-4 flex items-center gap-2">
+        <div className="bg-green-100 border border-green-300 text-green-700 p-3 rounded-lg mb-4">
           ✓ {success}
         </div>
       )}
 
-      {/* TOP ROW */}
       <div className="flex flex-col lg:flex-row justify-between gap-8">
-
-        {/* LEFT BLOCK */}
+        {/* LEFT */}
         <div className="flex gap-6 w-full lg:w-2/3">
+          {/* PROFILE IMAGE */}
+          <div className="relative" style={{ width: 128, height: 128 }}>
+            <div className="rounded-full overflow-hidden bg-gray-200 flex items-center justify-center w-full h-full">
+              {uploading ? (
+                <AvatarPlaceholder size={128} />
+              ) : !imageError && (preview || profile?.profile_image) ? (
+                <img
+                  src={preview || `${baseUrl}${profile.profile_image}`}
+                  alt="Profile"
+                  className="w-full h-full object-cover rounded-full"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <AvatarPlaceholder size={128} />
+              )}
+            </div>
 
-{/* PROFILE IMAGE + upload (debug version) */}
-<div className="relative" style={{ width: 128, height: 128 }}>
-  <div
-    className="rounded-full bg-gray-200 overflow-hidden flex items-center justify-center"
-    style={{ width: 128, height: 128 }}
-  >
-    <img
-      src={
-        // explicit safe fallback: preview OR valid profile.profile_image OR placeholder
-        preview ||
-        (profile && profile.profile_image
-          ? `${baseUrl}${profile.profile_image}`
-          : "https://via.placeholder.com/150?text=Profile")
-      }
-      alt="Profile"
-      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "9999px" }}
-      className={uploading ? "opacity-70" : ""}
-      onError={(e) => {
-        console.warn("Profile image failed to load, falling back to placeholder.", {
-          preview,
-          profile_image: profile?.profile_image,
-          constructedUrl: profile?.profile_image ? `${baseUrl}${profile.profile_image}` : null,
-        });
-        e.currentTarget.src = "https://via.placeholder.com/150?text=Profile";
-      }}
-      onLoad={() => {
-        console.log("Profile image loaded:", {
-          preview,
-          profile_image: profile?.profile_image,
-          constructedUrl: profile?.profile_image ? `${baseUrl}${profile.profile_image}` : null,
-          naturalWidth: e?.target?.naturalWidth, // will be undefined in some envs, ignore if so
-        });
-      }}
-    />
-  </div>
-
-  {/* Upload button (unchanged) */}
-  <div className="absolute bottom-0 bg-white shadow rounded-full px-3 py-1 text-xs text-blue-600 font-semibold cursor-pointer">
-    <label htmlFor="profileUpload" className="cursor-pointer">
-      {uploading ? "Uploading..." : "Edit"}
-    </label>
-    <input
-      id="profileUpload"
-      type="file"
-      accept="image/*"
-      className="hidden"
-      onChange={handleImageUpload}
-    />
-  </div>
-</div>
-
+            <label className="absolute bottom-0 bg-white shadow rounded-full px-3 py-1 text-xs text-blue-600 font-semibold cursor-pointer">
+              {uploading ? "Uploading..." : "Edit"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+            </label>
+          </div>
 
           {/* USER INFO */}
           <div className="flex flex-col w-full">
@@ -261,17 +245,7 @@ export default function ProfileHeader() {
               at {getVal(exp.company, "Company")}
             </p>
 
-            <p className="text-sm text-gray-500 mt-2">
-              Profile last updated —
-              <span className="text-blue-600 font-medium">
-                {" "}
-                {profile.last_updated
-                  ? new Date(profile.last_updated).toDateString()
-                  : "N/A"}
-              </span>
-            </p>
-
-            <div className="h-px bg-gray-300 my-3"></div>
+            <div className="h-px bg-gray-300 my-3" />
 
             <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-800">
               <InfoItem icon={<MapPin size={14} />} text={getVal(profile.address, "Location")} />
@@ -284,10 +258,10 @@ export default function ProfileHeader() {
           </div>
         </div>
 
-        {/* RIGHT STATS BOX */}
+        {/* RIGHT */}
         <div className="bg-[#f5f9ff] border border-[#e0eaff] rounded-xl p-6 flex justify-around w-fit lg:w-1/3">
           <StatBox number="0" label="Search Appearances" />
-          <div className="w-px h-12 bg-gray-300"></div>
+          <div className="w-px h-12 bg-gray-300" />
           <StatBox number="0" label="Recruiter Actions" />
         </div>
       </div>
@@ -309,11 +283,8 @@ function InfoItem({ icon, text }) {
 function StatBox({ number, label }) {
   return (
     <div className="text-center">
-      <p className="text-2xl font-bold text-gray-900">{number}</p>
-      <p className="text-gray-600 text-sm">{label}</p>
-      <button className="text-blue-600 text-xs mt-1 hover:underline">
-        {/* View all */}
-      </button>
+      <p className="text-2xl font-bold">{number}</p>
+      <p className="text-sm text-gray-600">{label}</p>
     </div>
   );
 }
