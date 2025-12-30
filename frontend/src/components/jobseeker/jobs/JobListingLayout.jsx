@@ -78,7 +78,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
 
 
   return (
-    <section className="bg-white py-10">
+    <section className="bg-white py-2">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* FILTERS */}
@@ -99,9 +99,9 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
           {/* JOB LIST */}
           <main className="lg:col-span-9">
             {/* TOOLBAR */}
-            <div className="mb-6">
+            {/* <div className="mb-6">
               <div className="h-14 bg-slate-50 rounded-xl"></div>
-            </div>
+            </div> */}
 
             {/* JOB GRID */}
             {loading ? (
