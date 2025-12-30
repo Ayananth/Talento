@@ -28,7 +28,7 @@ export const getJobs = async ({
         experience_level: filters.experience.join(","),
       }),
       ...(filters.postedWithin && {
-        published_after: filters.postedWithin,
+        posted_within: filters.postedWithin,
       }),
       ...(filters.salaryMin && {
         salary_min: filters.salaryMin,

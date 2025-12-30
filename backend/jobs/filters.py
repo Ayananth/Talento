@@ -1,11 +1,13 @@
-import django_filters
+from django_filters import rest_framework as filters
+from django.utils import timezone
+from datetime import timedelta
 from jobs.models.job import Job
 
 
-class RecruiterJobFilter(django_filters.FilterSet):
-    status = django_filters.CharFilter(field_name="status")
-    job_type = django_filters.CharFilter(field_name="job_type")
-    work_mode = django_filters.CharFilter(field_name="work_mode")
+class RecruiterJobFilter(filters.FilterSet):
+    status = filters.CharFilter(field_name="status")
+    job_type = filters.CharFilter(field_name="job_type")
+    work_mode = filters.CharFilter(field_name="work_mode")
 
     class Meta:
         model = Job
@@ -14,36 +16,47 @@ class RecruiterJobFilter(django_filters.FilterSet):
 
 
 
-class PublicJobFilter(django_filters.FilterSet):
-    job_type = django_filters.CharFilter(
-        field_name="job_type",
-        lookup_expr="iexact"
+class PublicJobFilter(filters.FilterSet):
+
+    job_type = filters.CharFilter(field_name="job_type", lookup_expr="iexact")
+    work_mode = filters.CharFilter(field_name="work_mode", lookup_expr="iexact")
+    experience_level = filters.CharFilter(
+        field_name="experience_level", lookup_expr="iexact"
     )
 
-    work_mode = django_filters.CharFilter(
-        field_name="work_mode",
-        lookup_expr="iexact"
+    location_city = filters.CharFilter(
+        field_name="location_city", lookup_expr="iexact"
+    )
+    location_state = filters.CharFilter(
+        field_name="location_state", lookup_expr="iexact"
+    )
+    location_country = filters.CharFilter(
+        field_name="location_country", lookup_expr="iexact"
     )
 
-    experience_level = django_filters.CharFilter(
-        field_name="experience_level",
-        lookup_expr="iexact"
+    # Date filters
+    published_after = filters.DateFilter(
+        field_name="published_at", lookup_expr="date__gte"
     )
+    published_before = filters.DateFilter(
+        field_name="published_at", lookup_expr="date__lte"
+    )
+    posted_within = filters.NumberFilter(method="filter_posted_within")
+    
 
-    location_city = django_filters.CharFilter(
-        field_name="location_city",
-        lookup_expr="iexact"
-    )
+    # Salary filters
+    salary_min = filters.NumberFilter(method="filter_salary_min")
+    salary_max = filters.NumberFilter(method="filter_salary_max")
 
-    location_state = django_filters.CharFilter(
-        field_name="location_state",
-        lookup_expr="iexact"
-    )
+    def filter_posted_within(self, queryset, name, value):
+        cutoff = timezone.now() - timedelta(days=int(value))
+        return queryset.filter(published_at__gte=cutoff)
 
-    location_country = django_filters.CharFilter(
-        field_name="location_country",
-        lookup_expr="iexact"
-    )
+    def filter_salary_min(self, queryset, name, value):
+        return queryset.filter(salary_max__gte=value).exclude(salary_max__isnull=True)
+
+    def filter_salary_max(self, queryset, name, value):
+        return queryset.filter(salary_min__lte=value)
 
     class Meta:
         model = Job
@@ -54,4 +67,8 @@ class PublicJobFilter(django_filters.FilterSet):
             "location_city",
             "location_state",
             "location_country",
+            "published_after",
+            "published_before",
+            "salary_min",
+            "salary_max",
         ]
