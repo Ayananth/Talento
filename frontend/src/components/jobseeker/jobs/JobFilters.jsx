@@ -13,6 +13,27 @@ const JobFilters = ({ filters, setFilters }) => {
 
   console.log("Filters: ",filters)
 
+const WORK_MODES = [
+  { value: "remote", label: "Remote" },
+  { value: "hybrid", label: "Hybrid" },
+  { value: "onsite", label: "On-site" },
+];
+
+const JOB_TYPES = [
+  { value: "full_time", label: "Full-time" },
+  { value: "part_time", label: "Part-time" },
+  { value: "contract", label: "Contract" },
+  { value: "internship", label: "Internship" },
+];
+
+const EXPERIENCE_LEVELS = [
+  { value: "fresher", label: "Fresher" },
+  { value: "junior", label: "Junior" },
+  { value: "mid", label: "Mid-level" },
+  { value: "senior", label: "Senior" },
+];
+
+
 
 
   return (
@@ -40,15 +61,15 @@ const JobFilters = ({ filters, setFilters }) => {
                     Work mode
                   </h4>
                   <div className="space-y-2 text-sm text-slate-700">
-                    {["remote", "hybrid", "onsite"].map((mode) => (
-                      <label key={mode} className="flex items-center gap-2">
+                    {WORK_MODES.map(({ value, label }) => (
+                      <label key={value} className="flex items-center gap-2">
                         <input
                           type="checkbox"
                           className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                            checked={filters.workMode.includes(mode)}
-                            onChange={() => toggleArrayValue("workMode", mode)}
+                          checked={filters.workMode.includes(value)}
+                          onChange={() => toggleArrayValue("workMode", value)}
                         />
-                        {mode.replace("_", " ")}
+                        {label}
                       </label>
                     ))}
                   </div>
@@ -60,17 +81,15 @@ const JobFilters = ({ filters, setFilters }) => {
                     Job type
                   </h4>
                   <div className="space-y-2 text-sm text-slate-700">
-                    {[
-                      "full_time", "part_time", "contract", "internship"
-                    ].map((type) => (
-                      <label key={type} className="flex items-center gap-2">
+                    {JOB_TYPES.map(({ value, label }) => (
+                      <label key={value} className="flex items-center gap-2">
                         <input
                           type="checkbox"
-                          checked={filters.jobType.includes(type)}
-                          onChange={() => toggleArrayValue("jobType", type)}
+                          checked={filters.jobType.includes(value)}
+                          onChange={() => toggleArrayValue("jobType", value)}
                           className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                         />
-                        {type}
+                        {label}
                       </label>
                     ))}
                   </div>
@@ -82,15 +101,15 @@ const JobFilters = ({ filters, setFilters }) => {
                     Experience level
                   </h4>
                   <div className="space-y-2 text-sm text-slate-700">
-                    {["fresher", "junior", "mid", "senior"].map((level) => (
-                      <label key={level} className="flex items-center gap-2">
+                    {EXPERIENCE_LEVELS.map(({ value, label }) => (
+                      <label key={value} className="flex items-center gap-2">
                         <input
                           type="checkbox"
-                          checked={filters.experience.includes(level)}
-                          onChange={() => toggleArrayValue("experience", level)}
+                          checked={filters.experience.includes(value)}
+                          onChange={() => toggleArrayValue("experience", value)}
                           className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                         />
-                        {level}
+                        {label}
                       </label>
                     ))}
                   </div>
