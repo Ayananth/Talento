@@ -25,7 +25,7 @@ export default function RecruiterOnboardingPage() {
     facebook: "",
     twitter: "",
     logo: null,
-    business_registration_doc: null,
+    draft_business_registration_doc: null,
 
     // required by reusable form
     existing_logo: null,

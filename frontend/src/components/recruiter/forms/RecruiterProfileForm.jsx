@@ -12,6 +12,7 @@ import {
   MAX_DOC_SIZE,
 } from "@/utils/recruiter/utils";
 import { useEffect, useState } from "react";
+import { getCloudinaryUrl } from "../../../utils/common/getCloudinaryUrl";
 
 export default function RecruiterProfileForm({
   initialData,
@@ -41,7 +42,7 @@ export default function RecruiterProfileForm({
         error = validateFile(file, ["image/jpeg", "image/png"], MAX_LOGO_SIZE);
       }
 
-      if (name === "business_registration_doc") {
+      if (name === "draft_business_registration_doc") {
         error = validateFile(
           file,
           ["application/pdf", "image/jpeg", "image/png"],
@@ -69,8 +70,8 @@ export default function RecruiterProfileForm({
     if (!formData.support_email || !isValidEmail(formData.support_email))
       errs.support_email = "Invalid email";
 
-    if (!formData.business_registration_doc && !formData.existing_doc)
-      errs.business_registration_doc = "Required";
+    if (!formData.draft_business_registration_doc && !formData.existing_doc)
+      errs.draft_business_registration_doc = "Required";
 
     if (Object.keys(errs).length) {
       setErrors(errs);
@@ -117,10 +118,10 @@ export default function RecruiterProfileForm({
         <Section title="Business Verification">
           <FileUploadField
             label="Business Registration Document *"
-            name="business_registration_doc"
-            file={formData.business_registration_doc}
+            name="draft_business_registration_doc"
+            file={formData.draft_business_registration_doc}
             existing={formData.existing_doc}
-            error={errors.business_registration_doc}
+            error={errors.draft_business_registration_doc}
             onChange={handleChange}
             onRemove={() => setFormData((p) => ({ ...p, existing_doc: null }))}
           />
@@ -162,28 +163,73 @@ const Textarea = (props) => (
   <textarea {...props} rows="4" className="input mt-2" />
 );
 
-const FileUploadField = ({ label, name, file, existing, onChange, onRemove, error }) => (
-  <div>
-    <label className="block text-sm font-medium mb-2">{label}</label>
+const FileUploadField = ({
+  label,
+  name,
+  file,
+  existing,
+  onChange,
+  onRemove,
+  error,
+}) => {
+  const handleOpen = () => {
+    let url;
 
-    {!file && !existing ? (
-      <label className="upload-box">
-        <FileText />
-        Upload document
-        <input type="file" name={name} hidden onChange={onChange} />
-      </label>
-    ) : (
-      <div className="flex justify-between border p-3 rounded">
-        <span>{file?.name || "Existing document"}</span>
-        <button type="button" onClick={onRemove}>
-          <X />
-        </button>
-      </div>
-    )}
+    if (file) {
+      // Local file preview
+      url = URL.createObjectURL(file);
+      url = getCloudinaryUrl(url)
+    } else if (existing) {
+      // Existing uploaded file URL
+      url = existing;
+    }
 
-    {error && <p className="text-red-500 text-xs">{error}</p>}
-  </div>
-);
+    if (!url) return;
+
+    // Open in new tab (browser handles view/download)
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-2">{label}</label>
+
+      {!file && !existing ? (
+        <label className="upload-box">
+          <FileText />
+          Upload document
+          <input type="file" name={name} hidden onChange={onChange} />
+        </label>
+      ) : (
+        <div className="flex items-center justify-between border p-3 rounded gap-3">
+          {/* CLICKABLE FILE NAME */}
+          <button
+            type="button"
+            onClick={handleOpen}
+            className="flex items-center gap-2 text-blue-600 hover:underline truncate"
+          >
+            <FileText size={18} />
+            <span className="truncate">
+              {file?.name || "View existing document"}
+            </span>
+          </button>
+
+          {/* REMOVE */}
+          <button
+            type="button"
+            onClick={onRemove}
+            className="text-gray-500 hover:text-red-600"
+          >
+            <X />
+          </button>
+        </div>
+      )}
+
+      {error && <p className="text-red-500 text-xs">{error}</p>}
+    </div>
+  );
+};
+
 
 const InputStyles = () => (
   <style>{`

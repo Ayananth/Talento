@@ -115,6 +115,7 @@ class RecruiterProfileSerializer(serializers.ModelSerializer):
             "linkedin",
             "facebook",
             "twitter",
+            "draft_business_registration_doc",  
             "business_registration_doc",  
             "verified_at",
             "created_at",

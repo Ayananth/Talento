@@ -152,9 +152,9 @@ const handleReject = async () => {
     Business Document:
   </div>
 
-  {signed_business_doc_url ? (
+  {documentUrl ? (
     <a
-      href={signed_business_doc_url}
+      href={documentUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="text-blue-600 underline"

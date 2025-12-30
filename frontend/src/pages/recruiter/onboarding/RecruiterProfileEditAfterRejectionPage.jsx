@@ -43,7 +43,7 @@ export default function RecruiterEditAfterRejectionPage() {
 
           // New uploads (initially empty)
           logo: null,
-          business_registration_doc: null,
+          draft_business_registration_doc: null,
 
           // Existing draft files
           existing_logo: profile.draft_logo || null,
@@ -105,6 +105,8 @@ export default function RecruiterEditAfterRejectionPage() {
   }
 
   /* ---------------- UI ---------------- */
+
+  console.log("initialData: ", initialData)
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-gray-100">
