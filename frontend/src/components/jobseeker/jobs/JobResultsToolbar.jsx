@@ -11,7 +11,8 @@ export default function JobResultsToolbar({
   onReset,
   onpageSizeChange,
   shown,
-  jobCount
+  jobCount,
+  onResetAll
 }) {
 
   function handlePageChange(e) {
@@ -31,7 +32,7 @@ export default function JobResultsToolbar({
           </h3>
 
           <button
-            onClick={onReset}
+            onClick={onResetAll}
             className="text-sm text-blue-600 hover:underline"
           >
             Reset

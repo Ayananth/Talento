@@ -17,6 +17,15 @@ const JobSearchPage = () => {
   const [page, setPage] = useState(1); 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const INITIAL_FILTERS = {
+    location: "",
+    workMode: [],
+    jobType: [],
+    experience: [],
+    postedWithin: "",
+    salaryMin: "",
+    salaryMax: "",
+  };
 
   const [filters, setFilters] = useState(() => ({
     location: searchParams.get("location") || "",
@@ -58,6 +67,14 @@ useEffect(() => {
   setSearchParams(params, { replace: true });
 }, [filters]);
 
+const resetAllFilters = () => {
+  setFilters(INITIAL_FILTERS);
+  setSalaryDraft({ min: "", max: "" });
+  setPage(1);
+  setSearchParams({}, { replace: true });
+};
+
+
 
   return (
     <div>
@@ -76,6 +93,7 @@ useEffect(() => {
       shown={shownCount}
       jobCount={jobCount}
       // onReset={handleReset}
+      onResetAll={resetAllFilters}
     />
       <JobListingLayout
         search={search}
