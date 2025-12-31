@@ -238,11 +238,11 @@ export default function ProfileHeader() {
             </div>
 
             <p className="text-sm text-gray-700">
-              {getVal(profile.headline, "Role")}
+              {getVal(profile.headline, "")}
             </p>
 
             <p className="text-xs text-gray-500">
-              at {getVal(exp.company, "Company")}
+               {getVal(exp.company, "")}
             </p>
 
             <div className="h-px bg-gray-300 my-3" />
