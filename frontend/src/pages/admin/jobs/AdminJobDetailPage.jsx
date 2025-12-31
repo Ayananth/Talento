@@ -40,6 +40,7 @@ export default function AdminJobDetailPage() {
   }
 
   if (!job) return null;
+  console.log("job", job)
 
   /* ---------------------------------------------------
      DERIVED VALUES
@@ -72,9 +73,11 @@ export default function AdminJobDetailPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          {job.status &&
           <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-            Published
+          {job.status ?.toUpperCase()}
           </span>
+}
 
           <button
             onClick={() => navigate(-1)}

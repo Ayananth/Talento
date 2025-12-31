@@ -49,6 +49,7 @@ class AdminJobDetailSerializer(serializers.ModelSerializer):
             "company",
             "expires_at",
             "created_at",
+            "status"
         ]
 
     def get_skills(self, obj):
