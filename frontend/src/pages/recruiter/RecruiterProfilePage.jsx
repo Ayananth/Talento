@@ -238,6 +238,15 @@ export default function RecruiterProfilePage() {
               <Building2 className="h-10 w-10 text-gray-400" />
             )}
           </div>
+          {isEditing && (
+            <input
+              type="file"
+              name="draft_logo"
+              onChange={(e) =>
+                setForm({ ...form, draft_logo: e.target.files[0] })
+              }
+            />
+          )}
         </div>
 
         {/* Basic Info */}
