@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+
 import {
   getAdminRecruiterProfile,
   approveRecruiterProfile,
   rejectRecruiterProfile,
-} from "../../apis/admin/recruiters"
-import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
-import Toast from "@/components/common/Toast"; // adjust path if needed
+} from "@/apis/admin/recruiters";
 
+import { getCloudinaryUrl } from "@/utils/common/getCloudinaryUrl";
+import ConfirmModal from "@/components/common/ConfirmModal";
+import Toast from "@/components/common/Toast"; 
 
-/**
- * Highlight class depending on difference between published and pending
- */
+/* ----------------------------------------
+   Highlight helper
+---------------------------------------- */
 const highlightClass = (live, pending) => {
   if (pending === undefined || pending === null) return "";
-  if (!live && pending) return "bg-green-100";     // New field
-  if (live && !pending) return "bg-red-100";       // Removed field
-  if (live !== pending) return "bg-yellow-100";    // Changed field
+  if (!live && pending) return "bg-green-100";
+  if (live && !pending) return "bg-red-100";
+  if (live !== pending) return "bg-yellow-100";
   return "";
 };
 
@@ -25,11 +27,19 @@ export default function AdminReviewCompanyPage() {
   const navigate = useNavigate();
 
   const [data, setData] = useState(null);
-  const [rejectReason, setRejectReason] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
+  const [approveOpen, setApproveOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+
+  const [rejectReason, setRejectReason] = useState("");
+  const [modalError, setModalError] = useState("");
+
+  /* ----------------------------------------
+     Fetch profile
+  ---------------------------------------- */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -91,55 +101,57 @@ export default function AdminReviewCompanyPage() {
     twitter,
   };
 
-  /* -------------------------
-     Approve / Reject
-  ------------------------- */
-  const handleApprove = async () => {
+  /* ----------------------------------------
+     Approve / Reject handlers
+  ---------------------------------------- */
+  const handleApproveConfirm = async () => {
     setSubmitting(true);
     try {
       await approveRecruiterProfile(data.id);
-navigate("/admin/recruiter/approvals", {
-  state: {
-    toast: {
-      message: "Profile approved successfully",
-      type: "success",
-    },
-  },
-});
+      navigate("/admin/recruiter/approvals", {
+        state: {
+          toast: {
+            message: "Profile approved successfully",
+            type: "success",
+          },
+        },
+      });
     } catch (err) {
       console.error(err);
-      alert("Failed to approve profile");
+      setModalError("Failed to approve profile");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleReject = async () => {
+  const handleRejectConfirm = async () => {
     if (!rejectReason.trim()) {
-      alert("Rejection reason is required");
+      setModalError("Rejection reason is required");
       return;
     }
 
     setSubmitting(true);
     try {
       await rejectRecruiterProfile(data.id, rejectReason);
-navigate("/admin/recruiter/approvals", {
-  state: {
-    toast: {
-      message: "Profile rejected successfully",
-      type: "success",
-    },
-  },
-});
-
+      navigate("/admin/recruiter/approvals", {
+        state: {
+          toast: {
+            message: "Profile rejected successfully",
+            type: "success",
+          },
+        },
+      });
     } catch (err) {
       console.error(err);
-      alert("Failed to reject profile");
+      setModalError("Failed to reject profile");
     } finally {
       setSubmitting(false);
     }
   };
 
+  /* ----------------------------------------
+     Render
+  ---------------------------------------- */
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -165,9 +177,9 @@ navigate("/admin/recruiter/approvals", {
         </p>
       </div>
 
-      {/* Comparison Panels */}
+      {/* Comparison panels */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* LIVE DATA */}
+        {/* Published */}
         <div className="border rounded-xl p-6 bg-gray-50">
           <h2 className="text-xl font-bold mb-4">
             Current Published Data
@@ -182,7 +194,6 @@ navigate("/admin/recruiter/approvals", {
             </div>
           ))}
 
-          {/* Published Logo */}
           <div className="mb-4">
             <div className="font-semibold">Logo:</div>
             {logo ? (
@@ -196,7 +207,6 @@ navigate("/admin/recruiter/approvals", {
             )}
           </div>
 
-          {/* Published Doc */}
           <div className="mb-4">
             <div className="font-semibold">Business Document:</div>
             {business_registration_doc ? (
@@ -214,7 +224,7 @@ navigate("/admin/recruiter/approvals", {
           </div>
         </div>
 
-        {/* PENDING DATA */}
+        {/* Pending */}
         <div className="border rounded-xl p-6 bg-white">
           <h2 className="text-xl font-bold mb-4">
             Requested Changes
@@ -235,7 +245,6 @@ navigate("/admin/recruiter/approvals", {
             </div>
           ))}
 
-          {/* Draft Logo */}
           <div className={`mb-4 p-2 rounded ${draft_logo ? "bg-yellow-100" : ""}`}>
             <div className="font-semibold">Logo (New):</div>
             {draft_logo ? (
@@ -249,7 +258,6 @@ navigate("/admin/recruiter/approvals", {
             )}
           </div>
 
-          {/* Draft Doc */}
           <div
             className={`mb-4 p-2 rounded ${
               draft_business_registration_doc ? "bg-yellow-100" : ""
@@ -273,31 +281,62 @@ navigate("/admin/recruiter/approvals", {
       </div>
 
       {/* Actions */}
-      <div className="mt-10 flex flex-col md:flex-row gap-4 justify-between">
+      <div className="mt-10 flex gap-4">
         <button
-          disabled={submitting}
-          onClick={handleApprove}
+          onClick={() => {
+            setModalError("");
+            setApproveOpen(true);
+          }}
           className="bg-green-600 text-white px-6 py-3 rounded-xl"
         >
           Approve Changes
         </button>
 
-        <div className="flex flex-col w-full md:w-auto">
-          <textarea
-            placeholder="Enter rejection reason..."
-            className="border rounded-xl px-3 py-2 mb-3 w-full"
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-          />
-          <button
-            disabled={submitting}
-            onClick={handleReject}
-            className="bg-red-600 text-white px-6 py-3 rounded-xl"
-          >
-            Reject Changes
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setModalError("");
+            setRejectOpen(true);
+          }}
+          className="bg-red-600 text-white px-6 py-3 rounded-xl"
+        >
+          Reject Changes
+        </button>
       </div>
+
+      {/* Approve modal */}
+      <ConfirmModal
+        open={approveOpen}
+        title="Approve Recruiter Profile"
+        description="Are you sure you want to approve these changes?"
+        confirmText="Approve"
+        loading={submitting}
+        error={modalError}
+        onClose={() => setApproveOpen(false)}
+        onConfirm={handleApproveConfirm}
+      />
+
+      {/* Reject modal */}
+      <ConfirmModal
+        open={rejectOpen}
+        title="Reject Recruiter Profile"
+        description="Please provide a rejection reason."
+        confirmText="Reject"
+        loading={submitting}
+        error={modalError}
+        onClose={() => setRejectOpen(false)}
+        onConfirm={handleRejectConfirm}
+      >
+        <textarea
+          rows={4}
+          className="w-full border rounded-lg px-3 py-2 text-sm"
+          placeholder="Enter rejection reason..."
+          value={rejectReason}
+          onChange={(e) => {
+            setRejectReason(e.target.value);
+            setModalError("");
+          }}
+        />
+      </ConfirmModal>
     </div>
   );
 }

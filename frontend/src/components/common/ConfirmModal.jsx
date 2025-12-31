@@ -5,6 +5,9 @@ export default function ConfirmModal({
   onClose,
   onConfirm,
   loading = false,
+  confirmText = "Confirm",
+  error = "",
+  children,
 }) {
   if (!open) return null;
 
@@ -15,9 +18,21 @@ export default function ConfirmModal({
           {title}
         </h3>
 
-        <p className="text-sm text-gray-600 mt-2">
-          {description}
-        </p>
+        {description && (
+          <p className="text-sm text-gray-600 mt-2">
+            {description}
+          </p>
+        )}
+
+        {/* CUSTOM CONTENT (textarea etc.) */}
+        {children && <div className="mt-4">{children}</div>}
+
+        {/* ERROR */}
+        {error && (
+          <p className="mt-3 text-sm text-red-600 font-medium">
+            {error}
+          </p>
+        )}
 
         <div className="flex justify-end gap-3 mt-6">
           <button
@@ -39,7 +54,7 @@ export default function ConfirmModal({
               }
             `}
           >
-            {loading ? "Please wait…" : "Confirm"}
+            {loading ? "Please wait…" : confirmText}
           </button>
         </div>
       </div>
