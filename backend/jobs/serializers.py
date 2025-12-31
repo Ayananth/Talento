@@ -218,6 +218,7 @@ class JobPublishSerializer(serializers.ModelSerializer):
 
 
 class RecruiterJobListSerializer(serializers.ModelSerializer):
+    applications_count = serializers.IntegerField(read_only=True)
     class Meta:
         model = Job
         fields = [
@@ -233,7 +234,8 @@ class RecruiterJobListSerializer(serializers.ModelSerializer):
             "published_at",
             "expires_at",
             "view_count",
-            "is_active"
+            "is_active",
+            "applications_count"
 
         ]
 

@@ -7,6 +7,7 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
+from django.db.models import Count
 
 
 
@@ -122,8 +123,7 @@ class RecruiterJobListView(ListAPIView):
 
     def get_queryset(self):
         return Job.objects.filter(
-            recruiter=self.request.user
-        )
+            recruiter=self.request.user).annotate(applications_count=Count("applications"))
     
 
 
