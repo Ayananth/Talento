@@ -36,12 +36,12 @@ class RecruiterDraftCreateSerializer(serializers.Serializer):
 
     # -------------------- Field-level validations --------------------
 
-    def validate_about_company(self, value):
-        if value and len(value.strip()) < 30:
-            raise serializers.ValidationError(
-                "Company description must be at least 30 characters."
-            )
-        return value
+    # def validate_about_company(self, value):
+    #     if value and len(value.strip()) < 10:
+    #         raise serializers.ValidationError(
+    #             "Company description must be at least 30 characters."
+    #         )
+    #     return value
 
     def validate_phone(self, value):
         if value:
