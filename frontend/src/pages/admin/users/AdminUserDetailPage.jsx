@@ -179,6 +179,7 @@ export default function AdminUserDetailPage() {
         <Info label="Username" value={user.username || "—"} />
         <Info label="Role" value={user.role_display} />
 
+
         <Info
           label="Account Status"
           value={
@@ -257,20 +258,25 @@ export default function AdminUserDetailPage() {
       )}
 
       {/* ACTIONS */}
-      <div className="mt-8 flex gap-4">
-        <button
-          onClick={() => setConfirmOpen(true)}
-          className={`px-6 py-2 rounded text-white
-            ${
-              user.is_blocked
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-red-600 hover:bg-red-700"
-            }
-          `}
-        >
-          {user.is_blocked ? "Unblock User" : "Block User"}
-        </button>
-      </div>
+{user.role !== "admin" && (
+  <div className="mt-8 flex gap-4">
+    <button
+      onClick={() => setConfirmOpen(true)}
+      className={`px-6 py-2 rounded text-white
+        ${
+          user.is_blocked
+            ? "bg-green-600 hover:bg-green-700"
+            : "bg-red-600 hover:bg-red-700"
+        }
+      `}
+    >
+      {user.is_blocked ? "Unblock User" : "Block User"}
+    </button>
+  </div>
+)}
+
+
+
 
       {/* CONFIRM MODAL */}
       <ConfirmModal
@@ -288,24 +294,27 @@ export default function AdminUserDetailPage() {
         }
       />
 
-<ConfirmModal
-  open={jobPostingConfirmOpen}
-  loading={jobPostingLoading}
-  onClose={() => {
-    if (!jobPostingLoading) setJobPostingConfirmOpen(false);
-  }}
-  onConfirm={handleToggleJobPosting}
-  title={
-    user.recruiter_profile.can_post_jobs
-      ? "Disable Job Posting"
-      : "Enable Job Posting"
-  }
-  description={
-    user.recruiter_profile.can_post_jobs
-      ? "This recruiter will not be able to post new jobs. Existing jobs will remain unchanged."
-      : "This recruiter will be allowed to post new jobs."
-  }
-/>
+{user.role === "recruiter" && user.recruiter_profile && (
+  <ConfirmModal
+    open={jobPostingConfirmOpen}
+    loading={jobPostingLoading}
+    onClose={() => {
+      if (!jobPostingLoading) setJobPostingConfirmOpen(false);
+    }}
+    onConfirm={handleToggleJobPosting}
+    title={
+      user.recruiter_profile.can_post_jobs
+        ? "Disable Job Posting"
+        : "Enable Job Posting"
+    }
+    description={
+      user.recruiter_profile.can_post_jobs
+        ? "This recruiter will not be able to post new jobs."
+        : "This recruiter will be allowed to post new jobs."
+    }
+  />
+)}
+
 
     </div>
   );

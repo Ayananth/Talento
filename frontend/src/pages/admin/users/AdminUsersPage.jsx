@@ -96,6 +96,8 @@ const fetchUsers = async () => {
       is_blocked: u.is_blocked,
       status: u.is_blocked ? "Blocked" : "Active",
       verified: u.is_email_verified ? "Yes" : "No",
+      role: u.role_display,
+      role_value: u.role, 
     }));
 
     setData(mapped);
@@ -319,22 +321,26 @@ console.log("data: ",data)
               View
             </button>
 
-            <button
-              onClick={() => {
-                setSelectedUser(row);
-                setConfirmOpen(true);
-              }}
-              className={`px-3 py-1 text-sm rounded text-white
-                ${
-                  row.is_blocked
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-            >
-              {row.is_blocked ? "Unblock" : "Block"}
-            </button>
-          </div>
-        )}
+            {/* HIDE block for admin */}
+            {row.role_value !== "admin" && (
+              <button
+                onClick={() => {
+                  setSelectedUser(row);
+                  setConfirmOpen(true);
+                }}
+                className={`px-3 py-1 text-sm rounded text-white
+                  ${
+                    row.is_blocked
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
+              >
+                {row.is_blocked ? "Unblock" : "Block"}
+              </button>
+            )}
+
+                      </div>
+                    )}
       />
 
       <Pagination

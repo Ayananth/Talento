@@ -41,6 +41,12 @@ class AdminToggleBlockUserView(APIView):
                 {"detail": "`block` field is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+        if user.role == "admin":
+            return Response(
+                {"detail": "Admin users cannot be blocked"},
+                status=403
+            )
 
         user.is_blocked = bool(block)
         user.save(update_fields=["is_blocked"])
