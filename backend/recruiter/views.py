@@ -286,7 +286,7 @@ class BaseAdminRecruiterListView(generics.ListAPIView):
     filterset_class = RecruiterProfileFilter
 
     search_fields = ["company_name", "industry", "user__email"]
-    ordering_fields = ["created_at", "company_name", "status"]
+    ordering_fields = ["updated_at", "company_name", "status", "user__username"]
 
     queryset = RecruiterProfile.objects.all()
 
@@ -305,9 +305,6 @@ class AdminRecruiterListView(BaseAdminRecruiterListView):
 
 class PendingRecruiterListView(BaseAdminRecruiterListView):
     def get_queryset(self):
-        # TODO
-        # query = Q(status="pending") | Q(status="rejected")
-        # return RecruiterProfile.objects.filter(query).order_by('-updated_at')
         return RecruiterProfile.objects.filter(status="pending").order_by('-updated_at')
 
     

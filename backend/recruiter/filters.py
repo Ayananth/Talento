@@ -1,5 +1,6 @@
 import django_filters
 from .models import RecruiterProfile
+from django.db.models import Q
 
 
 class RecruiterProfileFilter(django_filters.FilterSet):
@@ -37,6 +38,28 @@ class RecruiterProfileFilter(django_filters.FilterSet):
         lookup_expr="lte"
     )
 
+    request_type = django_filters.CharFilter(
+        method="filter_request_type"
+    )
+
+
     class Meta:
         model = RecruiterProfile
-        fields = ["status", "company_name", "industry"]
+        fields = ["status", "company_name", "industry", "request_type"]
+
+    def filter_request_type(self, queryset, name, value):
+        value = value.lower()
+
+        empty_company_data = (
+            (Q(company_name__isnull=True) | Q(company_name="")) &
+            (Q(website__isnull=True) | Q(website="")) &
+            (Q(industry__isnull=True) | Q(industry=""))
+        )
+
+        if value == "new":
+            return queryset.filter(empty_company_data)
+
+        if value == "edit":
+            return queryset.exclude(empty_company_data)
+
+        return queryset

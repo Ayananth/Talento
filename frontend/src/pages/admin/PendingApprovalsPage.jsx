@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import { getPendingList } from "@/apis/admin/getPendingList";
 import useAuth from "@/auth/context/useAuth";
 import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
-import ResponsiveTable from "@//components/admin/ResponsiveTable";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import ResponsiveTable from "@/components/admin/ResponsiveTable";
 import Toast from "../../components/common/Toast";
-
 
 
 export default function PendingApprovalsPage() {
@@ -15,47 +14,70 @@ export default function PendingApprovalsPage() {
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
   const [ordering, setOrdering] = useState("");
-  const pageSize = PAGE_SIZE;
-  const totalPages = Math.ceil(count / pageSize);
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [requestTypeFilter, setRequestTypeFilter] = useState("");
+
   const { loading: authLoading } = useAuth();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const location = useLocation();
   const [toast, setToast] = useState(null);
 
+  const totalPages = Math.ceil(count / PAGE_SIZE);
 
-  const fetchData = async (pageNum, orderingValue = ordering) => {
-    const response = await getPendingList(pageNum, orderingValue);
-    console.log("response: " , response)
 
-    const mapped = response.results.map((item) => ({
-      id: item.id,
-      user: item.username,
-      company: item.company_name || item.pending_data.company_name,
-      status: item.status?.toUpperCase(),
-      request_type: item.request_type?.toUpperCase() || "NEW",
-      submitted: new Date(item.updated_at).toLocaleString(),
-    }));
+  const fetchData = async (pageNum) => {
+    try {
+      const response = await getPendingList({
+        page: pageNum,
+        ordering,
+        search,
+        status: statusFilter,
+        request_type: requestTypeFilter,
+      });
 
-    setData(mapped);
-    setCount(response.count);
+      const mapped = response.results.map((item) => ({
+        id: item.id,
+        user: item.username,
+        company: item.company_name || item.pending_data?.company_name,
+        status: item.status?.toUpperCase(),
+        request_type: item.request_type?.toUpperCase() || "NEW",
+        submitted: new Date(item.updated_at).toLocaleString(),
+      }));
+
+      setData(mapped);
+      setCount(response.count);
+    } catch (err) {
+      console.error("Failed to fetch pending approvals", err);
+    }
   };
+
 
   useEffect(() => {
     if (!authLoading) fetchData(page);
-  }, [authLoading, page, ordering]);
+  }, [
+    authLoading,
+    page,
+    ordering,
+    search,
+    statusFilter,
+    requestTypeFilter,
+  ]);
+
 
   const handleSort = (orderingKey) => {
     if (!orderingKey) return;
 
     if (ordering === orderingKey) {
-      setOrdering(`-${orderingKey}`);      // ascending → descending
+      setOrdering(`-${orderingKey}`);
     } else if (ordering === `-${orderingKey}`) {
-      setOrdering("");                     // descending → reset
+      setOrdering("");
     } else {
-      setOrdering(orderingKey);            // no sort → ascending
+      setOrdering(orderingKey);
     }
 
-    setPage(1); // reset page
+    setPage(1);
   };
 
 
@@ -80,82 +102,48 @@ useEffect(() => {
     {
       label: "No",
       key: "number",
-      sortable: false,
-      render: (_, index) => (page - 1) * pageSize + index + 1,
+      render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
     },
-
     {
       label: "User",
       key: "user",
       sortable: true,
-      orderingKey: "user__username", 
+      orderingKey: "user__username",
     },
-
     {
       label: "Company",
       key: "company",
       sortable: true,
-      orderingKey: "company_name", 
+      orderingKey: "company_name",
     },
+    {
+      label: "Request Type",
+      key: "request_type",
+      render: (row) => {
+        const styles = {
+          NEW: "bg-blue-100 text-blue-800 border border-blue-200",
+          EDIT: "bg-purple-100 text-purple-800 border border-purple-200",
+        };
 
-{
-  label: "Request Type",
-  key: "request_type",
-  sortable: true,
-  orderingKey: "request_type",
-  render: (row) => {
-    const typeStyles = {
-      NEW: "bg-blue-100 text-blue-800 border border-blue-200",
-      EDIT: "bg-purple-100 text-purple-800 border border-purple-200",
-      DELETE: "bg-red-100 text-red-800 border border-red-200",
-    };
-
-    return (
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-          typeStyles[row.request_type] || "bg-gray-100 text-gray-800"
-        }`}
-      >
-        {row.request_type}
-      </span>
-    );
-  },
-},
-
-
-{
-  label: "Status",
-  key: "status",
-  sortable: true,
-  orderingKey: "status",
-  render: (row) => {
-    const statusStyles = {
-      PENDING: "bg-yellow-100 text-yellow-800 border border-yellow-200",
-      APPROVED: "bg-green-100 text-green-800 border border-green-200",
-      REJECTED: "bg-red-100 text-red-800 border border-red-200",
-    };
-
-    return (
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-          statusStyles[row.status] || "bg-gray-100 text-gray-800"
-        }`}
-      >
-        {row.status}
-      </span>
-    );
-  },
-},
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+              styles[row.request_type] || "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {row.request_type}
+          </span>
+        );
+      },
+    },
 
     {
       label: "Submitted",
       key: "submitted",
       sortable: true,
-      orderingKey: "created_at", 
+      orderingKey: "updated_at",
     },
   ];
-
-  console.log("data", data)
 
 
   return (
@@ -176,37 +164,81 @@ useEffect(() => {
         </div>
       )}
 
+      {/* FILTER TOOLBAR */}
+      <div className="mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3
+                      flex flex-col md:flex-row md:items-center gap-3">
+
+        {/* SEARCH */}
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            placeholder="Search by username or company"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="w-full h-9 pl-9 pr-3 text-sm border border-gray-300
+                       rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            🔍
+          </span>
+        </div>
+
+
+
+        {/* REQUEST TYPE */}
+        <select
+          value={requestTypeFilter}
+          onChange={(e) => {
+            setRequestTypeFilter(e.target.value);
+            setPage(1);
+          }}
+          className="h-9 px-3 text-sm border border-gray-300 rounded-lg bg-white"
+        >
+          <option value="">All Requests</option>
+          <option value="new">New</option>
+          <option value="edit">Edit</option>
+        </select>
+
+        {/* CLEAR */}
+        {(search || statusFilter || requestTypeFilter) && (
+          <button
+            onClick={() => {
+              setSearch("");
+              setStatusFilter("");
+              setRequestTypeFilter("");
+              setPage(1);
+            }}
+            className="text-sm text-gray-500 hover:text-gray-700 px-2"
+          >
+            Clear
+          </button>
+        )}
+      </div>
 
       <ResponsiveTable
         data={data}
         columns={columns}
         rowKey="id"
+        ordering={ordering}
+        onSort={handleSort}
         actions={(row) => (
-          <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={()=> navigate(`${row.id}`)}>
+          <button
+            onClick={() => navigate(`${row.id}`)}
+            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
             View
           </button>
         )}
-        ordering={ordering}
-        onSort={handleSort}
-
-/>
+      />
 
       <Pagination
         page={page}
         totalPages={totalPages}
-        onPageChange={(num) => setPage(num)}
+        onPageChange={setPage}
       />
-
-      {/* {toast && (
-  <Toast
-    message={toast.message}
-    type={toast.type}
-    onClose={() => setToast(null)}
-    duration={2000}
-  />
-)} */}
-
     </div>
   );
 }

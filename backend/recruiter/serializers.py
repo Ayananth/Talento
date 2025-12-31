@@ -91,7 +91,9 @@ class AdminRecruiterListSerializer(serializers.ModelSerializer):
             return "New"
         elif obj.is_editing():
             return "Edit"
-        return None
+        else:
+            return "Edit"
+
 
 
 
