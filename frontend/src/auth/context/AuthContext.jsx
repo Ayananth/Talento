@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
   // --- LOGIN (role optional, default = jobseeker) ---
   const login = async ({ email, password, role = "jobseeker" }) => {
     const res = await api.post(
-      "/v1/auth/sign_in",
+      "/v1/auth/signin",
       { email, password, role },
       { withCredentials: true }
     );
@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }) => {
     if (refreshTimer.current) clearTimeout(refreshTimer.current);
 
     try {
-      await api.post("/v1/auth/logout/", {}, { withCredentials: true });
+      await api.post("/v1/auth/signout/", {}, { withCredentials: true });
     } catch (err) {}
 
     if (role === "recruiter") window.location.href = "/recruiter/login";
