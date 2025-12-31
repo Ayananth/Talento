@@ -78,7 +78,7 @@ class AdminJobListView(generics.ListAPIView):
 
     filterset_class = AdminJobFilter
 
-    ordering_fields = ["created_at", "published_at"]
+    ordering_fields = ["created_at", "published_at", "expires_at", "status", "recruiter__recruiter_profile__company_name", "recruiter__email",]
     ordering = ["-created_at"]
 
 class AdminJobDetailView(generics.RetrieveAPIView):

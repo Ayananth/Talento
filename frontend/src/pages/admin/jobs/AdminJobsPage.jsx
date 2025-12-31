@@ -82,13 +82,13 @@ export default function AdminJobsPage() {
       label: "Company",
       key: "company",
       sortable: true,
-      orderingKey: "company",
+      orderingKey: "recruiter__recruiter_profile__company_name",
     },
     {
       label: "Recruiter Email",
       key: "email",
       sortable: true,
-      orderingKey: "email",
+        orderingKey: "recruiter__email",
     },
     {
       label: "Status",
