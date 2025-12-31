@@ -4,9 +4,12 @@ from jobs.models.job import Job
 
 class AdminJobFilter(django_filters.FilterSet):
     status = django_filters.CharFilter(field_name="status")
-    job_type = django_filters.CharFilter(field_name="job_type")
-    work_mode = django_filters.CharFilter(field_name="work_mode")
+
+    company = django_filters.CharFilter(
+        field_name="recruiter__recruiter_profile__company_name",
+        lookup_expr="icontains"
+    )
 
     class Meta:
         model = Job
-        fields = ["status", "job_type", "work_mode"]
+        fields = ["status", "company"]

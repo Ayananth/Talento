@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from jobs.models.job import Job
 from recruiter.models import RecruiterProfile
 from django.shortcuts import get_object_or_404
+from rest_framework.filters import SearchFilter
 
 
 
@@ -64,15 +65,19 @@ class AdminToggleBlockUserView(APIView):
 
 
 
-# Job management
 class AdminJobListView(generics.ListAPIView):
     serializer_class = AdminJobListSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
     pagination_class = RecruiterJobPagination
     queryset = Job.objects.all()
 
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+    ]
+
     filterset_class = AdminJobFilter
+
     ordering_fields = ["created_at", "published_at"]
     ordering = ["-created_at"]
 

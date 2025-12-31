@@ -1,9 +1,16 @@
 import api from "@/apis/api";
 
-export const getAdminJobs = async (page = 1, ordering = "") => {
+export const getAdminJobs = async ({
+  page = 1,
+  ordering = "",
+  company = "",
+  status = "",
+}) => {
   const params = {
     page,
     ...(ordering && { ordering }),
+    ...(company && { company }),
+    ...(status && { status }),
   };
 
   const res = await api.get("/v1/admin/jobs", { params });
