@@ -22,7 +22,6 @@ const AdminApprovePage = () => {
         setLoading(true);
         const data = await getRecruiterDetails(id);
         setRecruiter(data);
-        console.log("dataaaaaa:", data)
       } catch (err) {
         setError("Failed to load recruiter details");
       } finally {

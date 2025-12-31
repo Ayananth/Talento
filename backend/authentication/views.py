@@ -188,7 +188,6 @@ class VerifyEmailView(APIView):
             # Activate the user
             user.is_active = True
             user.is_email_verified = True
-            print(user)
             user.save()
 
             success_url = (
@@ -311,19 +310,15 @@ class GoogleLoginAPIView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def get(self, request):
-        print("Hello world")
         return Response(
             {"ok":"ok"},
             status=status.HTTP_200_OK
         )
 
     def post(self, request):
-        print("Checking serializer")
         serializer = GoogleAuthSerializer(data=request.data)
-        print("done serializer")
 
         serializer.is_valid(raise_exception=True)
-        print(" serializer valid")
 
         token = serializer.validated_data["id_token"]
         role = serializer.validated_data["role"]
@@ -351,7 +346,6 @@ class GoogleLoginAPIView(APIView):
             try:
                 user = USER.objects.get(email__iexact=email)
                 if user.role and user.role != role:
-                    print("Role mismatch. You already registered")
                     return Response(
                         {"detail": f"Role mismatch. You already registered as {user.role}"},
                         status=status.HTTP_400_BAD_REQUEST
@@ -371,8 +365,6 @@ class GoogleLoginAPIView(APIView):
                     role = role
                 )
 
-                print(user)
-                print(role)
                 user.set_unusable_password()
                 user.save()
 
@@ -394,11 +386,9 @@ class GoogleLoginAPIView(APIView):
 
         except ValueError:
             # Token invalid
-            print(f"detail: Invalid token ")
 
             return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:
-            print(f"detail: {str(exc)}")
             return Response({"detail": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

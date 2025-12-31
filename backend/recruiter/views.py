@@ -30,12 +30,10 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
-        print("Request received")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user = request.user
-        print(f"{request.user=}")
 
         profile, _ = RecruiterProfile.objects.get_or_create(user=user)
 

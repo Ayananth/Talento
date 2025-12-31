@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 export default function JobCard({ job, searchParams }) {
   const navigate = useNavigate();
 
-  // console.log(job.has_applied)
 
   const goToJobDetail = () => {
     navigate(`/jobs/${job.id}?${searchParams.toString()}`);

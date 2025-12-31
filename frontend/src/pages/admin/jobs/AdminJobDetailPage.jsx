@@ -40,7 +40,6 @@ export default function AdminJobDetailPage() {
   }
 
   if (!job) return null;
-  console.log("job", job)
 
   /* ---------------------------------------------------
      DERIVED VALUES

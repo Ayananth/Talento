@@ -13,7 +13,6 @@ const JobFilters = ({ filters, setFilters, salaryDraft, setSalaryDraft, onApplyS
     }));
   };
 
-  console.log("Filters: ",filters)
 
 const WORK_MODES = [
   { value: "remote", label: "Remote" },

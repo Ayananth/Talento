@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const refreshTimer = useRef(null);
 
 
-  console.log("Provider running")
 
   // On app start: check if an access token exists and set user if valid
   useEffect(() => {
@@ -45,7 +44,7 @@ export const AuthProvider = ({ children }) => {
 
     refreshTimer.current = setTimeout(refreshAccessToken, refreshIn);
 
-    console.log("Auto-refresh scheduled in ", refreshIn / 1000, "seconds");
+    console.log("Auto-refresh scheduled in ");
   };
 
   const refreshAccessToken = async () => {

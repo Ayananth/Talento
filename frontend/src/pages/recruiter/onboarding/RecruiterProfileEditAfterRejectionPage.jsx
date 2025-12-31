@@ -106,7 +106,6 @@ export default function RecruiterEditAfterRejectionPage() {
 
   /* ---------------- UI ---------------- */
 
-  console.log("initialData: ", initialData)
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-gray-100">

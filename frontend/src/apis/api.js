@@ -14,7 +14,6 @@ api.interceptors.request.use((config) => {
   if (access) {
     config.headers.Authorization = `Bearer ${access}`;
   }
-  console.log("➡️ API Request:", config.method?.toUpperCase(), config.url);
   return config;
 });
 
@@ -28,7 +27,6 @@ api.interceptors.response.use(
 
     // BLOCKED / FORBIDDEN → FORCE LOGOUT
     if (status === 403) {
-      console.log("User blocked or forbidden → force logout");
       clearTokens();
 
       //  avoid infinite loop

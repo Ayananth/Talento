@@ -32,7 +32,6 @@ class JobSeekerProfileView(APIView):
     def get(self, request):
         user = request.user
 
-        print("Profile data request received")
 
         if user.role != "jobseeker":
             return Response(
@@ -394,7 +393,6 @@ class JobSeekerResumeView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        print("resume upload request received!")
         profile = JobSeekerProfile.objects.get(user=request.user)
         serializer = JobSeekerResumeSerializer(data=request.data)
 

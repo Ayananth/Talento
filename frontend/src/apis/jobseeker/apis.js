@@ -8,7 +8,6 @@ export const getJobs = async ({
   pageSize = "12",
   filters = {},
 } = {}) => {
-  console.log("Filters: ",filters)
   const res = await api.get("/v1/jobs/jobs/public/", {
     params: {
       page,

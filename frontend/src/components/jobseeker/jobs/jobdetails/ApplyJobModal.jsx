@@ -225,7 +225,6 @@ const parseApiError = (err) => {
                     onChange={() => setSelectedResume(r)}
                   />
                   {r.title}
-                  {console.log("selected resume url : ", selectedResume)}
                 </label>
               ))}
 

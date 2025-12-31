@@ -24,7 +24,6 @@ export default function VerificationRejectedPage() {
         }
 
         setRejectionReason(profile.rejection_reason || "");
-        console.log(profile.pending_data)
 
         setInitialData({
           company_name: profile.pending_data?.company_name || "",

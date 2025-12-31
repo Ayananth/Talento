@@ -13,14 +13,12 @@ export default function RecruiterRedirect() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
 
-  console.log("RecruiterRedirect component running...")
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await api.get("/v1/recruiter/profile/");
         setProfile(res.data);
-        console.log("profile: ", profile)
       } catch (err) {
         if (err.response?.status === 404) {
           setProfile(null);
@@ -47,11 +45,9 @@ export default function RecruiterRedirect() {
    * No profile → first-time onboarding
    */
 
-  console.log(profile)
 
 
   if (!profile) {
-    console.log("Onboardig")
     return <RecruiterOnboardingPage />;
   }
 

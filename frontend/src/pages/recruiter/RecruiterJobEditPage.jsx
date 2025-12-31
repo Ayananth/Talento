@@ -18,7 +18,6 @@ export default function RecruiterJobEditPage() {
     const fetchJob = async () => {
       try {
         const res = await getRecruiterJobDetail(id);
-        console.log(res)
 
         setInitialData({
           title: res.title,

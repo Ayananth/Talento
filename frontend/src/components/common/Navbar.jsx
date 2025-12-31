@@ -13,7 +13,6 @@ export function Navbar({role}) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { isAuthenticated, logout } = useAuth();
-  console.log("isAuthenticated", isAuthenticated)
 
   const isRecruiter = pathname.includes("/recruiter/");
   const loginUrl = isRecruiter ? "/recruiter/login" : "/login";

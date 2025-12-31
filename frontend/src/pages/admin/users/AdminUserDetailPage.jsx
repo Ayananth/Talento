@@ -76,7 +76,6 @@ export default function AdminUserDetailPage() {
     const fetchUser = async () => {
       try {
         const res = await getAdminUserDetails(id);
-        console.log(res)
         setUser(res);
       } catch (err) {
         console.error("Failed to load user", err);

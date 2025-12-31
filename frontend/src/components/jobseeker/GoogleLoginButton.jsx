@@ -13,9 +13,7 @@ export default function GoogleLoginButton({role}) {
     const { googleLogin } = useAuth();
     const navigate = useNavigate()
   const handleSuccess = async (credentialResponse) => {
-    console.log("Google credential response:", credentialResponse);
     const id_token = credentialResponse.credential;
-    console.log("ID Token sent to backend:", id_token);
 
 
     try {
@@ -31,7 +29,6 @@ export default function GoogleLoginButton({role}) {
 
         googleLogin({access, refresh, role}); 
 
-      console.log("Logged in user:", user);
 
       navigate("/");
 

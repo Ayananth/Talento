@@ -54,7 +54,6 @@ const SignUp = ({role}) => {
 
 
     } catch (err) {
-      console.log(err.response?.data);
 
       // Backend validation errors
       const backend = err.response?.data;
