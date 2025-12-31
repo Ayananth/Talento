@@ -5,7 +5,7 @@ import { getAdminUsers } from "@/apis/admin/users";
 import { toggleUserBlock } from "@/apis/admin/users";
 import ResponsiveTable from "@/components/admin/ResponsiveTable";
 import Pagination from "@/components/common/Pagination";
-import { PAGE_SIZE } from "@/constants/constants";
+import { PAGE_SIZE_TABLES as PAGE_SIZE } from "@/constants/constants";
 
 /* ---------------------------------------------------
    CONFIRMATION MODAL
@@ -120,7 +120,6 @@ export default function AdminUsersPage() {
     try {
       setActionLoading(true);
 
-      // 👇 THIS IS THE KEY LINE
       await toggleUserBlock(
         selectedUser.id,
         !selectedUser.is_blocked
@@ -144,7 +143,8 @@ export default function AdminUsersPage() {
     {
       label: "No",
       key: "number",
-      render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
+render: (_, index) =>
+  (page - 1) * data.length + index + 1
     },
     {
       label: "Email",
@@ -185,12 +185,11 @@ export default function AdminUsersPage() {
     {
       label: "Email Verified",
       key: "verified",
+      sortable: true,
     },
   ];
 
-  /* ---------------------------------------------------
-     RENDER
-  --------------------------------------------------- */
+console.log("data: ",data)
   return (
     <div className="p-4 md:p-6">
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
