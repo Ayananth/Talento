@@ -7,87 +7,92 @@ import Toast from "@/components/common/Toast";
 import Pagination from "../common/Pagination";
 import { PAGE_SIZE } from "../../constants/constants";
 
-
-
-
-
-
 export default function RecruiterJobsListPage() {
-const [jobs, setJobs] = useState([]);
-const [ordering, setOrdering] = useState("-created_at");
-const [loading, setLoading] = useState(true);
-const [deleteJobId, setDeleteJobId] = useState(null);
-const [deleteLoading, setDeleteLoading] = useState(false);
-const [toast, setToast] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [ordering, setOrdering] = useState("-created_at");
+  const [loading, setLoading] = useState(true);
 
-const [page, setPage] = useState(1);
-const [count, setCount] = useState(0);
-const pageSize = PAGE_SIZE;
-const totalPages = Math.ceil(count / pageSize);  
+  const [deleteJobId, setDeleteJobId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [toast, setToast] = useState(null);
 
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(0);
 
+  const [statusFilter, setStatusFilter] = useState("");
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const totalPages = Math.ceil(count / PAGE_SIZE);
 
-const fetchJobs = async () => {
-  try {
-    setLoading(true);
+  /* ---------------------------------------------------
+     FETCH JOBS
+  --------------------------------------------------- */
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
 
-    const res = await getRecruiterJobs({ page, ordering })
+      const res = await getRecruiterJobs({
+        page,
+        ordering,
+        status: statusFilter,
+      });
 
-    const mapped = res.results.map((job) => ({
-      id: job.id,
-      title: job.title,
-      status: job.status,
-      applications_count: job.applications_count ?? 0,
-      view_count: job.view_count ?? 0,
-      expires_at: job.expires_at,
-      is_active: job.is_active,
-      location_city: job.location_city,
-      location_state: job.location_state,
-      location_country: job.location_country,
-    }));
+      const mapped = res.results.map((job) => ({
+        id: job.id,
+        title: job.title,
+        status: job.status,
+        applications_count: job.applications_count ?? 0,
+        view_count: job.view_count ?? 0,
+        expires_at: job.expires_at,
+        is_active: job.is_active,
+        location_city: job.location_city,
+        location_state: job.location_state,
+        location_country: job.location_country,
+      }));
 
-    setJobs(mapped);
-    setCount(res.count)
-  } catch (err) {
-    console.error("Failed to load recruiter jobs", err);
-  } finally {
-    setLoading(false);
-  }
-};
+      setJobs(mapped);
+      setCount(res.count);
+    } catch (err) {
+      console.error("Failed to load recruiter jobs", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-useEffect(() => {
-  fetchJobs();
-}, [ordering, page]);
+  useEffect(() => {
+    fetchJobs();
+  }, [ordering, page, statusFilter]);
 
-const handleDeleteJob = async () => {
-  try {
-    setDeleteLoading(true);
-    await deleteJob(deleteJobId);
+  /* ---------------------------------------------------
+     DELETE JOB
+  --------------------------------------------------- */
+  const handleDeleteJob = async () => {
+    try {
+      setDeleteLoading(true);
+      await deleteJob(deleteJobId);
 
-    setDeleteJobId(null);
-    await fetchJobs();
-    
+      setDeleteJobId(null);
+      await fetchJobs();
 
-    setToast({
-      type: "success",
-      message: "Job deleted successfully",
-    });
-  } catch (err) {
-    console.error("Failed to delete job", err);
-    setDeleteJobId(null);
-    setToast({
-      type: "Failed",
-      message: "Failed to delete",
-    });
-  } finally {
-    setDeleteLoading(false);
-  }
-};
+      setToast({
+        type: "success",
+        message: "Job deleted successfully",
+      });
+    } catch (err) {
+      console.error("Failed to delete job", err);
+      setDeleteJobId(null);
+      setToast({
+        type: "error",
+        message: "Failed to delete job",
+      });
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
-
-
+  /* ---------------------------------------------------
+     TABLE COLUMNS
+  --------------------------------------------------- */
   const columns = [
     {
       label: "Title",
@@ -104,9 +109,6 @@ const handleDeleteJob = async () => {
       label: "Applicants",
       key: "applications_count",
       sortable: true,
-      render: (row) => (
-        <span className="font-medium">{row.applications_count}</span>
-      ),
     },
     {
       label: "Views",
@@ -127,13 +129,10 @@ const handleDeleteJob = async () => {
     {
       label: "Location",
       key: "location",
-      render: (row) => (
-        <span>
-          {[row.location_city, row.location_state, row.location_country]
-            .filter(Boolean)
-            .join(", ")}
-        </span>
-      ),
+      render: (row) =>
+        [row.location_city, row.location_state, row.location_country]
+          .filter(Boolean)
+          .join(", "),
     },
     {
       label: "Active",
@@ -153,66 +152,98 @@ const handleDeleteJob = async () => {
     },
   ];
 
-const actions = (row) => (
-  <div className="flex gap-2">
-    <button
-      onClick={() => navigate(`/recruiter/jobs/${row.id}`)}
-      className="text-blue-600 text-sm hover:underline"
-    >
-      View
-    </button>
+  /* ---------------------------------------------------
+     ACTIONS
+  --------------------------------------------------- */
+  const actions = (row) => (
+    <div className="flex gap-2">
+      <button
+        onClick={() => navigate(`/recruiter/jobs/${row.id}`)}
+        className="text-blue-600 text-sm hover:underline"
+      >
+        View
+      </button>
 
-    <button
-      onClick={() => navigate(`/recruiter/jobs/${row.id}/edit`)}
-      className="text-gray-700 text-sm hover:underline"
-    >
-      Edit
-    </button>
+      <button
+        onClick={() => navigate(`/recruiter/jobs/${row.id}/edit`)}
+        className="text-gray-700 text-sm hover:underline"
+      >
+        Edit
+      </button>
 
-<button
-  disabled={!row.is_active || row.status === "closed"}
-  onClick={() => setDeleteJobId(row.id)}
-  className={`text-sm
-    ${
-      row.is_active && row.status !== "closed"
-        ? "text-red-600 hover:underline"
-        : "text-gray-400 cursor-not-allowed"
-    }
-  `}
->
-  Close
-</button>
+      <button
+        disabled={!row.is_active || row.status === "closed"}
+        onClick={() => setDeleteJobId(row.id)}
+        className={`text-sm ${
+          row.is_active && row.status !== "closed"
+            ? "text-red-600 hover:underline"
+            : "text-gray-400 cursor-not-allowed"
+        }`}
+      >
+        Close
+      </button>
+    </div>
+  );
 
-
-  </div>
-);
-
-
+  /* ---------------------------------------------------
+     RENDER
+  --------------------------------------------------- */
   return (
     <div className="p-6 space-y-6">
-      {/* PAGE HEADER */}
+      {/* HEADER */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          My Jobs
-        </h1>
+        <h1 className="text-2xl font-semibold text-gray-900">My Jobs</h1>
 
-        <button 
-        onClick={()=>navigate('/recruiter/jobs/create')}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        {/* <button
+          onClick={() => navigate("/recruiter/jobs/create")}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
           + Post New Job
-        </button>
-{/* <button
-  disabled={!canPostJobs}
-  className={`px-4 py-2 rounded-lg text-white
-    ${canPostJobs
-      ? "bg-blue-600 hover:bg-blue-700"
-      : "bg-gray-400 cursor-not-allowed"}
-  `}
->
-  + Post New Job
-</button> */}
-
+        </button> */}
       </div>
+
+      {/* FILTER BAR */}
+{/* FILTER + ACTION ROW */}
+<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+  {/* LEFT: FILTER */}
+  <div className="flex items-center gap-3">
+    <select
+      value={statusFilter}
+      onChange={(e) => {
+        setStatusFilter(e.target.value);
+        setPage(1);
+      }}
+      className="h-9 px-3 text-sm border border-gray-300 rounded-lg bg-white"
+    >
+      <option value="">All Status</option>
+      <option value="draft">Draft</option>
+      <option value="published">Published</option>
+      <option value="closed">Closed</option>
+    </select>
+
+    {statusFilter && (
+      <button
+        onClick={() => {
+          setStatusFilter("");
+          setPage(1);
+        }}
+        className="text-sm text-gray-500 hover:text-gray-700"
+      >
+        Clear
+      </button>
+    )}
+  </div>
+
+  {/* RIGHT: POST JOB */}
+  <button
+    onClick={() => navigate("/recruiter/jobs/create")}
+    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 self-start md:self-auto"
+  >
+    + Post New Job
+  </button>
+</div>
+
 
       {/* TABLE */}
       <ResponsiveTable
@@ -220,54 +251,42 @@ const actions = (row) => (
         columns={columns}
         ordering={ordering}
         onSort={(key) => {
-          setOrdering((prev) => (prev === key ? `-${key}` : key));
+          setOrdering((prev) => {
+            if (prev === key) return `-${key}`;
+            if (prev === `-${key}`) return "";
+            return key;
+          });
           setPage(1);
         }}
-
         actions={actions}
       />
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={(num) => setPage(num)}
-            />
 
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
 
+      {loading && <p className="text-sm text-gray-500">Loading jobs…</p>}
 
-{loading && (
-  <p className="text-sm text-gray-500">
-    Loading jobs…
-  </p>
+      {deleteJobId && (
+        <ConfirmModal
+          open
+          loading={deleteLoading}
+          title="Delete Job"
+          description="Are you sure you want to delete this job? This action cannot be undone."
+          onClose={() => !deleteLoading && setDeleteJobId(null)}
+          onConfirm={handleDeleteJob}
+        />
+      )}
 
-
-)}
-
-{deleteJobId && (
-  <ConfirmModal
-    open={true}
-    loading={deleteLoading}
-    title="Delete Job"
-    description="Are you sure you want to delete this job? This action cannot be undone."
-    onClose={() => {
-      if (!deleteLoading) setDeleteJobId(null);
-    }}
-    onConfirm={handleDeleteJob}
-  />
-)}
-
-
-{toast && (
-  <Toast
-    message={toast.message}
-    type={toast.type}
-    onClose={() => setToast(null)}
-  />
-)}
-
-
-
-
-
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

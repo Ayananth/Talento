@@ -117,7 +117,7 @@ class RecruiterJobListView(ListAPIView):
 
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = RecruiterJobFilter
-    ordering_fields = ["created_at", "published_at"]
+    ordering_fields = [ "expires_at", "view_count"]
     ordering = ["-created_at"]
 
     def get_queryset(self):
