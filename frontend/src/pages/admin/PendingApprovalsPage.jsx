@@ -30,9 +30,9 @@ export default function PendingApprovalsPage() {
     const mapped = response.results.map((item) => ({
       id: item.id,
       user: item.username,
-      company: item.company_name,
-      status: item.status,
-      request_type: item.request_type?.toLowerCase(),
+      company: item.company_name || item.pending_data.company_name,
+      status: item.status?.toUpperCase(),
+      request_type: item.request_type?.toUpperCase() || "NEW",
       submitted: new Date(item.updated_at).toLocaleString(),
     }));
 
@@ -98,19 +98,54 @@ useEffect(() => {
       orderingKey: "company_name", 
     },
 
-    {
-      label: "Request Type",
-      key: "request_type",
-      sortable: true,
-      orderingKey: "request_type",
-    },
+{
+  label: "Request Type",
+  key: "request_type",
+  sortable: true,
+  orderingKey: "request_type",
+  render: (row) => {
+    const typeStyles = {
+      NEW: "bg-blue-100 text-blue-800 border border-blue-200",
+      EDIT: "bg-purple-100 text-purple-800 border border-purple-200",
+      DELETE: "bg-red-100 text-red-800 border border-red-200",
+    };
 
-    {
-      label: "Status",
-      key: "status",
-      sortable: true,
-      orderingKey: "status",
-    },
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+          typeStyles[row.request_type] || "bg-gray-100 text-gray-800"
+        }`}
+      >
+        {row.request_type}
+      </span>
+    );
+  },
+},
+
+
+{
+  label: "Status",
+  key: "status",
+  sortable: true,
+  orderingKey: "status",
+  render: (row) => {
+    const statusStyles = {
+      PENDING: "bg-yellow-100 text-yellow-800 border border-yellow-200",
+      APPROVED: "bg-green-100 text-green-800 border border-green-200",
+      REJECTED: "bg-red-100 text-red-800 border border-red-200",
+    };
+
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+          statusStyles[row.status] || "bg-gray-100 text-gray-800"
+        }`}
+      >
+        {row.status}
+      </span>
+    );
+  },
+},
 
     {
       label: "Submitted",

@@ -11,6 +11,7 @@ from core.permissions import IsRecruiter, IsAdmin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .filters import RecruiterProfileFilter
+from django.db.models import Q
 
 
 
@@ -304,7 +305,11 @@ class AdminRecruiterListView(BaseAdminRecruiterListView):
 
 class PendingRecruiterListView(BaseAdminRecruiterListView):
     def get_queryset(self):
+        # TODO
+        # query = Q(status="pending") | Q(status="rejected")
+        # return RecruiterProfile.objects.filter(query).order_by('-updated_at')
         return RecruiterProfile.objects.filter(status="pending").order_by('-updated_at')
+
     
 
 class RecruiterProfileDetailView(generics.RetrieveAPIView):
