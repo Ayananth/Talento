@@ -6,6 +6,7 @@ import {
   updateRecruiterProfileDraft,
 } from "../../apis/recruiter/apis";
 import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
+import { popularCitiesInIndia } from "../../utils/common/utils";
 import "./profile.css";
 import Toast from "@/components/common/Toast";
 
@@ -22,14 +23,17 @@ const emptyProfile = {
   support_email: "",
   location: "",
   linkedin: "",
+  facebook: "",
+  twitter: "",
   logo: null,
 };
 
-function Field({ label, children }) {
+function Field({ label, error, children }) {
   return (
     <div className="space-y-1">
       <label className="text-sm font-medium text-gray-700">{label}</label>
       {children}
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
 }
@@ -37,6 +41,8 @@ function Field({ label, children }) {
 export default function RecruiterProfilePage() {
   const [form, setForm] = useState(emptyProfile);
   const [original, setOriginal] = useState(emptyProfile);
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -63,13 +69,15 @@ export default function RecruiterProfilePage() {
           support_email: data.support_email || "",
           location: data.location || "",
           linkedin: data.linkedin || "",
+          facebook: data.facebook || "",
+          twitter: data.twitter || "",
           logo: data.logo || null,
         };
 
         setForm(mapped);
         setOriginal(mapped);
       } catch (err) {
-        console.error("Failed to load recruiter profile", err);
+        console.error("Failed to load profile", err);
       } finally {
         setLoading(false);
       }
@@ -82,7 +90,10 @@ export default function RecruiterProfilePage() {
      Change handler
   ---------------------------------- */
   const onChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setErrors((p) => ({ ...p, [name]: null }));
+    setFormError("");
+    setForm({ ...form, [name]: value });
   };
 
   /* ----------------------------------
@@ -91,8 +102,12 @@ export default function RecruiterProfilePage() {
   const buildCreatePayload = () => {
     const payload = new FormData();
     Object.keys(form).forEach((key) => {
-      if (key !== "status" && key !== "rejection_reason" && form[key] !== null) {
-        payload.append(key, form[key]);
+      if (
+        key !== "status" &&
+        key !== "rejection_reason" &&
+        form[key] !== null
+      ) {
+        payload.append(key, form[key] === "" ? "" : form[key]);
       }
     });
     return payload;
@@ -107,7 +122,7 @@ export default function RecruiterProfilePage() {
         form[key] !== original[key] &&
         form[key] !== null
       ) {
-        payload.append(key, form[key]);
+        payload.append(key, form[key] === "" ? "" : form[key]);
       }
     });
     return payload;
@@ -116,47 +131,52 @@ export default function RecruiterProfilePage() {
   /* ----------------------------------
      Submit draft
   ---------------------------------- */
-const submitDraft = async () => {
-  setSubmitting(true);
-  try {
-    if (form.status === "pending") {
-      const payload = buildUpdatePayload();
+  const submitDraft = async () => {
+    setSubmitting(true);
+    setErrors({});
+    setFormError("");
 
-      if ([...payload.keys()].length === 0) {
-        setToast({
-          message: "No changes to submit",
-          type: "error",
-        });
-        setSubmitting(false);
-        return;
+    try {
+      if (form.status === "pending") {
+        const payload = buildUpdatePayload();
+        if ([...payload.keys()].length === 0) {
+          setToast({ message: "No changes to submit", type: "error" });
+          setSubmitting(false);
+          return;
+        }
+        await updateRecruiterProfileDraft(payload);
+      } else {
+        const payload = buildCreatePayload();
+        await createRecruiterProfileDraft(payload);
       }
 
-      await updateRecruiterProfileDraft(payload);
-    } else {
-      const payload = buildCreatePayload();
-      await createRecruiterProfileDraft(payload);
+      setToast({
+        message: "Profile changes submitted for admin approval",
+        type: "success",
+      });
+
+      setIsEditing(false);
+      setForm({ ...form, status: "pending", rejection_reason: "" });
+    } catch (err) {
+      const data = err?.response?.data;
+
+      if (!data) {
+        setFormError("Something went wrong. Please try again.");
+      } else if (data.detail) {
+        setFormError(data.detail);
+      } else {
+        const fieldErrors = {};
+        Object.keys(data).forEach((key) => {
+          fieldErrors[key] = Array.isArray(data[key])
+            ? data[key][0]
+            : data[key];
+        });
+        setErrors(fieldErrors);
+      }
+    } finally {
+      setSubmitting(false);
     }
-
-    setToast({
-      message: "Profile changes submitted for admin approval",
-      type: "success",
-    });
-
-    setIsEditing(false);
-    setForm({ ...form, status: "pending", rejection_reason: "" });
-  } catch (err) {
-    console.error(err);
-    setToast({
-      message:
-        err.response?.data?.detail ||
-        "Failed to submit changes",
-      type: "error",
-    });
-  } finally {
-    setSubmitting(false);
-  }
-};
-
+  };
 
   if (loading) {
     return <div className="p-6 text-gray-500">Loading profile…</div>;
@@ -167,9 +187,16 @@ const submitDraft = async () => {
 
   return (
     <div className="max-w-6xl space-y-6">
-      {/* Rejection Banner */}
+      {/* Global error */}
+      {formError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
+          {formError}
+        </div>
+      )}
+
+      {/* Rejection banner */}
       {isRejected && form.rejection_reason && (
-        <div className="flex gap-3 items-start bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="flex gap-3 bg-red-50 border border-red-200 rounded-lg p-4">
           <AlertTriangle className="text-red-600 mt-1" />
           <div>
             <p className="font-semibold text-red-700">
@@ -178,37 +205,22 @@ const submitDraft = async () => {
             <p className="text-sm text-red-600 mt-1">
               {form.rejection_reason}
             </p>
-            <p className="text-sm text-gray-600 mt-2">
-              Please update the requested fields and resubmit for approval.
-            </p>
           </div>
         </div>
       )}
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Company Profile
-          </h1>
-          <p className="text-sm text-gray-500">
-            Changes require admin approval
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-            {form.status}
-          </span>
-
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            disabled={isPending}
-            className="px-4 py-2 rounded-lg bg-black text-white text-sm disabled:opacity-50"
-          >
-            {isEditing ? "Cancel" : "Edit Profile"}
-          </button>
-        </div>
+        <h1 className="text-2xl font-semibold text-gray-900">
+          Company Profile
+        </h1>
+        <button
+          onClick={() => setIsEditing(!isEditing)}
+          disabled={isPending}
+          className="px-4 py-2 rounded-lg bg-black text-white text-sm disabled:opacity-50"
+        >
+          {isEditing ? "Cancel" : "Edit Profile"}
+        </button>
       </div>
 
       {/* Card */}
@@ -226,21 +238,11 @@ const submitDraft = async () => {
               <Building2 className="h-10 w-10 text-gray-400" />
             )}
           </div>
-
-          {isEditing && (
-            <input
-              type="file"
-              name="draft_logo"
-              onChange={(e) =>
-                setForm({ ...form, draft_logo: e.target.files[0] })
-              }
-            />
-          )}
         </div>
 
         {/* Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Field label="Company Name">
+          <Field label="Company Name" error={errors.company_name}>
             <input
               className="input"
               name="company_name"
@@ -250,7 +252,7 @@ const submitDraft = async () => {
             />
           </Field>
 
-          <Field label="Industry">
+          <Field label="Industry" error={errors.industry}>
             <input
               className="input"
               name="industry"
@@ -260,7 +262,7 @@ const submitDraft = async () => {
             />
           </Field>
 
-          <Field label="Website">
+          <Field label="Website" error={errors.website}>
             <input
               className="input"
               name="website"
@@ -283,7 +285,7 @@ const submitDraft = async () => {
 
         {/* About */}
         <div className="mt-6">
-          <Field label="About Company">
+          <Field label="About Company" error={errors.about_company}>
             <textarea
               className="textarea"
               name="about_company"
@@ -297,7 +299,7 @@ const submitDraft = async () => {
 
         {/* Address */}
         <div className="mt-6">
-          <Field label="Address">
+          <Field label="Address" error={errors.address}>
             <textarea
               className="textarea"
               name="address"
@@ -311,7 +313,7 @@ const submitDraft = async () => {
 
         {/* Contact */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <Field label="Phone">
+          <Field label="Phone" error={errors.phone}>
             <input
               className="input"
               name="phone"
@@ -321,7 +323,7 @@ const submitDraft = async () => {
             />
           </Field>
 
-          <Field label="Support Email">
+          <Field label="Support Email" error={errors.support_email}>
             <input
               className="input"
               name="support_email"
@@ -334,21 +336,48 @@ const submitDraft = async () => {
 
         {/* Location & Social */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <Field label="Location">
+          <Field label="Location" error={errors.location}>
+            <select
+              name="location"
+              className="input"
+              value={form.location}
+              onChange={onChange}
+              disabled={!isEditing}
+            >
+              <option value="">Select City</option>
+              {popularCitiesInIndia.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="LinkedIn" error={errors.linkedin}>
             <input
               className="input"
-              name="location"
-              value={form.location}
+              name="linkedin"
+              value={form.linkedin}
               onChange={onChange}
               disabled={!isEditing}
             />
           </Field>
 
-          <Field label="LinkedIn">
+          <Field label="Facebook" error={errors.facebook}>
             <input
               className="input"
-              name="linkedin"
-              value={form.linkedin}
+              name="facebook"
+              value={form.facebook}
+              onChange={onChange}
+              disabled={!isEditing}
+            />
+          </Field>
+
+          <Field label="Twitter / X" error={errors.twitter}>
+            <input
+              className="input"
+              name="twitter"
+              value={form.twitter}
               onChange={onChange}
               disabled={!isEditing}
             />
@@ -369,20 +398,19 @@ const submitDraft = async () => {
               disabled={submitting}
               className="px-4 py-2 rounded-lg bg-black text-white text-sm disabled:opacity-50"
             >
-              {submitting ? "Submitting..." : "Submit for Approval"}
+              {submitting ? "Submitting…" : "Submit for Approval"}
             </button>
           </div>
         )}
       </div>
 
-{toast && (
-  <Toast
-    message={toast.message}
-    type={toast.type}
-    onClose={() => setToast(null)}
-  />
-)}
-
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
