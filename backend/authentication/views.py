@@ -432,7 +432,7 @@ class AdminUserListView(ListAPIView):
         "is_active",
     ]
 
-    ordering = ["email"]
+    ordering = ["-date_joined"]
 
 
 
