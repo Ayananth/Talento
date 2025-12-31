@@ -1,15 +1,26 @@
 import api from "@/apis/api";
 
-export const getAdminUsers = async (page = 1, ordering = "") => {
-  const res = await api.get("/v1/auth/admin/users/", {
+export const getAdminUsers = ({
+  page = 1,
+  ordering = "",
+  search = "",
+  role = "",
+  status = "",
+  verified = "",
+}) => {
+  return api.get("/v1/auth/admin/users/", {
     params: {
       page,
       ordering,
+      ...(search && { search }),
+      ...(role && { role }),
+      ...(status !== "" && { is_blocked: status }),
+      ...(verified !== "" && { is_email_verified: verified }),
     },
-  });
-
-  return res.data;
+  }).then(res => res.data);
 };
+
+
 
 
 

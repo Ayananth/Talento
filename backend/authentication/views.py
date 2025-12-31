@@ -37,6 +37,7 @@ from .tasks import send_verification_email, send_password_reset_email_task
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from core.permissions import IsAdmin
 
@@ -418,12 +419,18 @@ class AdminUserListView(ListAPIView):
     serializer_class = AdminUserListSerializer
     queryset = USER.objects.all()
 
-    filter_backends = [SearchFilter, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 
     search_fields = [
         "email",
         "username",
     ]
+
+    filterset_fields = {
+        "role": ["exact"],
+        "is_blocked": ["exact"],
+        "is_email_verified": ["exact"],
+    }
 
     ordering_fields = [
         "email",

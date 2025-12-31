@@ -63,42 +63,59 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [verifiedFilter, setVerifiedFilter] = useState("");
+
+
   const navigate = useNavigate();
   const totalPages = Math.ceil(count / PAGE_SIZE);
 
   /* ---------------------------------------------------
      FETCH USERS
   --------------------------------------------------- */
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const res = await getAdminUsers(page, ordering);
+const fetchUsers = async () => {
+  try {
+    setLoading(true);
 
-      res.results.map((u)=> console.log(u));
+    const res = await getAdminUsers({
+      page,
+      ordering,
+      search,
+      role: roleFilter,
+      status: statusFilter,
+      verified: verifiedFilter,
+    });
 
-      const mapped = res.results.map((u) => ({
-        id: u.id,
-        email: u.email,
-        username: u.username || "—",
-        role: u.role_display,
-        is_blocked: u.is_blocked,
-        status: u.is_blocked ? "Blocked" : "Active",
-        verified: u.is_email_verified ? "Yes" : "No",
-        raw: u,
-      }));
+    const mapped = res.results.map((u) => ({
+      id: u.id,
+      email: u.email,
+      username: u.username || "—",
+      role: u.role_display,
+      is_blocked: u.is_blocked,
+      status: u.is_blocked ? "Blocked" : "Active",
+      verified: u.is_email_verified ? "Yes" : "No",
+    }));
 
-      setData(mapped);
-      setCount(res.count);
-    } catch (err) {
-      console.error("Failed to load users", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setData(mapped);
+    setCount(res.count);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchUsers();
-  }, [page, ordering]);
+  }, [
+      page,
+  ordering,
+  search,
+  roleFilter,
+  statusFilter,
+  verifiedFilter,
+  ]);
 
   /* ---------------------------------------------------
      SORTING
@@ -195,6 +212,97 @@ console.log("data: ",data)
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
         Users
       </h2>
+
+
+{/* FILTER TOOLBAR */}
+<div className="mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3
+                flex flex-col md:flex-row md:items-center gap-3">
+
+  {/* SEARCH */}
+  <div className="flex-1 relative">
+    <input
+      type="text"
+      placeholder="Search users by username or email"
+      value={search}
+      onChange={(e) => {
+        setSearch(e.target.value);
+        setPage(1);
+      }}
+      className="w-full h-9 pl-9 pr-3 text-sm border border-gray-300
+                 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+
+    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+      🔍
+    </span>
+  </div>
+
+  {/* ROLE */}
+  <select
+    value={roleFilter}
+    onChange={(e) => {
+      setRoleFilter(e.target.value);
+      setPage(1);
+    }}
+    className="h-9 px-3 text-sm border border-gray-300 rounded-lg
+               bg-white focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="">All Roles</option>
+    <option value="recruiter">Recruiter</option>
+    <option value="jobseeker">Job Seeker</option>
+    <option value="admin">Admin</option>
+  </select>
+
+  {/* STATUS */}
+  <select
+    value={statusFilter}
+    onChange={(e) => {
+      setStatusFilter(e.target.value);
+      setPage(1);
+    }}
+    className="h-9 px-3 text-sm border border-gray-300 rounded-lg bg-white"
+  >
+    <option value="">All Status</option>
+    <option value="false">Active</option>
+    <option value="true">Blocked</option>
+  </select>
+
+  {/* VERIFIED */}
+  <select
+    value={verifiedFilter}
+    onChange={(e) => {
+      setVerifiedFilter(e.target.value);
+      setPage(1);
+    }}
+    className="h-9 px-3 text-sm border border-gray-300 rounded-lg bg-white"
+  >
+    <option value="">Email Verified</option>
+    <option value="true">Yes</option>
+    <option value="false">No</option>
+  </select>
+
+  {/* CLEAR */}
+  {(search || roleFilter || statusFilter || verifiedFilter) && (
+    <button
+      onClick={() => {
+        setSearch("");
+        setRoleFilter("");
+        setStatusFilter("");
+        setVerifiedFilter("");
+        setPage(1);
+      }}
+      className="text-sm text-gray-500 hover:text-gray-700 px-2"
+    >
+      Clear
+    </button>
+  )}
+</div>
+
+
+
+
+
+
 
       <ResponsiveTable
         data={data}
