@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import JobCard from "./JobCard";
 import JobCategoryTabs from "./JobCategoryTabs";
 
@@ -70,41 +71,77 @@ const JOBS = [
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
+
 export default function JobsOfTheDay() {
   const [activeCategory, setActiveCategory] = useState("Management");
 
-//   const filteredJobs = JOBS.filter(
-//     (job) => job.category === activeCategory
-//   );
-
-    const filteredJobs = JOBS;
+  const filteredJobs = JOBS;
 
   return (
-    <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-
+    <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-slate-900">
-            Jobs of the day
-          </h1>
-          <p className="mt-3 text-slate-500">
-            Search and connect with the right candidates faster.
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">
+            Jobs of the Day
+          </h2>
+          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+            Discover the latest job opportunities posted today
           </p>
-        </div>
+        </motion.div>
 
         {/* Tabs */}
-        <JobCategoryTabs
-          active={activeCategory}
-          onChange={setActiveCategory}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <JobCategoryTabs
+            active={activeCategory}
+            onChange={setActiveCategory}
+          />
+        </motion.div>
 
         {/* Job Cards */}
-        <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={containerVariants}
+          className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
           {filteredJobs.map((job, index) => (
-            <JobCard key={index} job={job} />
+            <motion.div key={index} variants={itemVariants}>
+              <JobCard job={job} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
