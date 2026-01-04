@@ -9,6 +9,7 @@ import RecruiterJobsListPage from "../../components/recruiter/RecruiterJobsListP
 import RecruiterJobDetailPage from "../../pages/recruiter/RecruiterJobDetailPage";
 import RecruiterJobEditPage from "../../pages/recruiter/RecruiterJobEditPage";
 import RecruiterProfilePage from "../../pages/recruiter/RecruiterProfilePage";
+import RecruiterApplicationsListPage from "../../pages/recruiter/RecruiterApplicationsListPage";
 
 const recruiterRoutes = [
   {
@@ -53,6 +54,23 @@ const recruiterRoutes = [
 
             element: <RecruiterProfilePage />,
           },
+
+
+          {
+            path: "applications",
+            element: <RecruiterApplicationsListPage />,
+          },
+
+
+
+
+
+
+
+
+
+
+
         ],
       },
     ],
