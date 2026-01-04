@@ -188,3 +188,77 @@ class JobApplicationListSerializer(serializers.ModelSerializer):
     def get_job_type(self, obj):
         job = obj.job
         return job.job_type
+    
+
+class RecruiterApplicationListSerializer(serializers.ModelSerializer):
+    job_title = serializers.CharField(source="job.title", read_only=True)
+
+    applicant_name = serializers.CharField(
+        source="applicant.fullname",
+        read_only=True
+    )
+    applicant_email = serializers.EmailField(
+        source="applicant.user.email",
+        read_only=True
+    )
+    phone = serializers.CharField(
+        source="applicant.phone_number",
+        read_only=True
+    )
+
+    expected_salary = serializers.IntegerField(read_only=True)
+    current_salary = serializers.IntegerField(read_only=True)
+    notice_period = serializers.CharField(read_only=True)
+    location = serializers.SerializerMethodField()
+
+    skills = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="skill_name",
+        source="applicant.skills"
+    )   
+    
+    experience_years = serializers.IntegerField(
+        source="applicant.experience_years",
+        read_only=True
+    )
+
+    status_display = serializers.CharField(
+        source="get_status_display",
+        read_only=True
+    )
+
+    resume_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = JobApplication
+        fields = [
+            "id",
+            "job",
+            "job_title",
+            "applicant_name",
+            "applicant_email",
+            "expected_salary",
+            "current_salary",
+            "notice_period",
+            "status",
+            "status_display",
+            "resume_url",
+            "applied_at",
+            "phone",
+            "location",
+            "experience_years",
+            "skills"
+        ]
+
+    def get_resume_url(self, obj):
+        return obj.resume.url if obj.resume else None
+    
+    def get_location(self, obj):
+        job = obj.job
+        parts = [
+            job.location_city,
+            # job.location_state,
+            # job.location_country,
+        ]
+        return ", ".join(filter(None, parts))

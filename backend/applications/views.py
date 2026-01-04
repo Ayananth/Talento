@@ -6,9 +6,10 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
 
-from core.permissions import IsJobseeker
+from core.permissions import IsJobseeker, IsRecruiter
+from applications.models import JobApplication
 from profiles.models import JobSeekerResume
-from .serializers import ApplyJobSerializer, JobApplicationSerializer, JobApplicationListSerializer
+from .serializers import ApplyJobSerializer, JobApplicationSerializer, JobApplicationListSerializer, RecruiterApplicationListSerializer
 
 from .pagination import ApplicationPagination
 from .filters import JobApplicationFilter
@@ -97,3 +98,38 @@ class MyApplicationsView(ListAPIView):
                 "job__recruiter__recruiter_profile",
             )
         )
+    
+class JobApplicationsForRecruiterView(ListAPIView):
+    permission_classes = [IsRecruiter] 
+    serializer_class = RecruiterApplicationListSerializer
+    pagination_class = ApplicationPagination
+
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+    ]
+
+    filterset_class = JobApplicationFilter
+
+    ordering_fields = [
+        "applied_at",
+        "updated_at",
+        "status",
+    ]
+    ordering = ["-applied_at"]
+
+    def get_queryset(self):
+        return (
+            JobApplication.objects.filter(
+                job__recruiter=self.request.user
+            )
+            .select_related(
+                "job",
+                "job__recruiter",
+                "job__recruiter__recruiter_profile",
+                "applicant",
+                "applicant__user",
+            )
+        )
+    
+
