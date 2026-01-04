@@ -1,13 +1,19 @@
 import cloudinary.uploader as uploader
 
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
 
 from core.permissions import IsJobseeker
 from profiles.models import JobSeekerResume
-from .serializers import ApplyJobSerializer, JobApplicationSerializer
+from .serializers import ApplyJobSerializer, JobApplicationSerializer, JobApplicationListSerializer
+
+from .pagination import ApplicationPagination
+from .filters import JobApplicationFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
 
 
 class ApplyJobView(APIView):
@@ -59,4 +65,35 @@ class ApplyJobView(APIView):
         return Response(
             JobApplicationSerializer(application).data,
             status=status.HTTP_201_CREATED
+        )
+    
+
+
+class MyApplicationsView(ListAPIView):
+    permission_classes = [IsJobseeker]
+    serializer_class = JobApplicationListSerializer
+    pagination_class = ApplicationPagination
+
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+    ]
+
+    filterset_class = JobApplicationFilter
+
+    ordering_fields = [
+        "applied_at",
+        "updated_at",
+        "status",
+    ]
+    ordering = ["-applied_at"]
+
+    def get_queryset(self):
+        return (
+            self.request.user.jobseeker_profile.applications
+            .select_related(
+                "job",
+                "job__recruiter",
+                "job__recruiter__recruiter_profile",
+            )
         )

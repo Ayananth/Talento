@@ -125,3 +125,24 @@ export const applyToJob = async ({
 
   return res.data;
 };
+
+
+
+export const getMyApplications = async ({
+  page = 1,
+  status = "",
+  ordering = "-applied_date",
+  search = "",
+} = {}) => {
+  const res = await api.get("/v1/applications/my-applications/", {
+    params: {
+      page,
+      ...(status && { status }),
+      ...(ordering && { ordering }),
+      ...(search && { search }),
+    },
+  });
+
+  return res.data;
+};
+

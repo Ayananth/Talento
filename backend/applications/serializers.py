@@ -126,3 +126,65 @@ class JobApplicationSerializer(serializers.ModelSerializer):
         )
         return url
 
+
+class JobApplicationListSerializer(serializers.ModelSerializer):
+    job_title = serializers.CharField(source="job.title", read_only=True)
+
+    company_name = serializers.SerializerMethodField()
+
+    status_display = serializers.CharField(
+        source="get_status_display",
+        read_only=True
+    )
+    salary = serializers.SerializerMethodField()
+    job_type = serializers.SerializerMethodField()
+    location_city = serializers.CharField(
+        source="job.location_city",
+        read_only=True
+    )
+    location_state = serializers.CharField(
+        source="job.location_state",
+        read_only=True
+    )
+    location_country = serializers.CharField(
+        source="job.location_country",
+        read_only=True
+    )
+
+    class Meta:
+        model = JobApplication
+        fields = [
+            "id",
+            "job",
+            "job_title",
+            "company_name",
+            "status",
+            "status_display",
+            "cover_letter",
+            "applied_at",
+            "updated_at",
+            "salary",
+            "job_type",
+            "location_city",
+            "location_state",
+            "location_country",
+        ]
+
+    def get_company_name(self, obj):
+        recruiter = obj.job.recruiter
+        return getattr(recruiter.recruiter_profile, "company_name", None)
+
+    def get_salary(self, obj):
+        job = obj.job
+        if job.salary_min and job.salary_max:
+            return f"{job.salary_currency} {job.salary_min} - {job.salary_max}"
+        elif job.salary_min:
+            return f"{job.salary_currency} {job.salary_min}+"
+        elif job.salary_max:
+            return f"{job.salary_currency} up to {job.salary_max}"
+        else:
+            return "Not specified"
+    
+    def get_job_type(self, obj):
+        job = obj.job
+        return job.job_type

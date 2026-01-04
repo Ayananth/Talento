@@ -1,63 +1,30 @@
-import React, { useState } from 'react';
-import { Briefcase, Calendar, MapPin, DollarSign, Clock, Filter, Search } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Briefcase, Calendar, MapPin, DollarSign, Clock, Filter, Search, IndianRupee } from 'lucide-react';
+import { getMyApplications } from '../../apis/jobseeker/apis';
 
 const AppliedJobsDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [appliedJobs, setAppliedJobs] = useState([]);
 
-  const appliedJobs = [
-    {
-      id: 1,
-      company: 'TechCorp Inc.',
-      position: 'Senior Frontend Developer',
-      location: 'San Francisco, CA',
-      salary: '$120k - $150k',
-      appliedDate: '2024-01-02',
-      status: 'Under Review',
-      type: 'Full-time'
-    },
-    {
-      id: 2,
-      company: 'StartupXYZ',
-      position: 'React Developer',
-      location: 'Remote',
-      salary: '$90k - $110k',
-      appliedDate: '2023-12-28',
-      status: 'Interview Scheduled',
-      type: 'Full-time'
-    },
-    {
-      id: 3,
-      company: 'Digital Solutions',
-      position: 'UI/UX Developer',
-      location: 'New York, NY',
-      salary: '$100k - $130k',
-      appliedDate: '2023-12-20',
-      status: 'Rejected',
-      type: 'Contract'
-    },
-    {
-      id: 4,
-      company: 'CloudTech Systems',
-      position: 'Full Stack Engineer',
-      location: 'Austin, TX',
-      salary: '$130k - $160k',
-      appliedDate: '2024-01-01',
-      status: 'Under Review',
-      type: 'Full-time'
-    },
-    {
-      id: 5,
-      company: 'InnovateLabs',
-      position: 'JavaScript Developer',
-      location: 'Remote',
-      salary: '$95k - $120k',
-      appliedDate: '2023-12-15',
-      status: 'Offer Received',
-      type: 'Full-time'
-    }
-  ];
 
+  useEffect(() => {
+    // Fetch applied jobs from backend
+    const fetchAppliedJobs = async () => {
+      try {
+        const data = await getMyApplications();
+        console.log('Fetched applied jobs:', data);
+        setAppliedJobs(data.results || []);
+        console.log('Applied jobs set in state:', data.results || []);
+      } catch (error) {
+        console.error('Error fetching applied jobs:', error);
+      }
+    };
+
+    fetchAppliedJobs();
+  }, []);
+
+  
   const getStatusColor = (status) => {
     switch (status) {
       case 'Under Review':
@@ -74,8 +41,8 @@ const AppliedJobsDashboard = () => {
   };
 
   const filteredJobs = appliedJobs.filter(job => {
-    const matchesSearch = job.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.company.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = job.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         job.company_name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -155,8 +122,8 @@ const AppliedJobsDashboard = () => {
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{job.position}</div>
-                          <div className="text-sm text-gray-500">{job.company}</div>
+                          <div className="text-sm font-medium text-gray-900">{job.title}</div>
+                          <div className="text-sm text-gray-500">{job.company_name}</div>
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 mt-1">
                             {job.type}
                           </span>
@@ -166,19 +133,19 @@ const AppliedJobsDashboard = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center text-sm text-gray-900">
                         <MapPin className="w-4 h-4 text-gray-400 mr-2" />
-                        {job.location}
+                        {job.location_city}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center text-sm text-gray-900">
-                        <DollarSign className="w-4 h-4 text-gray-400 mr-1" />
+                        {/* <DollarSign className="w-4 h-4 text-gray-400 mr-1" /> */}
                         {job.salary}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center text-sm text-gray-900">
                         <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                        {new Date(job.appliedDate).toLocaleDateString()}
+                        {new Date(job.applied_at).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="px-6 py-4">
