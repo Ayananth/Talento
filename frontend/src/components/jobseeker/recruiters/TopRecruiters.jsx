@@ -1,138 +1,98 @@
+import { motion } from "framer-motion";
 import RecruiterCard from "./RecruiterCard";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const RECRUITERS = [
   {
     name: "LinkedIn",
-    logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
+    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 68,
     location: "New York, US",
     openJobs: 25,
   },
   {
     name: "Adobe",
-    logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
+    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 42,
     location: "New York, US",
     openJobs: 17,
   },
   {
     name: "Dailymotion",
-    logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
+    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 46,
     location: "New York, US",
     openJobs: 65,
   },
   {
     name: "NewSum",
-    logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
+    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 68,
     location: "New York, US",
     openJobs: 25,
   },
   {
     name: "PowerHome",
-    logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
+    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 87,
     location: "New York, US",
     openJobs: 34,
   },
-//   {
-//     name: "Whop.com",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 34,
-//     location: "New York, US",
-//     openJobs: 56,
-//   },
-//   {
-//     name: "Greewood",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 124,
-//     location: "New York, US",
-//     openJobs: 78,
-//   },
-//   {
-//     name: "Kentucky",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 54,
-//     location: "New York, US",
-//     openJobs: 98,
-//   },
-//   {
-//     name: "Queity",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 76,
-//     location: "New York, US",
-//     openJobs: 90,
-//   },
-//   {
-//     name: "Honda",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 89,
-//     location: "New York, US",
-//     openJobs: 34,
-//   },
-//   {
-//     name: "Toyota",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 34,
-//     location: "New York, US",
-//     openJobs: 26,
-//   },
-//   {
-//     name: "Lexus",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 27,
-//     location: "New York, US",
-//     openJobs: 54,
-//   },
-//   {
-//     name: "Ondo",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 54,
-//     location: "New York, US",
-//     openJobs: 58,
-//   },
-//   {
-//     name: "Square",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 16,
-//     location: "New York, US",
-//     openJobs: 37,
-//   },
-//   {
-//     name: "Vista",
-//     logo:"https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-//     reviews: 97,
-//     location: "New York, US",
-//     openJobs: 43,
-//   },
 ];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
 
 export default function TopRecruiters() {
   return (
-    <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-
+    <section className="py-20 bg-gradient-to-b from-white to-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-extrabold text-slate-900">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">
             Top Recruiters
-          </h1>
-          <p className="mt-3 text-slate-500">
-            Discover your next career move, freelance gig, or internship
+          </h2>
+          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+            Discover your next career move with leading companies hiring on our platform
           </p>
-        </div>
-
-
+        </motion.div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={containerVariants}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"
+        >
           {RECRUITERS.map((recruiter, index) => (
-            <RecruiterCard key={index} recruiter={recruiter} />
+            <motion.div key={index} variants={itemVariants}>
+              <RecruiterCard recruiter={recruiter} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
