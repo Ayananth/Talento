@@ -92,3 +92,21 @@ export const createRecruiterProfileDraft = async (payload) => {
   return res.data;
 };
 
+export const getRecruiterApplications = async ({
+  page = 1,
+  ordering = "",
+  search = "",
+  status = "",
+} = {}) => {
+  const res = await api.get("/v1/applications/recruiter/applications", {
+    params: {
+      page,
+      ...(ordering && { ordering }),
+      ...(search && { search }),
+      ...(status && { status }),
+    },
+  });
+
+  return res.data;
+}
+

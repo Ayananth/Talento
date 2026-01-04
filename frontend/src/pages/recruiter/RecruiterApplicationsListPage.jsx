@@ -1,92 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Briefcase, Calendar, Mail, Phone, MapPin, Download, Eye, CheckCircle, XCircle, Clock, Filter, Search } from 'lucide-react';
+import {getRecruiterApplications} from '../../apis/recruiter/apis';
 
 const RecruiterApplicationsListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [positionFilter, setPositionFilter] = useState('all');
+  const [candidates, setCandidates] = useState([]);
+
+
+  useEffect(() => {
+    // Fetch applications data from API when component mounts
+    const fetchApplications = async () => {
+      try {
+        const data = await getRecruiterApplications();
+        setCandidates(data.results); 
+        console.log(data);
+      } catch (error) {
+        console.error('Error fetching applications:', error);
+      }
+    };
+
+    fetchApplications();
+  }, []);
+  
 
   // Sample data for applied candidates
-  const candidates = [
-    {
-      id: 1,
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@email.com',
-      phone: '+1 (555) 123-4567',
-      position: 'Senior Frontend Developer',
-      location: 'San Francisco, CA',
-      experience: '5 years',
-      appliedDate: '2024-01-02',
-      status: 'Under Review',
-      skills: ['React', 'TypeScript', 'Node.js'],
-      resumeUrl: '#'
-    },
-    {
-      id: 2,
-      name: 'Michael Chen',
-      email: 'michael.chen@email.com',
-      phone: '+1 (555) 234-5678',
-      position: 'React Developer',
-      location: 'Remote',
-      experience: '3 years',
-      appliedDate: '2024-01-01',
-      status: 'Interview Scheduled',
-      skills: ['React', 'JavaScript', 'CSS'],
-      resumeUrl: '#'
-    },
-    {
-      id: 3,
-      name: 'Emily Rodriguez',
-      email: 'emily.rodriguez@email.com',
-      phone: '+1 (555) 345-6789',
-      position: 'UI/UX Developer',
-      location: 'New York, NY',
-      experience: '4 years',
-      appliedDate: '2023-12-30',
-      status: 'Shortlisted',
-      skills: ['Figma', 'React', 'CSS'],
-      resumeUrl: '#'
-    },
-    {
-      id: 4,
-      name: 'David Park',
-      email: 'david.park@email.com',
-      phone: '+1 (555) 456-7890',
-      position: 'Full Stack Engineer',
-      location: 'Austin, TX',
-      experience: '6 years',
-      appliedDate: '2023-12-28',
-      status: 'Rejected',
-      skills: ['React', 'Node.js', 'MongoDB'],
-      resumeUrl: '#'
-    },
-    {
-      id: 5,
-      name: 'Amanda White',
-      email: 'amanda.white@email.com',
-      phone: '+1 (555) 567-8901',
-      position: 'Senior Frontend Developer',
-      location: 'Seattle, WA',
-      experience: '7 years',
-      appliedDate: '2024-01-03',
-      status: 'Offer Extended',
-      skills: ['React', 'Vue', 'TypeScript'],
-      resumeUrl: '#'
-    },
-    {
-      id: 6,
-      name: 'James Wilson',
-      email: 'james.wilson@email.com',
-      phone: '+1 (555) 678-9012',
-      position: 'React Developer',
-      location: 'Remote',
-      experience: '2 years',
-      appliedDate: '2023-12-25',
-      status: 'Under Review',
-      skills: ['React', 'JavaScript', 'Tailwind'],
-      resumeUrl: '#'
-    }
-  ];
+//   const candidates = [
+//     {
+//       id: 1,
+//       name: 'Sarah Johnson',
+//       email: 'sarah.johnson@email.com',
+//       phone: '+1 (555) 123-4567',
+//       position: 'Senior Frontend Developer',
+//       location: 'San Francisco, CA',
+//       experience: '5 years',
+//       appliedDate: '2024-01-02',
+//       status: 'Under Review',
+//       skills: ['React', 'TypeScript', 'Node.js'],
+//       resumeUrl: '#'
+//     },
+//     {
+//       id: 2,
+//       name: 'Michael Chen',
+//       email: 'michael.chen@email.com',
+//       phone: '+1 (555) 234-5678',
+//       position: 'React Developer',
+//       location: 'Remote',
+//       experience: '3 years',
+//       appliedDate: '2024-01-01',
+//       status: 'Interview Scheduled',
+//       skills: ['React', 'JavaScript', 'CSS'],
+//       resumeUrl: '#'
+//     },
+//     {
+//       id: 3,
+//       name: 'Emily Rodriguez',
+//       email: 'emily.rodriguez@email.com',
+//       phone: '+1 (555) 345-6789',
+//       position: 'UI/UX Developer',
+//       location: 'New York, NY',
+//       experience: '4 years',
+//       appliedDate: '2023-12-30',
+//       status: 'Shortlisted',
+//       skills: ['Figma', 'React', 'CSS'],
+//       resumeUrl: '#'
+//     },
+//     {
+//       id: 4,
+//       name: 'David Park',
+//       email: 'david.park@email.com',
+//       phone: '+1 (555) 456-7890',
+//       position: 'Full Stack Engineer',
+//       location: 'Austin, TX',
+//       experience: '6 years',
+//       appliedDate: '2023-12-28',
+//       status: 'Rejected',
+//       skills: ['React', 'Node.js', 'MongoDB'],
+//       resumeUrl: '#'
+//     },
+//     {
+//       id: 5,
+//       name: 'Amanda White',
+//       email: 'amanda.white@email.com',
+//       phone: '+1 (555) 567-8901',
+//       position: 'Senior Frontend Developer',
+//       location: 'Seattle, WA',
+//       experience: '7 years',
+//       appliedDate: '2024-01-03',
+//       status: 'Offer Extended',
+//       skills: ['React', 'Vue', 'TypeScript'],
+//       resumeUrl: '#'
+//     },
+//     {
+//       id: 6,
+//       name: 'James Wilson',
+//       email: 'james.wilson@email.com',
+//       phone: '+1 (555) 678-9012',
+//       position: 'React Developer',
+//       location: 'Remote',
+//       experience: '2 years',
+//       appliedDate: '2023-12-25',
+//       status: 'Under Review',
+//       skills: ['React', 'JavaScript', 'Tailwind'],
+//       resumeUrl: '#'
+//     }
+//   ];
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -251,15 +270,15 @@ const RecruiterApplicationsListPage = () => {
                         <div className="flex-shrink-0">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                             <span className="text-white font-medium text-sm">
-                              {candidate.name.split(' ').map(n => n[0]).join('')}
+                              {candidate.applicant_name.split(' ').map(n => n[0]).join('')}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{candidate.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{candidate.applicant_name}</div>
                           <div className="flex items-center text-sm text-gray-500 mt-1">
                             <Mail className="w-3 h-3 mr-1" />
-                            {candidate.email}
+                            {candidate.applicant_email}
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <Phone className="w-3 h-3 mr-1" />
@@ -278,7 +297,7 @@ const RecruiterApplicationsListPage = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center text-sm text-gray-900">
                         <Briefcase className="w-4 h-4 text-gray-400 mr-2" />
-                        {candidate.position}
+                        {candidate.job_title}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -288,7 +307,7 @@ const RecruiterApplicationsListPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{candidate.experience}</div>
+                      <div className="text-sm text-gray-900">{candidate.experience_years}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center text-sm text-gray-900">
