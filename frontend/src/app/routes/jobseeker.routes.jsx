@@ -9,6 +9,7 @@ import JobseekerLandingPage from "../../pages/jobseeker/JobseekerLandingPage";
 import JobSearchPage from "../../pages/jobseeker/JobSearchPage";
 import JobDetailPage from "../../pages/jobseeker/JobDetailPage";
 import MessagesPageResponsive from '@/pages/jobseeker/MessagesPageResponsive';
+import AppliedJobsDashboard from "../../pages/jobseeker/AppliedJobsDashboard";
 
 
 const jobseekerRoutes = [
@@ -53,6 +54,16 @@ const jobseekerRoutes = [
         element: <RoleRoute allowedRoles={["jobseeker"]} />,
         children: [{ path: "", element: <Profile /> }],
       },
+
+      {
+        element: <RoleRoute allowedRoles={["jobseeker"]} />,
+        children: [{ path: "applied-jobs", element: <AppliedJobsDashboard /> }],
+      },
+
+
+
+
+
     ],
   },
 ];

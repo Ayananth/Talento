@@ -7,11 +7,13 @@ import {
   Settings,
   LogOut
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
+  const navigate = useNavigate();
   const menuItems = [
     { name: "My Profile", icon: <User size={18} />, path: "/profile" },
-    { name: "Applied Jobs", icon: <Briefcase size={18} />, path: "/applied" },
+    { name: "Applied Jobs", icon: <Briefcase size={18} />, path: "/profile/applied-jobs" },
     { name: "Shortlisted Jobs", icon: <Bookmark size={18} />, path: "/shortlisted" },
     { name: "Messages", icon: <MessageSquare size={18} />, path: "/messages" },
     { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
@@ -24,6 +26,7 @@ export default function Sidebar() {
         {menuItems.map((item) => (
           <div
             key={item.name}
+            onClick={()=> navigate(item.path)}
             className="flex items-center gap-4 text-gray-600 hover:text-black cursor-pointer transition"
           >
             {item.icon}
