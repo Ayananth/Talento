@@ -16,6 +16,9 @@ from .filters import JobApplicationFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 
+from django.utils.timezone import now
+from django.db.models import Count, Q
+
 
 class ApplyJobView(APIView):
     permission_classes = [IsJobseeker]
@@ -133,3 +136,38 @@ class JobApplicationsForRecruiterView(ListAPIView):
         )
     
 
+
+
+
+class RecruiterApplicationStatsView(APIView):
+    permission_classes = [IsRecruiter]
+
+    def get(self, request):
+        base_qs = JobApplication.objects.filter(
+            job__recruiter=request.user,
+            job__is_active=True,
+        ).filter(
+            Q(job__expires_at__isnull=True) |
+            Q(job__expires_at__gte=now())
+        )
+
+        stats = base_qs.aggregate(
+            total_active=Count("id"),
+
+            under_review=Count(
+                "id",
+                filter=Q(status=JobApplication.Status.APPLIED)
+            ),
+
+            shortlisted=Count(
+                "id",
+                filter=Q(status=JobApplication.Status.SHORTLISTED)
+            ),
+
+            interviewed=Count(
+                "id",
+                filter=Q(status=JobApplication.Status.INTERVIEW)
+            ),
+        )
+
+        return Response(stats)
