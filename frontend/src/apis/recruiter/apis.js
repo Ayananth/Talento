@@ -110,3 +110,7 @@ export const getRecruiterApplications = async ({
   return res.data;
 }
 
+export const getRecruiterApplicationStats = async () => {
+  const res = await api.get("/v1/applications/recruiter/stats/");
+  return res.data;
+}

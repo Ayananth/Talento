@@ -7,27 +7,34 @@ const RecruiterApplicationsListPage = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [positionFilter, setPositionFilter] = useState('all');
   const [candidates, setCandidates] = useState([]);
+  const [applicationStats, setApplicationStats] = useState({
+    total: 0,
+    underReview: 0,
+    shortlisted: 0,
+    interviewed: 0
+  }); 
 
 
   useEffect(() => {
-    // Fetch applications data from API when component mounts
-    const fetchApplications = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getRecruiterApplications();
-        setCandidates(data.results); 
-        console.log(data);
+        const [applications, stats] = await Promise.all([
+          getRecruiterApplications(),
+          getRecruiterApplicationStats(),
+        ]);
+
+        setCandidates(applications.results);
+        setApplicationStats(stats);
       } catch (error) {
-        console.error('Error fetching applications:', error);
+        console.error("Error loading recruiter dashboard:", error);
       }
     };
 
-    fetchApplications();
+    fetchData();
   }, []);
   
 
-  // Sample data for applied candidates
-//   const candidates = [
-//     {
+
 //       id: 1,
 //       name: 'Sarah Johnson',
 //       email: 'sarah.johnson@email.com',
