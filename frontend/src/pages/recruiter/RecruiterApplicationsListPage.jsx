@@ -18,6 +18,7 @@ import {
 import {
   getRecruiterApplications,
   getRecruiterApplicationStats,
+  getRecruiterJobs
 } from "../../apis/recruiter/apis";
 
 import { StatCard } from "../../components/recruiter/StatCard";
@@ -47,7 +48,7 @@ const RecruiterApplicationsListPage = () => {
   const [positionFilter, setPositionFilter] = useState("");
 
   const [candidates, setCandidates] = useState([]);
-  const [positions, setPositions] = useState([]);
+  const [jobs, setJobs] = useState([]);
 
   const [applicationStats, setApplicationStats] = useState({
     total_active: 0,
@@ -82,15 +83,6 @@ const RecruiterApplicationsListPage = () => {
 
       setCandidates(applications.results || []);
       setCount(applications.count || 0);
-
-      // build positions dynamically (for filter dropdown)
-      const uniquePositions = [
-        ...new Set(
-          (applications.results || []).map((a) => a.job_title)
-        ),
-      ];
-
-      setPositions(uniquePositions);
       setApplicationStats(stats);
     } catch (error) {
       console.error("Error loading recruiter applications:", error);
@@ -98,6 +90,20 @@ const RecruiterApplicationsListPage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res = await getRecruiterJobs();
+        setJobs(res.results || []);
+      } catch (err) {
+        console.error("Failed to load jobs", err);
+      }
+    };
+
+    fetchJobs();
+  }, []);
+
 
   useEffect(() => {
     fetchApplications();
@@ -171,12 +177,14 @@ const RecruiterApplicationsListPage = () => {
               }}
             >
               <option value="">All Positions</option>
-              {positions.map((p) => (
-                <option key={p} value={p}>
-                  {p}
+
+              {jobs.map((job) => (
+                <option key={job.id} value={job.id}>
+                  {job.title}
                 </option>
               ))}
             </select>
+
 
             {/* STATUS FILTER */}
             <select

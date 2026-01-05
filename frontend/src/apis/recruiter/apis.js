@@ -97,6 +97,7 @@ export const getRecruiterApplications = async ({
   ordering = "",
   search = "",
   status = "",
+  job = "",
 } = {}) => {
   const res = await api.get("/v1/applications/recruiter/applications", {
     params: {
@@ -104,6 +105,7 @@ export const getRecruiterApplications = async ({
       ...(ordering && { ordering }),
       ...(search && { search }),
       ...(status && { status }),
+      ...(job && { job }),
     },
   });
 
