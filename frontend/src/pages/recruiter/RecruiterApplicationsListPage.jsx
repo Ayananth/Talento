@@ -49,6 +49,7 @@ const RecruiterApplicationsListPage = () => {
 
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(false);
 
   const [applicationStats, setApplicationStats] = useState({
     total_active: 0,
@@ -94,10 +95,13 @@ const RecruiterApplicationsListPage = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
+        setJobsLoading(true);
         const res = await getRecruiterJobs();
         setJobs(res.results || []);
       } catch (err) {
         console.error("Failed to load jobs", err);
+      } finally {
+        setJobsLoading(false);
       }
     };
 
@@ -171,19 +175,26 @@ const RecruiterApplicationsListPage = () => {
             <select
               className="pl-4 pr-8 py-2 border rounded-lg bg-white"
               value={positionFilter}
+              disabled={jobsLoading}
               onChange={(e) => {
                 setPositionFilter(e.target.value);
                 setPage(1);
               }}
             >
-              <option value="">All Positions</option>
-
-              {jobs.map((job) => (
-                <option key={job.id} value={job.id}>
-                  {job.title}
-                </option>
-              ))}
+              {jobsLoading ? (
+                <option>Loading positions…</option>
+              ) : (
+                <>
+                  <option value="">All Positions</option>
+                  {jobs.map((job) => (
+                    <option key={job.id} value={job.id}>
+                      {job.title}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
+
 
 
             {/* STATUS FILTER */}
