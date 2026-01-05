@@ -154,26 +154,13 @@ const RecruiterApplicationsListPage = () => {
 
         {/* FILTERS */}
         <div className="bg-white rounded-lg shadow-sm mb-6 p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-
-            {/* SEARCH */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search by name, email, or skills..."
-                className="w-full pl-10 pr-4 py-2 border rounded-lg"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </div>
+          <div className="flex flex-col md:flex-row gap-4 md:items-center">
 
             {/* POSITION FILTER */}
             <select
-              className="pl-4 pr-8 py-2 border rounded-lg bg-white"
+              className={`pl-4 pr-8 py-2 border rounded-lg bg-white ${
+                jobsLoading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
               value={positionFilter}
               disabled={jobsLoading}
               onChange={(e) => {
@@ -195,8 +182,6 @@ const RecruiterApplicationsListPage = () => {
               )}
             </select>
 
-
-
             {/* STATUS FILTER */}
             <select
               className="pl-4 pr-8 py-2 border rounded-lg bg-white"
@@ -215,6 +200,7 @@ const RecruiterApplicationsListPage = () => {
 
           </div>
         </div>
+
 
         {/* TABLE */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
