@@ -10,6 +10,7 @@ import RecruiterJobDetailPage from "../../pages/recruiter/RecruiterJobDetailPage
 import RecruiterJobEditPage from "../../pages/recruiter/RecruiterJobEditPage";
 import RecruiterProfilePage from "../../pages/recruiter/RecruiterProfilePage";
 import RecruiterApplicationsListPage from "../../pages/recruiter/RecruiterApplicationsListPage";
+import ApplicantDetailsPage from "../../pages/recruiter/ApplicantDetailsPage";
 
 const recruiterRoutes = [
   {
@@ -60,6 +61,12 @@ const recruiterRoutes = [
             path: "applications",
             element: <RecruiterApplicationsListPage />,
           },
+
+          {
+            path: "applications/:id",
+            element: <ApplicantDetailsPage />,
+          },
+
 
 
 
