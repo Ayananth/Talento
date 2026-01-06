@@ -366,7 +366,7 @@ const handleStatusChange = async (newStatus) => {
             </div>
 
             {/* Recruiter Notes */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            {/* <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Recruiter Notes (Private)</h2>
               <textarea
                 value={recruiterNotes}
@@ -380,7 +380,7 @@ const handleStatusChange = async (newStatus) => {
               className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Save Notes
               </button>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Column - 1/3 width */}
@@ -446,22 +446,20 @@ const handleStatusChange = async (newStatus) => {
             </div> */}
 
             {/* Quick Stats */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm p-6 text-white">
-              <h2 className="text-lg font-semibold mb-4">Quick Stats</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-blue-100">Profile Views</span>
-                  <span className="font-bold text-xl">12</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-blue-100">Days Active</span>
-                  <span className="font-bold text-xl">8</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-blue-100">Response Time</span>
-                  <span className="font-bold text-xl">2h</span>
-                </div>
-              </div>
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Recruiter Notes (Private)</h2>
+              <textarea
+                value={recruiterNotes}
+                onChange={(e) => setRecruiterNotes(e.target.value)}
+                placeholder="Add your private notes about this candidate..."
+                className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              />
+              <button
+              onClick={handleSaveNotes}
+              
+              className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Save Notes
+              </button>
             </div>
           </div>
         </div>
