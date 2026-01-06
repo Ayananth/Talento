@@ -124,3 +124,12 @@ export const getApplicantDetails = async (applicationId) => {
   );
   return res.data;
 }
+
+
+export const updateApplicationStatus = async (applicationId, payload) => {
+  const res = await api.patch(
+    `/v1/applications/update-status/${applicationId}/`,
+    payload
+  );
+  return res.data;
+}

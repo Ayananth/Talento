@@ -1,8 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import { Mail, Phone, MapPin, Calendar, Download, Eye, CheckCircle, XCircle, Clock, Briefcase, DollarSign, FileText, User, Tag, MessageSquare } from 'lucide-react';
-import { getApplicantDetails } from '../../apis/recruiter/apis';
+import { getApplicantDetails, updateApplicationStatus } from '../../apis/recruiter/apis';
+import { formatDateTime } from '../../utils/common/utils';
 
+
+const STATUS_LABELS = {
+  applied: "applied",
+  under_review: "Under Review",
+  shortlisted: "shortlisted",
+  interview_scheduled: "interview",
+  rejected: "rejected",
+};
+
+const STATUS_COLORS = {
+  applied: "bg-blue-100 text-blue-800",
+  under_review: "bg-yellow-100 text-yellow-800",
+  shortlisted: "bg-green-100 text-green-800",
+  interview_scheduled: "bg-purple-100 text-purple-800",
+  rejected: "bg-red-100 text-red-800",
+};
 export default function ApplicantDetailsPage() {
   const [status, setStatus] = useState('Applied');
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -10,48 +27,20 @@ export default function ApplicantDetailsPage() {
   const [recruiterNotes, setRecruiterNotes] = useState('');
 
 
-  // Sample applicant data
-//   const applicant = {
-//     id: 'APP-2024-0542',
-//     name: 'Sarah Mitchell',
-//     email: 'sarah.mitchell@email.com',
-//     phone: '+1 (555) 123-4567',
-//     location: 'San Francisco, CA',
-//     jobTitle: 'Senior Frontend Developer',
-//     appliedDate: 'Dec 28, 2024',
-//     lastUpdated: 'Jan 3, 2025',
-//     totalExperience: '6 years',
-//     currentRole: 'Frontend Developer at TechCorp',
-//     noticePeriod: '30 days',
-//     expectedSalary: '$120,000 - $140,000',
-//     currentSalary: '$110,000',
-//     resumeUrl: '#',
-//     resumeUploadDate: 'Dec 28, 2024',
-//     applicationSource: 'Job Portal',
-//     appliedVia: 'Website',
-//     skills: [
-//       { name: 'React', years: '5' },
-//       { name: 'JavaScript', years: '6' },
-//       { name: 'TypeScript', years: '4' },
-//       { name: 'Next.js', years: '3' },
-//       { name: 'Tailwind CSS', years: '3' },
-//       { name: 'Node.js', years: '4' },
-//       { name: 'Git', years: '6' },
-//       { name: 'Redux', years: '4' }
-//     ],
-//     coverLetter: 'I am excited to apply for the Senior Frontend Developer position. With over 6 years of experience building scalable web applications, I have developed expertise in React, TypeScript, and modern frontend architectures. At TechCorp, I led the migration of our main product to a micro-frontend architecture, resulting in a 40% improvement in load times. I am particularly drawn to your company\'s focus on innovative user experiences and would love to contribute to your team.',
-//     statusHistory: [
-//       { status: 'Applied', date: 'Dec 28, 2024, 10:30 AM', by: 'System' },
-//       { status: 'Under Review', date: 'Dec 30, 2024, 2:15 PM', by: 'John Recruiter' },
-//       { status: 'Shortlisted', date: 'Jan 2, 2025, 11:00 AM', by: 'John Recruiter' }
-//     ],
-//     tags: ['Strong Candidate', 'Immediate Joiner', 'Referral']
-//   };
+
 
     const [applicant, setApplicant] = useState(null);
     const [loading, setLoading] = useState(true);
   const { applicantId } = useParams();
   console.log("Applicant ID from URL:", applicantId);
+
+const [toast, setToast] = useState(null);
+
+const showToast = (message, type = "success") => {
+  setToast({ message, type });
+  setTimeout(() => setToast(null), 3000);
+};
+
 
 
 useEffect(() => {
@@ -74,6 +63,44 @@ useEffect(() => {
   }
 }, [applicantId]);
 
+
+// useEffect(() => {
+//   if (!applicant) return;
+
+//   const updateStatus = async () => {
+//     try {
+//       await updateApplicationStatus(applicant.id, { status });
+//       showToast(`Status changed to ${STATUS_LABELS[status]}`);
+//     } catch (err) {
+//       console.error("Failed to update application status", err);
+//       showToast("Failed to update status", "error");
+//     }
+//   };
+
+//   updateStatus();
+// }, [status]);
+
+
+function handleSaveNotes() {
+  const saveNotes = async () => {
+    try {
+      if (applicant.recruiter_notes === recruiterNotes) {
+        showToast("No changes to save");
+        return;
+      } 
+      await updateApplicationStatus(applicant.id, { status: applicant.status, recruiter_notes: recruiterNotes });
+      showToast("Recruiter notes saved successfully");
+    } catch (err) {
+      console.error("Failed to save recruiter notes", err);
+      showToast("Failed to save notes", "error");
+    }
+  };
+
+  saveNotes();
+} 
+
+
+
 if (loading || !applicant) {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -94,24 +121,39 @@ if (loading || !applicant) {
     'Hired': 'bg-teal-100 text-teal-800'
   };
 
-  const handleStatusChange = (newStatus) => {
-    if (newStatus === 'Rejected') {
-      setShowRejectModal(true);
-    } else if (newStatus === 'Interview Scheduled') {
-      setShowInterviewModal(true);
-    } else {
-      setStatus(newStatus);
-    }
-  };
+const handleStatusChange = async (newStatus) => {
+  if (!applicant) return;
+
+  if (newStatus === "interview") {
+    setShowInterviewModal(true);
+    return;
+  }
+
+  if (newStatus === applicant.status) {
+    return; // no-op
+  }
+
+  try {
+    await updateApplicationStatus(applicant.id, { status: newStatus });
+    setStatus(newStatus);
+    setApplicant(prev => ({ ...prev, status: newStatus }));
+    showToast(`Status changed to ${STATUS_LABELS[newStatus]}`);
+  } catch (err) {
+    console.error("Failed to update status", err);
+    showToast("Failed to update status", "error");
+  }
+};
+
+
 
   const handleReject = (reason) => {
-    setStatus('Rejected');
+    setStatus('rejected');
     setShowRejectModal(false);
     // Here you would typically save the rejection reason
   };
 
   const handleScheduleInterview = (details) => {
-    setStatus('Interview Scheduled');
+    setStatus('interview scheduled');
     setShowInterviewModal(false);
     // Here you would typically save interview details
   };
@@ -125,9 +167,10 @@ if (loading || !applicant) {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold text-gray-900">{applicant.name}</h1>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[status]}`}>
-                  {status}
-                </span>
+<span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLORS[status]}`}>
+  {status}
+</span>
+
               </div>
               <div className="flex items-center gap-4 text-gray-600">
                 <div className="flex items-center gap-2">
@@ -136,29 +179,50 @@ if (loading || !applicant) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>Applied: {applicant.applied_date}</span>
+                  <span>
+  Applied: {new Date(applicant.applied_date).toLocaleDateString("en-IN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })}
+</span>
+
                 </div>
               </div>
             </div>
 
             {/* Quick Actions */}
             <div className="flex gap-2">
+              {status!=='shortlisted' && (
               <button
-                onClick={() => handleStatusChange('Shortlisted')}
+                onClick={() => handleStatusChange('shortlisted')}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 <CheckCircle className="w-4 h-4" />
                 Shortlist
               </button>
+              )}
+              {status === "shortlisted" && (
+                <button
+                  onClick={() => handleStatusChange("applied")}
+                  className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                >
+                  Move to Under Review
+                </button>
+              )}
+
+              {status!=="rejected" && (
+
               <button
-                onClick={() => handleStatusChange('Rejected')}
+                onClick={() => handleStatusChange('rejected')}
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 <XCircle className="w-4 h-4" />
                 Reject
               </button>
+              )}
               <button
-                onClick={() => handleStatusChange('Interview Scheduled')}
+                onClick={() => handleStatusChange('interview')}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
                 <Calendar className="w-4 h-4" />
@@ -310,7 +374,10 @@ if (loading || !applicant) {
                 placeholder="Add your private notes about this candidate..."
                 className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
-              <button className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+              onClick={handleSaveNotes}
+              
+              className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Save Notes
               </button>
             </div>
@@ -474,6 +541,17 @@ if (loading || !applicant) {
           </div>
         </div>
       )}
+
+{toast && (
+  <div
+    className={`fixed bottom-6 right-6 px-4 py-3 rounded-lg shadow-lg text-white
+      ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}
+    `}
+  >
+    {toast.message}
+  </div>
+)}
+
     </div>
   );
 }
