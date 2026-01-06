@@ -9,7 +9,7 @@ from rest_framework import status
 from core.permissions import IsJobseeker, IsRecruiter
 from applications.models import JobApplication
 from profiles.models import JobSeekerResume
-from .serializers import ApplyJobSerializer, JobApplicationSerializer, JobApplicationListSerializer, RecruiterApplicationListSerializer
+from .serializers import ApplyJobSerializer, JobApplicationSerializer, JobApplicationListSerializer, RecruiterApplicationListSerializer, RecruiterApplicationDetailSerializer
 
 from .pagination import ApplicationPagination
 from .filters import JobApplicationFilter
@@ -40,6 +40,7 @@ class ApplyJobView(APIView):
                 resume.file.url,                     # delivery URL
                 resource_type="image",
                 folder="talento-dev/resumes/applications"
+
             )
 
         elif resume_file:
@@ -171,3 +172,28 @@ class RecruiterApplicationStatsView(APIView):
         )
 
         return Response(stats)
+    
+
+class ApplicationtDetailView(APIView):
+    permission_classes = [IsRecruiter]
+
+    def get(self, request, application_id):
+        try:
+            application = JobApplication.objects.select_related(
+                "job",
+                "job__recruiter",
+                "job__recruiter__recruiter_profile",
+                "applicant",
+                "applicant__user",
+            ).get(
+                id=application_id,
+                job__recruiter=request.user
+            )
+        except JobApplication.DoesNotExist:
+            return Response(
+                {"detail": "Application not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = RecruiterApplicationDetailSerializer(application)
+        return Response(serializer.data)
