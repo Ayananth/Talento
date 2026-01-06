@@ -40,8 +40,8 @@ export const CandidateRow = ({ candidate }) => {
         <Download className="w-4 h-4 text-blue-600" />
       </a>
       <Eye onClick={()=> navigate("/recruiter/applications/" + candidate.id)} className="w-4 h-4 text-gray-600" />
-      <CheckCircle className="w-4 h-4 text-green-600" />
-      <XCircle className="w-4 h-4 text-red-600" />
+      {/* <CheckCircle className="w-4 h-4 text-green-600" />
+      <XCircle className="w-4 h-4 text-red-600" /> */}
     </td>
   </tr>
 )};
