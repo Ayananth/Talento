@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, Calendar, Download, Eye, CheckCircle, XCircle, Clock, Briefcase, DollarSign, FileText, User, Tag, MessageSquare } from 'lucide-react';
+import { getApplicantDetails } from '../../apis/recruiter/apis';
 
 export default function ApplicantDetailsPage() {
   const [status, setStatus] = useState('Applied');
@@ -8,42 +9,76 @@ export default function ApplicantDetailsPage() {
   const [recruiterNotes, setRecruiterNotes] = useState('');
 
   // Sample applicant data
-  const applicant = {
-    id: 'APP-2024-0542',
-    name: 'Sarah Mitchell',
-    email: 'sarah.mitchell@email.com',
-    phone: '+1 (555) 123-4567',
-    location: 'San Francisco, CA',
-    jobTitle: 'Senior Frontend Developer',
-    appliedDate: 'Dec 28, 2024',
-    lastUpdated: 'Jan 3, 2025',
-    totalExperience: '6 years',
-    currentRole: 'Frontend Developer at TechCorp',
-    noticePeriod: '30 days',
-    expectedSalary: '$120,000 - $140,000',
-    currentSalary: '$110,000',
-    resumeUrl: '#',
-    resumeUploadDate: 'Dec 28, 2024',
-    applicationSource: 'Job Portal',
-    appliedVia: 'Website',
-    skills: [
-      { name: 'React', years: '5' },
-      { name: 'JavaScript', years: '6' },
-      { name: 'TypeScript', years: '4' },
-      { name: 'Next.js', years: '3' },
-      { name: 'Tailwind CSS', years: '3' },
-      { name: 'Node.js', years: '4' },
-      { name: 'Git', years: '6' },
-      { name: 'Redux', years: '4' }
-    ],
-    coverLetter: 'I am excited to apply for the Senior Frontend Developer position. With over 6 years of experience building scalable web applications, I have developed expertise in React, TypeScript, and modern frontend architectures. At TechCorp, I led the migration of our main product to a micro-frontend architecture, resulting in a 40% improvement in load times. I am particularly drawn to your company\'s focus on innovative user experiences and would love to contribute to your team.',
-    statusHistory: [
-      { status: 'Applied', date: 'Dec 28, 2024, 10:30 AM', by: 'System' },
-      { status: 'Under Review', date: 'Dec 30, 2024, 2:15 PM', by: 'John Recruiter' },
-      { status: 'Shortlisted', date: 'Jan 2, 2025, 11:00 AM', by: 'John Recruiter' }
-    ],
-    tags: ['Strong Candidate', 'Immediate Joiner', 'Referral']
+//   const applicant = {
+//     id: 'APP-2024-0542',
+//     name: 'Sarah Mitchell',
+//     email: 'sarah.mitchell@email.com',
+//     phone: '+1 (555) 123-4567',
+//     location: 'San Francisco, CA',
+//     jobTitle: 'Senior Frontend Developer',
+//     appliedDate: 'Dec 28, 2024',
+//     lastUpdated: 'Jan 3, 2025',
+//     totalExperience: '6 years',
+//     currentRole: 'Frontend Developer at TechCorp',
+//     noticePeriod: '30 days',
+//     expectedSalary: '$120,000 - $140,000',
+//     currentSalary: '$110,000',
+//     resumeUrl: '#',
+//     resumeUploadDate: 'Dec 28, 2024',
+//     applicationSource: 'Job Portal',
+//     appliedVia: 'Website',
+//     skills: [
+//       { name: 'React', years: '5' },
+//       { name: 'JavaScript', years: '6' },
+//       { name: 'TypeScript', years: '4' },
+//       { name: 'Next.js', years: '3' },
+//       { name: 'Tailwind CSS', years: '3' },
+//       { name: 'Node.js', years: '4' },
+//       { name: 'Git', years: '6' },
+//       { name: 'Redux', years: '4' }
+//     ],
+//     coverLetter: 'I am excited to apply for the Senior Frontend Developer position. With over 6 years of experience building scalable web applications, I have developed expertise in React, TypeScript, and modern frontend architectures. At TechCorp, I led the migration of our main product to a micro-frontend architecture, resulting in a 40% improvement in load times. I am particularly drawn to your company\'s focus on innovative user experiences and would love to contribute to your team.',
+//     statusHistory: [
+//       { status: 'Applied', date: 'Dec 28, 2024, 10:30 AM', by: 'System' },
+//       { status: 'Under Review', date: 'Dec 30, 2024, 2:15 PM', by: 'John Recruiter' },
+//       { status: 'Shortlisted', date: 'Jan 2, 2025, 11:00 AM', by: 'John Recruiter' }
+//     ],
+//     tags: ['Strong Candidate', 'Immediate Joiner', 'Referral']
+//   };
+
+    const [applicant, setApplicant] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  const fetchApplicant = async () => {
+    try {
+      setLoading(true);
+
+      const res = await getApplicantDetails(25); // replace with route param later
+
+      setApplicant(res);
+      console.log(res);
+      setStatus(res.status_display || res.status);
+      setRecruiterNotes(res.recruiter_notes || "");
+    } catch (err) {
+      console.error("Failed to load applicant details", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  fetchApplicant();
+}, []);
+
+if (loading || !applicant) {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <p className="text-gray-600">Loading applicant details...</p>
+    </div>
+  );
+}
+
+
 
   const statusColors = {
     'Applied': 'bg-blue-100 text-blue-800',
@@ -97,7 +132,7 @@ export default function ApplicantDetailsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span>Applied: {applicant.appliedDate}</span>
+                  <span>Applied: {applicant.applied_date}</span>
                 </div>
               </div>
             </div>
@@ -126,7 +161,7 @@ export default function ApplicantDetailsPage() {
                 Schedule
               </button>
               <a
-                href={applicant.resumeUrl}
+                href={applicant.resume_url}
                 download
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
@@ -170,14 +205,14 @@ export default function ApplicantDetailsPage() {
                   <MapPin className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500">Location</p>
-                    <p className="text-gray-900">{applicant.location}</p>
+                    <p className="text-gray-900">Location</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Briefcase className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500">Experience</p>
-                    <p className="text-gray-900">{applicant.totalExperience}</p>
+                    <p className="text-gray-900">{applicant.experience}</p>
                   </div>
                 </div>
               </div>
@@ -189,19 +224,19 @@ export default function ApplicantDetailsPage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Current Role</span>
-                  <span className="font-medium text-gray-900">{applicant.currentRole}</span>
+                  <span className="font-medium text-gray-900">{applicant.currentRole||"current role"}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Notice Period</span>
-                  <span className="font-medium text-gray-900">{applicant.noticePeriod}</span>
+                  <span className="font-medium text-gray-900">{applicant.notice_period}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Expected Salary</span>
-                  <span className="font-medium text-gray-900">{applicant.expectedSalary}</span>
+                  <span className="font-medium text-gray-900">{applicant.expected_salary}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Current Salary</span>
-                  <span className="font-medium text-gray-900">{applicant.currentSalary}</span>
+                  <span className="font-medium text-gray-900">{applicant.current_salary}</span>
                 </div>
               </div>
             </div>
@@ -213,7 +248,7 @@ export default function ApplicantDetailsPage() {
                   <FileText className="w-5 h-5" />
                   Resume
                 </h2>
-                <span className="text-sm text-gray-500">Uploaded: {applicant.resumeUploadDate}</span>
+                <span className="text-sm text-gray-500">Uploaded: {applicant.resumeUploadDate||"resume date"}</span>
               </div>
               <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
@@ -224,7 +259,7 @@ export default function ApplicantDetailsPage() {
                     View Resume
                   </button>
                   <a
-                    href={applicant.resumeUrl}
+                    href={applicant.resume_url}
                     download
                     className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
@@ -242,12 +277,12 @@ export default function ApplicantDetailsPage() {
                 Skills & Expertise
               </h2>
               <div className="flex flex-wrap gap-2">
-                {applicant.skills.map((skill, index) => (
+                {applicant.skills.map((skill) => (
                   <span
-                    key={index}
+                    key={skill}
                     className="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-200"
                   >
-                    {skill.name} <span className="text-blue-500">• {skill.years}y</span>
+                    {skill} <span className="text-blue-500">•</span>
                   </span>
                 ))}
               </div>
@@ -259,7 +294,7 @@ export default function ApplicantDetailsPage() {
                 <MessageSquare className="w-5 h-5" />
                 Cover Letter
               </h2>
-              <p className="text-gray-700 leading-relaxed">{applicant.coverLetter}</p>
+              <p className="text-gray-700 leading-relaxed">{applicant.cover_letter}</p>
             </div>
 
             {/* Recruiter Notes */}
@@ -288,22 +323,22 @@ export default function ApplicantDetailsPage() {
                   <p className="font-medium text-gray-900">{applicant.id}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Source</p>
-                  <p className="font-medium text-gray-900">{applicant.applicationSource}</p>
+                  <p className="text-gray-500">Job ID</p>
+                  <p className="font-medium text-gray-900">{applicant.job_id}</p>
                 </div>
-                <div>
+                {/* <div>
                   <p className="text-gray-500">Applied Via</p>
                   <p className="font-medium text-gray-900">{applicant.appliedVia}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Last Updated</p>
                   <p className="font-medium text-gray-900">{applicant.lastUpdated}</p>
-                </div>
+                </div> */}
               </div>
             </div>
 
             {/* Status Timeline */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            {/* <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Status Timeline</h2>
               <div className="space-y-4">
                 {applicant.statusHistory.map((item, index) => (
@@ -322,10 +357,10 @@ export default function ApplicantDetailsPage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             {/* Tags */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            {/* <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Tags</h2>
               <div className="flex flex-wrap gap-2">
                 {applicant.tags.map((tag, index) => (
@@ -337,7 +372,7 @@ export default function ApplicantDetailsPage() {
                   </span>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             {/* Quick Stats */}
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm p-6 text-white">
