@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from "react-router-dom";
 import { Mail, Phone, MapPin, Calendar, Download, Eye, CheckCircle, XCircle, Clock, Briefcase, DollarSign, FileText, User, Tag, MessageSquare } from 'lucide-react';
 import { getApplicantDetails } from '../../apis/recruiter/apis';
 
@@ -7,6 +8,7 @@ export default function ApplicantDetailsPage() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showInterviewModal, setShowInterviewModal] = useState(false);
   const [recruiterNotes, setRecruiterNotes] = useState('');
+
 
   // Sample applicant data
 //   const applicant = {
@@ -48,16 +50,16 @@ export default function ApplicantDetailsPage() {
 
     const [applicant, setApplicant] = useState(null);
     const [loading, setLoading] = useState(true);
+  const { applicantId } = useParams();
+  console.log("Applicant ID from URL:", applicantId);
+
 
 useEffect(() => {
   const fetchApplicant = async () => {
     try {
       setLoading(true);
-
-      const res = await getApplicantDetails(25); // replace with route param later
-
+      const res = await getApplicantDetails(applicantId);
       setApplicant(res);
-      console.log(res);
       setStatus(res.status_display || res.status);
       setRecruiterNotes(res.recruiter_notes || "");
     } catch (err) {
@@ -67,8 +69,10 @@ useEffect(() => {
     }
   };
 
-  fetchApplicant();
-}, []);
+  if (applicantId) {
+    fetchApplicant();
+  }
+}, [applicantId]);
 
 if (loading || !applicant) {
   return (
@@ -162,7 +166,8 @@ if (loading || !applicant) {
               </button>
               <a
                 href={applicant.resume_url}
-                download
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Download className="w-4 h-4" />
@@ -254,18 +259,17 @@ if (loading || !applicant) {
                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                 <p className="text-gray-600 mb-4">Resume Preview</p>
                 <div className="flex gap-3 justify-center">
-                  <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    <Eye className="w-4 h-4" />
-                    View Resume
-                  </button>
-                  <a
-                    href={applicant.resume_url}
-                    download
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download
-                  </a>
+
+
+              <a
+                href={applicant.resume_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                View / Download Resume
+              </a>
                 </div>
               </div>
             </div>

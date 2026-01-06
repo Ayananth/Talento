@@ -116,3 +116,11 @@ export const getRecruiterApplicationStats = async () => {
   const res = await api.get("/v1/applications/recruiter/stats/");
   return res.data;
 }
+
+
+export const getApplicantDetails = async (applicationId) => {
+  const res = await api.get(
+    `/v1/applications/recruiter/applications/${applicationId}/`
+  );
+  return res.data;
+}

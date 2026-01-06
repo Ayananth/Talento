@@ -63,7 +63,7 @@ const recruiterRoutes = [
           },
 
           {
-            path: "applications/:id",
+            path: "applications/:applicantId",
             element: <ApplicantDetailsPage />,
           },
 
