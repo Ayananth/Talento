@@ -55,6 +55,7 @@ class JobApplication(models.Model):
         choices=Status.choices,
         default=Status.APPLIED
     )
+    recruiter_notes = models.TextField(blank=True)
 
     applied_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

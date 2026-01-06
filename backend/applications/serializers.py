@@ -338,3 +338,22 @@ class RecruiterApplicationDetailSerializer(serializers.ModelSerializer):
         return list(
             obj.applicant.skills.values_list("skill_name", flat=True)
         )
+    
+
+class UpdateApplicationStatusSerializer(serializers.ModelSerializer):
+    status = serializers.ChoiceField(
+        choices=JobApplication.Status.choices
+    )
+    recruiter_notes = serializers.CharField(
+        allow_blank=True,
+        required=False
+    )
+
+    class Meta:
+        model = JobApplication
+        fields = [
+            "status",
+            "recruiter_notes",
+        ]
+
+

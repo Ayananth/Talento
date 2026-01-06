@@ -9,7 +9,7 @@ from rest_framework import status
 from core.permissions import IsJobseeker, IsRecruiter
 from applications.models import JobApplication
 from profiles.models import JobSeekerResume
-from .serializers import ApplyJobSerializer, JobApplicationSerializer, JobApplicationListSerializer, RecruiterApplicationListSerializer, RecruiterApplicationDetailSerializer
+from .serializers import ApplyJobSerializer, JobApplicationSerializer, JobApplicationListSerializer, RecruiterApplicationListSerializer, RecruiterApplicationDetailSerializer, UpdateApplicationStatusSerializer
 
 from .pagination import ApplicationPagination
 from .filters import JobApplicationFilter
@@ -197,3 +197,38 @@ class ApplicationtDetailView(APIView):
 
         serializer = RecruiterApplicationDetailSerializer(application)
         return Response(serializer.data)
+    
+class UpdateApplicationStatusView(APIView):
+    permission_classes = [IsRecruiter]
+
+    def patch(self, request, application_id):
+        print("UpdateApplicationStatusView called")
+        try:
+            application = JobApplication.objects.get(
+                id=application_id,
+                job__recruiter=request.user
+            )
+        except JobApplication.DoesNotExist:
+            return Response(
+                {"detail": "Application not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        new_status = request.data.get("status")
+        recruiter_notes = request.data.get("recruiter_notes", "")
+        print("Requested new status:", new_status)
+        print("Current status:", application.status)
+        if new_status not in dict(JobApplication.Status.choices):
+            return Response(
+                {"status": ["Invalid status."]},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        application.status = new_status
+        application.recruiter_notes = recruiter_notes
+        application.save()
+
+        return Response(
+            UpdateApplicationStatusSerializer(application).data,
+            status=status.HTTP_200_OK
+        )
