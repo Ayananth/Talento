@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   User,
   Briefcase,
@@ -63,6 +64,8 @@ const RecruiterApplicationsListPage = () => {
   const [loading, setLoading] = useState(false);
 
   const totalPages = Math.ceil(count / PAGE_SIZE);
+
+  const navigate = useNavigate();
 
   /* -------------------------
      FETCH DATA
@@ -228,7 +231,7 @@ const RecruiterApplicationsListPage = () => {
 
             <tbody className="divide-y">
               {candidates.map((c) => (
-                <CandidateRow key={c.id} candidate={c} />
+                <CandidateRow key={c.id} candidate={c}  />
               ))}
             </tbody>
           </table>

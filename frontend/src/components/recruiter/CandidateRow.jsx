@@ -13,8 +13,12 @@ import {
   Filter,
   Search,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export const CandidateRow = ({ candidate }) => (
+export const CandidateRow = ({ candidate }) => {
+  const navigate = useNavigate();
+  
+  return (
   <tr className="hover:bg-gray-50">
     <td className="px-6 py-4">
       <div className="font-medium">{candidate.applicant_name}</div>
@@ -35,12 +39,12 @@ export const CandidateRow = ({ candidate }) => (
       <a href={candidate.resume_url} target="_blank" rel="noreferrer">
         <Download className="w-4 h-4 text-blue-600" />
       </a>
-      <Eye className="w-4 h-4 text-gray-600" />
+      <Eye onClick={()=> navigate("/recruiter/applications/" + candidate.id)} className="w-4 h-4 text-gray-600" />
       <CheckCircle className="w-4 h-4 text-green-600" />
       <XCircle className="w-4 h-4 text-red-600" />
     </td>
   </tr>
-);
+)};
 
 /* -------------------------
    STATUS HELPERS
