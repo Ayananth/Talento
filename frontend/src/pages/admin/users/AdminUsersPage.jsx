@@ -96,7 +96,6 @@ const fetchUsers = async () => {
       is_blocked: u.is_blocked,
       status: u.is_blocked ? "Blocked" : "Active",
       verified: u.is_email_verified ? "Yes" : "No",
-      role: u.role_display,
       role_value: u.role, 
     }));
 
