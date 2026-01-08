@@ -137,7 +137,7 @@ const MessagesPageResponsive = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+<div className="flex h-screen bg-slate-50 overflow-hidden">
       <div className="hidden md:flex w-full max-w-screen-2xl mx-auto">
         {/* Desktop: Chat List */}
         <div className="hidden md:flex md:w-96 flex-col">
@@ -150,7 +150,7 @@ const MessagesPageResponsive = () => {
 
         {/* Desktop: Chat Window or Empty State */}
         <div className="hidden md:flex md:flex-1 flex-col items-stretch">
-          <div className="w-full max-w-3xl mx-auto flex-1 flex flex-col">
+          <div className="w-full max-w-3xl flex-1 flex flex-col">
             {selectedChat ? (
               <ChatWindow
                 chat={selectedChat}
