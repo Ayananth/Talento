@@ -24,3 +24,9 @@ class IsNotBlocked(BasePermission):
 
     def has_permission(self, request, view):
         return not request.user.is_blocked
+
+
+class IsConversationParticipant(BasePermission):
+    message = "You are not a participant of this conversation."
+    def has_object_permission(self, request, view, obj):
+        return request.user in [obj.jobseeker, obj.recruiter]
