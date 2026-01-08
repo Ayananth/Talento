@@ -56,7 +56,9 @@ INSTALLED_APPS = [
     "django_filters",
     # "admin",
     "jobs",
-    "applications"
+    "applications",
+    "chat",
+    "channels",
 ]
 
 MIDDLEWARE = [
