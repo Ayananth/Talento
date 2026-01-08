@@ -165,7 +165,7 @@ export default function ProfileHeader() {
 
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow p-6">
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
       <ProfileEditModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
@@ -183,86 +183,94 @@ export default function ProfileHeader() {
       />
 
       {error && (
-        <div className="bg-red-100 border border-red-300 text-red-700 p-3 rounded-lg mb-4 flex items-center gap-2">
-          <AlertCircle size={18} />
-          {error}
+        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 m-6 rounded-lg flex items-center gap-3">
+          <AlertCircle size={18} className="flex-shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-100 border border-green-300 text-green-700 p-3 rounded-lg mb-4">
-          ✓ {success}
+        <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 m-6 rounded-lg flex items-center gap-3">
+          <span className="text-lg">✓</span>
+          <span>{success}</span>
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row justify-between gap-8">
-        {/* LEFT */}
-        <div className="flex gap-6 w-full lg:w-2/3">
-          {/* PROFILE IMAGE */}
-          <div className="relative" style={{ width: 128, height: 128 }}>
-            <div className="rounded-full overflow-hidden bg-gray-200 flex items-center justify-center w-full h-full">
-              {uploading ? (
-                <AvatarPlaceholder size={128} />
-              ) : !imageError && (preview || profile?.profile_image) ? (
-                <img
-                  src={preview || `${baseUrl}${profile.profile_image}`}
-                  alt="Profile"
-                  className="w-full h-full object-cover rounded-full"
-                  onError={() => setImageError(true)}
+      <div className="p-8 sm:p-10">
+        <div className="flex flex-col lg:flex-row justify-between gap-10">
+          {/* LEFT SECTION */}
+          <div className="flex gap-8 w-full lg:w-2/3">
+            {/* PROFILE IMAGE */}
+            <div className="relative flex-shrink-0" style={{ width: 140, height: 140 }}>
+              <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center w-full h-full shadow-md">
+                {uploading ? (
+                  <AvatarPlaceholder size={140} />
+                ) : !imageError && (preview || profile?.profile_image) ? (
+                  <img
+                    src={preview || `${baseUrl}${profile.profile_image}`}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <AvatarPlaceholder size={140} />
+                )}
+              </div>
+
+              <label className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 shadow-lg rounded-full p-2.5 text-white cursor-pointer transition-all duration-200 transform hover:scale-110">
+                <Edit3 size={16} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
                 />
-              ) : (
-                <AvatarPlaceholder size={128} />
-              )}
+              </label>
             </div>
 
-            <label className="absolute bottom-0 bg-white shadow rounded-full px-3 py-1 text-xs text-blue-600 font-semibold cursor-pointer">
-              {uploading ? "Uploading..." : "Edit"}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
-            </label>
-          </div>
+            {/* USER INFO */}
+            <div className="flex flex-col justify-center w-full">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold text-slate-900">
+                  {getVal(profile.fullname, "User")}
+                </h1>
+                <button 
+                  onClick={() => setShowModal(true)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+                  title="Edit profile"
+                >
+                  <Edit3 size={18} className="text-slate-500 hover:text-blue-600" />
+                </button>
+              </div>
 
-          {/* USER INFO */}
-          <div className="flex flex-col w-full">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-semibold">
-                {getVal(profile.fullname, "User")}
-              </h1>
-              <button onClick={() => setShowModal(true)}>
-                <Edit3 size={18} className="text-gray-500" />
-              </button>
-            </div>
+              <p className="text-lg text-slate-600 font-medium mb-1">
+                {getVal(profile.headline, "Add your professional headline")}
+              </p>
 
-            <p className="text-sm text-gray-700">
-              {getVal(profile.headline, "")}
-            </p>
+              <p className="text-sm text-slate-500 mb-4">
+                {getVal(exp.company, "Add your company")}
+              </p>
 
-            <p className="text-xs text-gray-500">
-               {getVal(exp.company, "")}
-            </p>
+              <div className="h-px bg-slate-200 my-4" />
 
-            <div className="h-px bg-gray-300 my-3" />
-
-            <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-800">
-              <InfoItem icon={<MapPin size={14} />} text={getVal(profile.address, "Location")} />
-              <InfoItem icon={<Briefcase size={14} />} text={profile.experience_years ? `${profile.experience_years} Years` : "Experience"} />
-              <InfoItem icon={<Briefcase size={14} />} text={getVal(profile.current_salary, "Salary")} />
-              <InfoItem icon={<Phone size={14} />} text={getVal(profile.phone_number, "Phone")} />
-              <InfoItem icon={<Mail size={14} />} text={getVal(user.email, "Email")} />
-              <InfoItem icon={<Clock size={14} />} text={getVal(profile.notice_period, "Notice Period")} />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                <InfoItem icon={<MapPin size={16} />} text={getVal(profile.address, "Location")} />
+                <InfoItem icon={<Briefcase size={16} />} text={profile.experience_years ? `${profile.experience_years} Years` : "Experience"} />
+                <InfoItem icon={<Briefcase size={16} />} text={getVal(profile.current_salary, "Salary")} />
+                <InfoItem icon={<Phone size={16} />} text={getVal(profile.phone_number, "Phone")} />
+                <InfoItem icon={<Mail size={16} />} text={getVal(user.email, "Email")} />
+                <InfoItem icon={<Clock size={16} />} text={getVal(profile.notice_period, "Notice Period")} />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* RIGHT */}
-        <div className="bg-[#f5f9ff] border border-[#e0eaff] rounded-xl p-6 flex justify-around w-fit lg:w-1/3">
-          <StatBox number="0" label="Search Appearances" />
-          <div className="w-px h-12 bg-gray-300" />
-          <StatBox number="0" label="Recruiter Actions" />
+          {/* RIGHT SECTION - STATS */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-8 flex flex-col justify-center gap-8 w-full lg:w-1/3">
+            <StatBox number="0" label="Search Appearances" />
+            <div className="h-px bg-blue-200" />
+            <StatBox number="0" label="Recruiter Actions" />
+          </div>
         </div>
       </div>
     </div>

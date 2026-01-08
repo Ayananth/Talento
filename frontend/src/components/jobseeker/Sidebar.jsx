@@ -21,17 +21,19 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="w-64 min-h-screen border border-gray-300 bg-white p-6 mt-10">
-      <nav className="flex flex-col gap-8 mt-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <nav className="flex flex-col gap-2">
         {menuItems.map((item) => (
-          <div
+          <button
             key={item.name}
-            onClick={()=> navigate(item.path)}
-            className="flex items-center gap-4 text-gray-600 hover:text-black cursor-pointer transition"
+            onClick={() => navigate(item.path)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 font-medium text-sm group"
           >
-            {item.icon}
-            <span className="text-sm font-medium">{item.name}</span>
-          </div>
+            <span className="text-slate-500 group-hover:text-blue-600 transition-colors duration-200">
+              {item.icon}
+            </span>
+            <span>{item.name}</span>
+          </button>
         ))}
       </nav>
     </div>
