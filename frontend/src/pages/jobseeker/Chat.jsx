@@ -27,6 +27,15 @@ export default function Chat({
     setMessages(data);
   }
 
+  // mart read
+  async function markAsRead() {
+  await fetch(
+    `http://127.0.0.1:8000/api/conversations/${conversationId}/read?token=${token}`,
+    { method: "POST" }
+  );
+}
+
+
   // ---------------- CONNECT WEBSOCKET ----------------
   function connectWebSocket() {
     // Intentional close (do NOT reconnect)
@@ -104,6 +113,7 @@ export default function Chat({
   // ---------------- INIT / CLEANUP ----------------
   useEffect(() => {
     loadHistory().then(() => {
+      markAsRead();
       connectWebSocket();
     });
 
@@ -148,6 +158,11 @@ export default function Chat({
             >
               {msg.content}
             </span>
+            {msg.sender_id === currentUserId && msg.read_at && (
+              <small style={{ marginLeft: 6, color: "gray" }}>
+                Seen
+              </small>
+            )}
           </div>
         ))}
       </div>
