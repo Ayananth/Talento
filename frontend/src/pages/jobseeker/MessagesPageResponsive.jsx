@@ -1,91 +1,143 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChatList from '../../components/jobseeker/messages/ChatList';
 import ChatWindow from '../../components/jobseeker/messages/ChatWindow';
 import EmptyState from '../../components/jobseeker/messages/EmptyState';
 import { ArrowLeft } from 'lucide-react';
+import { fetchConversations } from '../../utils/common/fetchConversations';
+
+import { useChat } from "@/hooks/useChat";
+
 
 const MessagesPageResponsive = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [showChatList, setShowChatList] = useState(true);
-  const [chats, setChats] = useState([
-    {
-      id: 1,
-      recruiterName: 'Sarah Johnson',
-      companyName: 'Tech Innovations Inc.',
-      companyLogo: 'https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80',
-      jobTitle: 'Senior React Developer',
-      lastMessage: 'Thanks for your interest! We would like to schedule an interview...',
-      timestamp: '2 hours ago',
-      unreadCount: 2,
-      isBlocked: false,
-      messages: [
-        {
-          id: 1,
-          sender: 'recruiter',
-          text: 'Hi! Thanks for applying to the Senior React Developer position.',
-          timestamp: '10:30 AM',
-          status: 'read',
-        },
-        {
-          id: 2,
-          sender: 'jobseeker',
-          text: 'Thank you! I am very interested in this opportunity.',
-          timestamp: '10:35 AM',
-          status: 'read',
-        },
-        {
-          id: 3,
-          sender: 'recruiter',
-          text: 'Great! We would like to schedule an interview with you. Are you available next week?',
-          timestamp: '10:40 AM',
-          status: 'read',
-        },
-        {
-          id: 4,
-          sender: 'jobseeker',
-          text: 'Yes, I am available. What time works best for you?',
-          timestamp: '10:45 AM',
-          status: 'delivered',
-        },
-      ],
-    },
-    {
-      id: 2,
-      recruiterName: 'Michael Chen',
-      companyName: 'Digital Solutions Ltd.',
-      companyLogo: 'https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80',
-      jobTitle: 'Full Stack Engineer',
-      lastMessage: 'We will get back to you soon with the next steps.',
-      timestamp: '1 day ago',
-      unreadCount: 0,
-      isBlocked: false,
-      messages: [
-        {
-          id: 1,
-          sender: 'recruiter',
-          text: 'Thank you for your application!',
-          timestamp: 'Yesterday 3:20 PM',
-          status: 'read',
-        },
-      ],
-    },
-    {
-      id: 3,
-      recruiterName: 'Emma Wilson',
-      companyName: 'Creative Agency Co.',
-      companyLogo: 'https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80',
-      jobTitle: 'UI/UX Designer',
-      lastMessage: 'You have been blocked by this recruiter',
-      timestamp: '3 days ago',
-      unreadCount: 0,
-      isBlocked: true,
-      messages: [],
-    },
-  ]);
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0Mn0.ceovGGz_Y0eu9xKY7Uorny1d93KsO_KFddxHh5u_DRM";
+  const currentUserId = 42;
+
+const [chats, setChats] = useState([]);
+const [loadingChats, setLoadingChats] = useState(true);
+
+  // const [chats, setChats] = useState([
+  //   {
+  //     id: 1,
+  //     recruiterName: 'Sarah Johnson',
+  //     companyName: 'Tech Innovations Inc.',
+  //     companyLogo: 'https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80',
+  //     jobTitle: 'Senior React Developer',
+  //     lastMessage: 'Thanks for your interest! We would like to schedule an interview...',
+  //     timestamp: '2 hours ago',
+  //     unreadCount: 2,
+  //     isBlocked: false,
+  //     messages: [
+  //       {
+  //         id: 1,
+  //         sender: 'recruiter',
+  //         text: 'Hi! Thanks for applying to the Senior React Developer position.',
+  //         timestamp: '10:30 AM',
+  //         status: 'read',
+  //       },
+  //       {
+  //         id: 2,
+  //         sender: 'jobseeker',
+  //         text: 'Thank you! I am very interested in this opportunity.',
+  //         timestamp: '10:35 AM',
+  //         status: 'read',
+  //       },
+  //       {
+  //         id: 3,
+  //         sender: 'recruiter',
+  //         text: 'Great! We would like to schedule an interview with you. Are you available next week?',
+  //         timestamp: '10:40 AM',
+  //         status: 'read',
+  //       },
+  //       {
+  //         id: 4,
+  //         sender: 'jobseeker',
+  //         text: 'Yes, I am available. What time works best for you?',
+  //         timestamp: '10:45 AM',
+  //         status: 'delivered',
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: 2,
+  //     recruiterName: 'Michael Chen',
+  //     companyName: 'Digital Solutions Ltd.',
+  //     companyLogo: 'https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80',
+  //     jobTitle: 'Full Stack Engineer',
+  //     lastMessage: 'We will get back to you soon with the next steps.',
+  //     timestamp: '1 day ago',
+  //     unreadCount: 0,
+  //     isBlocked: false,
+  //     messages: [
+  //       {
+  //         id: 1,
+  //         sender: 'recruiter',
+  //         text: 'Thank you for your application!',
+  //         timestamp: 'Yesterday 3:20 PM',
+  //         status: 'read',
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: 3,
+  //     recruiterName: 'Emma Wilson',
+  //     companyName: 'Creative Agency Co.',
+  //     companyLogo: 'https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80',
+  //     jobTitle: 'UI/UX Designer',
+  //     lastMessage: 'You have been blocked by this recruiter',
+  //     timestamp: '3 days ago',
+  //     unreadCount: 0,
+  //     isBlocked: true,
+  //     messages: [],
+  //   },
+  // ]);
+
+
+  console.log("Selected Chat ID:", selectedChat?.id);
+const chatApi = useChat({
+  conversationId: selectedChat?.id,
+  // conversationId: 101,
+  token,
+  currentUserId,
+});
+
+
+useEffect(() => {
+  async function loadConversations() {
+    try {
+      const data = await fetchConversations(token);
+
+      // 🔁 Map backend → UI shape
+      const mapped = data.map((c) => ({
+        id: c.conversation_id,
+        recruiterName: c.recruiter_name,
+        companyName: c.company_name,
+        companyLogo: c.company_logo,
+        jobTitle: c.job_title,
+        lastMessage: c.last_message,
+        timestamp: new Date(c.last_message_at).toLocaleString(),
+        unreadCount: c.unread_count,
+        isBlocked: c.is_blocked,
+      }));
+
+      setChats(mapped);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingChats(false);
+    }
+  }
+
+  loadConversations();
+}, []);
+
+
 
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
+    console.log("Selected Chat:", chat);
     setShowChatList(false);
   };
 
@@ -136,11 +188,21 @@ const MessagesPageResponsive = () => {
     setSelectedChat(updatedChats.find((c) => c.id === chatId));
   };
 
+  if (loadingChats) {
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <p className="text-slate-500">Loading conversations...</p>
+    </div>
+  );
+}
+
+
   return (
 <div className="flex h-screen bg-slate-50 overflow-hidden">
       <div className="hidden md:flex w-full max-w-screen-2xl mx-auto">
         {/* Desktop: Chat List */}
         <div className="hidden md:flex md:w-96 flex-col">
+          
           <ChatList
             chats={chats}
             selectedChat={selectedChat}
@@ -152,11 +214,15 @@ const MessagesPageResponsive = () => {
         <div className="hidden md:flex md:flex-1 flex-col items-stretch">
           <div className="w-full max-w-3xl flex-1 flex flex-col">
             {selectedChat ? (
-              <ChatWindow
-                chat={selectedChat}
-                onSendMessage={handleSendMessage}
-                onBlockRecruiter={handleBlockRecruiter}
-              />
+<ChatWindow
+  chat={{
+    ...selectedChat,
+    messages: chatApi.messages,
+  }}
+  onSendMessage={chatApi.sendMessage}
+  connected={chatApi.connected}
+/>
+
             ) : (
               <EmptyState />
             )}

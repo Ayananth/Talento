@@ -12,7 +12,7 @@ import {
 import MessageBubble from './MessageBubble';
 import MessageComposer from './MessageComposer';
 
-const ChatWindow = ({ chat, onSendMessage, onBlockRecruiter }) => {
+const ChatWindow = ({ chat, onSendMessage, connected }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const messagesEndRef = useRef(null);
@@ -153,7 +153,11 @@ const ChatWindow = ({ chat, onSendMessage, onBlockRecruiter }) => {
 
       {/* Message Composer */}
       {!chat.isBlocked ? (
-        <MessageComposer onSendMessage={onSendMessage} />
+        <MessageComposer
+  disabled={!connected || chat.isBlocked}
+  onSendMessage={(text, attachments) => onSendMessage(text)}
+/>
+
       ) : (
         <div className="border-t border-slate-200 p-6 bg-slate-50">
           <p className="text-sm text-slate-600 text-center">
