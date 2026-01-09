@@ -126,3 +126,67 @@ class StartConversationAPIView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+    
+
+class GetConversationAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        job_id = request.query_params.get("job_id")
+        user = request.user
+
+        if not job_id:
+            return Response(
+                {"detail": "job_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            job = Job.objects.select_related("recruiter").get(id=job_id)
+        except Job.DoesNotExist:
+            return Response(
+                {"detail": "Job not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Determine roles
+        if user == job.recruiter:
+            recruiter = user
+            jobseeker = None
+        else:
+            recruiter = job.recruiter
+            jobseeker = user
+
+        conversation = Conversation.objects.filter(
+            job=job,
+            recruiter=recruiter,
+            jobseeker=jobseeker,
+        ).first()
+
+        if not conversation:
+            return Response(
+                {"conversation": None},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(
+            {
+                "conversation": {
+                    "id": conversation.id,
+                    "job": job.id,
+                    "other_user": {
+                        "id": (
+                            conversation.jobseeker.id
+                            if user == recruiter
+                            else conversation.recruiter.id
+                        ),
+                        "name": (
+                            conversation.jobseeker.email
+                            if user == recruiter
+                            else conversation.recruiter.email
+                        ),
+                    },
+                }
+            },
+            status=status.HTTP_200_OK,
+        )
