@@ -1,21 +1,24 @@
 import React, { useEffect, useRef } from "react";
 
 const MessageList = ({ messages, currentUserId, loading }) => {
-
-  const endRef = useRef(null);
-  const isFirstLoad = useRef(true);
+  const containerRef = useRef(null);
+  const prevMessageCount = useRef(0);
 
   useEffect(() => {
     if (loading) return;
 
-    if (isFirstLoad.current) {
-      // On first load → scroll to bottom WITHOUT animation
-      endRef.current?.scrollIntoView();
-      isFirstLoad.current = false;
-    } else {
-      // On new messages → smooth scroll
-      endRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (prevMessageCount.current === 0) {
+      prevMessageCount.current = messages.length;
+      return;
     }
+
+    // ✅ Scroll ONLY when a new message is added
+    if (messages.length > prevMessageCount.current) {
+      containerRef.current.scrollTop =
+        containerRef.current.scrollHeight;
+    }
+
+    prevMessageCount.current = messages.length;
   }, [messages, loading]);
 
   if (loading) {
@@ -35,11 +38,12 @@ const MessageList = ({ messages, currentUserId, loading }) => {
   }
 
   return (
-   <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-3 overscroll-contain">
+    <div
+      ref={containerRef}
+      className="flex-1 overflow-y-auto p-6 pb-24 space-y-3 overscroll-contain"
+    >
       {messages.map((msg) => {
-        console.log(msg.senderId, currentUserId);
         const isMine = msg.senderId === currentUserId;
-        console.log("isMine:", isMine);
 
         return (
           <div
@@ -61,7 +65,6 @@ const MessageList = ({ messages, currentUserId, loading }) => {
           </div>
         );
       })}
-      <div ref={endRef} />
     </div>
   );
 };
