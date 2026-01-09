@@ -24,14 +24,15 @@ export default function JobHeader({
   hasApplied,
   onApply,
   job, recruiter,
+  hasAppliedLocal
 }) {
 
   const [error, setError] = useState(null);
   useEffect(() => {
-    if (hasApplied && error) {
+    if (hasAppliedLocal && error) {
       setError(null);
     }
-  }, [hasApplied, error]);
+  }, [hasAppliedLocal, error]);
 
   const navigate = useNavigate();
 
@@ -44,7 +45,7 @@ export default function JobHeader({
 
 
 const message = () => {
-  if (!hasApplied) {
+  if (!hasAppliedLocal) {
     setError("Please Apply first");
     return;
   }
@@ -65,7 +66,10 @@ const message = () => {
 };
 
 async function handleMessageRecruiter() {
-  console.log(job)
+    if (!hasApplied) {
+      setError("Please Apply first");
+      return;
+    }
   const res = await api.get("v1/chat/conversation/", {
     params: { job_id: job.id },
   });

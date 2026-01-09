@@ -17,6 +17,8 @@ export default function JobDetailPage() {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [hasAppliedLocal, setHasAppliedLocal] = useState(job?.has_applied || false);
+
 
   /* ----------------------------------
      Fetch job detail
@@ -34,6 +36,8 @@ export default function JobDetailPage() {
 
 
         setJob(res);
+        setHasAppliedLocal(res.has_applied);
+
               } catch (err) {
         console.error("Failed to fetch job detail", err);
         setError(true);
@@ -44,7 +48,7 @@ export default function JobDetailPage() {
     };
 
     fetchJob();
-  }, [id]);
+  }, [id, hasAppliedLocal]);
 
   /* ----------------------------------
      States
@@ -84,6 +88,7 @@ export default function JobDetailPage() {
               hasApplied={job.has_applied}
               job={job}
               recruiter={job.recruiter}
+              hasAppliedLocal={hasAppliedLocal}
             />
 
             <JobOverview
@@ -110,6 +115,8 @@ export default function JobDetailPage() {
               status="published"
               hasApplied={job.has_applied}
               isSaved={false}
+              hasAppliedLocal={hasAppliedLocal}
+              setHasAppliedLocal={setHasAppliedLocal}
             />
           </main>
 

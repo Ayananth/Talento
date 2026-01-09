@@ -9,14 +9,16 @@ export default function JobActions({
   status = "published",
   hasApplied,
   isSaved: initialSaved = false,
+  hasAppliedLocal,
+  setHasAppliedLocal,
 }) {
   const [openApply, setOpenApply] = useState(false);
   const [saved, setSaved] = useState(initialSaved);
-  const [hasAppliedLocal, setHasAppliedLocal] = useState(hasApplied);
+  // const [hasAppliedLocal, setHasAppliedLocal] = useState(hasApplied);
 
   useEffect(() => {
     setHasAppliedLocal(hasApplied);
-  }, [hasApplied]);
+  }, [hasAppliedLocal]);
 
   const canApply =
     isActive && status === "published" && !hasAppliedLocal;
