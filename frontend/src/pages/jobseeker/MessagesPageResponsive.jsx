@@ -202,19 +202,17 @@ const handleSelectChat = async (chat) => {
 
       {/* Mobile */}
 {/* Mobile */}
-<div className="md:hidden w-full flex flex-col">
+{/* Mobile */}
+<div className="md:hidden w-full h-full flex flex-col min-h-0">
   <AnimatePresence mode="wait">
     {showChatList ? (
-      // --------------------
-      // CHAT LIST (MOBILE)
-      // --------------------
       <motion.div
         key="chat-list"
-        initial={{ opacity: 0, x: -30 }}
+        initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -30 }}
-        transition={{ duration: 0.25 }}
-        className="flex-1"
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.2 }}
+        className="flex-1 min-h-0"
       >
         <ChatList
           chats={conversations}
@@ -223,51 +221,36 @@ const handleSelectChat = async (chat) => {
         />
       </motion.div>
     ) : (
-      // --------------------
-      // CHAT WINDOW (MOBILE)
-      // --------------------
       <motion.div
         key="chat-window"
-        initial={{ opacity: 0, x: 30 }}
+        initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 30 }}
-        transition={{ duration: 0.25 }}
-        className="flex-1 flex flex-col bg-white"
+        exit={{ opacity: 0, x: 20 }}
+        transition={{ duration: 0.2 }}
+        className="flex-1 flex flex-col bg-white min-h-0"
       >
-        {/* Header with Back Button */}
-        <div className="flex items-center gap-3 p-4 border-b bg-white sticky top-0 z-10">
-          <button
-            onClick={handleBackToList}
-            className="p-2 rounded-lg hover:bg-slate-100"
-          >
-            <ArrowLeft size={20} className="text-slate-700" />
+        {/* Mobile Header */}
+        <div className="flex items-center gap-3 p-4 border-b shrink-0">
+          <button onClick={handleBackToList}>
+            ←
           </button>
-
-          <div className="flex flex-col">
-            <span className="font-medium text-slate-900">
-              {selectedChat?.name}
-            </span>
-            <span className="text-xs text-slate-500">
-              {connected ? "Online" : "Connecting..."}
-            </span>
-          </div>
+          <span className="font-medium">{selectedChat?.name}</span>
         </div>
 
-        {/* Chat Window */}
-        <div className="flex-1 overflow-hidden">
-          <ChatWindow
-            chat={selectedChat}
-            messages={messages}
-            loadingMessages={messagesLoading}
-            currentUserId={currentUserId}
-            onSendMessage={handleSendMessage}
-            connected={connected}
-          />
-        </div>
+        {/* Chat */}
+        <ChatWindow
+          chat={selectedChat}
+          messages={messages}
+          loadingMessages={messagesLoading}
+          currentUserId={currentUserId}
+          onSendMessage={handleSendMessage}
+          connected={connected}
+        />
       </motion.div>
     )}
   </AnimatePresence>
 </div>
+
 
     </div>
   );
