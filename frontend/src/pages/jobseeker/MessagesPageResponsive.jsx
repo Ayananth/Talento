@@ -201,49 +201,74 @@ const handleSelectChat = async (chat) => {
       </div>
 
       {/* Mobile */}
-      <div className="md:hidden w-full flex flex-col">
-        <AnimatePresence mode="wait">
-          {showChatList ? (
-            <motion.div
-              key="chat-list"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="flex-1"
-            >
-              <ChatList
-                chats={conversations}
-                selectedChat={selectedChat}
-                onSelectChat={handleSelectChat}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="empty-state"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-              className="flex-1 flex flex-col relative"
-            >
-              {/* Back Button */}
-              <div className="absolute top-4 left-4 z-10">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleBackToList}
-                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  <ArrowLeft size={20} className="text-slate-600" />
-                </motion.button>
-              </div>
+{/* Mobile */}
+<div className="md:hidden w-full flex flex-col">
+  <AnimatePresence mode="wait">
+    {showChatList ? (
+      // --------------------
+      // CHAT LIST (MOBILE)
+      // --------------------
+      <motion.div
+        key="chat-list"
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -30 }}
+        transition={{ duration: 0.25 }}
+        className="flex-1"
+      >
+        <ChatList
+          chats={conversations}
+          selectedChat={selectedChat}
+          onSelectChat={handleSelectChat}
+        />
+      </motion.div>
+    ) : (
+      // --------------------
+      // CHAT WINDOW (MOBILE)
+      // --------------------
+      <motion.div
+        key="chat-window"
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 30 }}
+        transition={{ duration: 0.25 }}
+        className="flex-1 flex flex-col bg-white"
+      >
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-3 p-4 border-b bg-white sticky top-0 z-10">
+          <button
+            onClick={handleBackToList}
+            className="p-2 rounded-lg hover:bg-slate-100"
+          >
+            <ArrowLeft size={20} className="text-slate-700" />
+          </button>
 
-              <EmptyState />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          <div className="flex flex-col">
+            <span className="font-medium text-slate-900">
+              {selectedChat?.name}
+            </span>
+            <span className="text-xs text-slate-500">
+              {connected ? "Online" : "Connecting..."}
+            </span>
+          </div>
+        </div>
+
+        {/* Chat Window */}
+        <div className="flex-1 overflow-hidden">
+          <ChatWindow
+            chat={selectedChat}
+            messages={messages}
+            loadingMessages={messagesLoading}
+            currentUserId={currentUserId}
+            onSendMessage={handleSendMessage}
+            connected={connected}
+          />
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
+
     </div>
   );
 };
