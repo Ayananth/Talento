@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
+import { Button } from "flowbite-react";
 import { Mail, Phone, MapPin, Calendar, Download, Eye, CheckCircle, XCircle, Clock, Briefcase, DollarSign, FileText, User, Tag, MessageSquare } from 'lucide-react';
 import { getApplicantDetails, updateApplicationStatus } from '../../apis/recruiter/apis';
 import { formatDateTime } from '../../utils/common/utils';
+import { useNavigate } from "react-router-dom";
+import { fetchConversation } from '../../apis/common/fetchConversation';
+
 
 
 const STATUS_LABELS = {
@@ -41,6 +45,41 @@ const showToast = (message, type = "success") => {
   setTimeout(() => setToast(null), 3000);
 };
 
+const navigate = useNavigate();
+
+
+async function handleMessageCandidate(applicant) {
+  try {
+    const res = await fetchConversation(applicant.job_id);
+    console.log("Fetched conversation:", res);
+    const conversation = res.data.conversation;
+
+    if (conversation) {
+      navigate("/recruiter/messages", {
+        state: {
+          openConversationId: conversation.id,
+        },
+      });
+    } else {
+      console.log(applicant.job_id, applicant.applicant_id, applicant.name);
+      // return
+      navigate("/recruiter/messages", {
+        state: {
+          draftChat: {
+            id: null,
+            jobId: applicant.job_id,
+            otherUserId: applicant.applicant_id,
+            name: applicant.name, // or full name later
+            jobTitle: applicant.jobTitle,
+          },
+        },
+      });
+    }
+  } catch (err) {
+    console.error("Failed to open chat", err);
+  }
+}
+
 
 
 useEffect(() => {
@@ -49,6 +88,7 @@ useEffect(() => {
       setLoading(true);
       const res = await getApplicantDetails(applicantId);
       setApplicant(res);
+      console.log("Fetched applicant details:", res);
       setStatus(res.status_display || res.status);
       setRecruiterNotes(res.recruiter_notes || "");
     } catch (err) {
@@ -247,10 +287,19 @@ const handleStatusChange = async (newStatus) => {
           <div className="col-span-2 space-y-6">
             {/* Contact Information */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Contact Information
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Contact Information
+                </h2>
+                  <Button
+                    size="lg"
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => handleMessageCandidate(applicant)}
+                  >
+                    Message
+                  </Button>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-gray-400" />

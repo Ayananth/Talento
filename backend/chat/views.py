@@ -18,6 +18,8 @@ class ConversationListAPIView(APIView):
 
     def get(self, request):
         user = request.user
+        print(user)
+        print("Fetching conversations for user:", user.id)
 
         conversations = Conversation.objects.filter(
             Q(jobseeker=user) | Q(recruiter=user)

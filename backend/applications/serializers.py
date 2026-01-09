@@ -282,7 +282,7 @@ class RecruiterApplicationDetailSerializer(serializers.ModelSerializer):
         required=False
     )
 
-    applicant_id = serializers.IntegerField(source="applicant.id", read_only=True)
+    applicant_id = serializers.IntegerField(source="applicant.user.id", read_only=True)
 
     jobTitle = serializers.CharField(source="job.title", read_only=True)
     status = serializers.CharField()
