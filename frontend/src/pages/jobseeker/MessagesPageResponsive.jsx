@@ -52,10 +52,13 @@ const MessagesPageResponsive = () => {
 
 const location = useLocation();
 useEffect(() => {
+  console.log("Location state on mount:", location.state);
   if (location.state?.openConversationId) {
     const convo = conversations.find(
       (c) => c.id === location.state.openConversationId
     );
+
+    console.log("Auto-opening conversation from state:", convo);
 
     if (convo) {
       handleSelectChat(convo);

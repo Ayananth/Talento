@@ -13,6 +13,11 @@ from django.db import transaction
 from rest_framework import status   
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class ConversationListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -135,11 +140,12 @@ class GetConversationAPIView(APIView):
 
     def get(self, request):
         job_id = request.query_params.get("job_id")
+        other_user_id = request.query_params.get("other_user_id")
         user = request.user
 
-        if not job_id:
+        if not job_id or not other_user_id:
             return Response(
-                {"detail": "job_id is required"},
+                {"detail": "job_id and other_user_id are required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -151,13 +157,26 @@ class GetConversationAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Determine roles
+        try:
+            other_user = User.objects.get(id=other_user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Determine roles explicitly
         if user == job.recruiter:
             recruiter = user
-            jobseeker = None
-        else:
-            recruiter = job.recruiter
+            jobseeker = other_user
+        elif other_user == job.recruiter:
+            recruiter = other_user
             jobseeker = user
+        else:
+            return Response(
+                {"detail": "Invalid participants for this job"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         conversation = Conversation.objects.filter(
             job=job,
@@ -166,10 +185,7 @@ class GetConversationAPIView(APIView):
         ).first()
 
         if not conversation:
-            return Response(
-                {"conversation": None},
-                status=status.HTTP_200_OK,
-            )
+            return Response({"conversation": None}, status=status.HTTP_200_OK)
 
         return Response(
             {
@@ -177,16 +193,8 @@ class GetConversationAPIView(APIView):
                     "id": conversation.id,
                     "job": job.id,
                     "other_user": {
-                        "id": (
-                            conversation.jobseeker.id
-                            if user == recruiter
-                            else conversation.recruiter.id
-                        ),
-                        "name": (
-                            conversation.jobseeker.email
-                            if user == recruiter
-                            else conversation.recruiter.email
-                        ),
+                        "id": other_user.id,
+                        "name": other_user.email,
                     },
                 }
             },

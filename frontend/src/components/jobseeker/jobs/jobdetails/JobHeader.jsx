@@ -3,6 +3,7 @@ import { Briefcase, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "../../../../apis/api";
+import { fetchConversation } from "../../../../apis/common/fetchConversation";
 
 const formatJobType = (value) =>
   value ? value.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase()) : "";
@@ -70,9 +71,10 @@ async function handleMessageRecruiter() {
       setError("Please Apply first");
       return;
     }
-  const res = await api.get("v1/chat/conversation/", {
-    params: { job_id: job.id },
-  });
+  // const res = await api.get("v1/chat/conversation/", {
+  //   params: { job_id: job.id, other_user_id: job.recruiter_id },
+  // });
+  const res = await fetchConversation(job.id, job.recruiter_id);
 
   const conversation = res.data.conversation;
   console.log(conversation)

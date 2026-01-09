@@ -6,6 +6,7 @@ import { getApplicantDetails, updateApplicationStatus } from '../../apis/recruit
 import { formatDateTime } from '../../utils/common/utils';
 import { useNavigate } from "react-router-dom";
 import { fetchConversation } from '../../apis/common/fetchConversation';
+import api from '../../apis/api';
 
 
 
@@ -50,9 +51,14 @@ const navigate = useNavigate();
 
 async function handleMessageCandidate(applicant) {
   try {
-    const res = await fetchConversation(applicant.job_id);
-    console.log("Fetched conversation:", res);
-    const conversation = res.data.conversation;
+      // const res = await api.get("v1/chat/conversation/", {
+      //   params: { job_id: applicant.job_id, other_user_id: applicant.applicant_id },
+      // });
+
+      const res = await fetchConversation(applicant.job_id, applicant.applicant_id);
+
+      const conversation = res.data.conversation;
+      console.log(conversation)
 
     if (conversation) {
       navigate("/recruiter/messages", {
