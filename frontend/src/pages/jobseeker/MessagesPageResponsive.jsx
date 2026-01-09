@@ -132,6 +132,7 @@ const handleSendMessage = async (text) => {
     async function loadConversations() {
       try {
         const data = await fetchConversations();
+        console.log("Fetched conversations:", data);
 
         /**
          * Normalize backend response → UI model
@@ -158,7 +159,7 @@ const handleSendMessage = async (text) => {
           unreadCount: 0,
           isBlocked: false,
           companyName: null,
-          companyLogo: null,
+          companyLogo: c.other_user?.img ?? null,
         }));
 
         if (isMounted) {

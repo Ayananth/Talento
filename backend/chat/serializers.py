@@ -55,12 +55,14 @@ class ConversationListSerializer(serializers.ModelSerializer):
                 "id": obj.recruiter.id,
                 "name": obj.recruiter.recruiter_profile.company_name or obj.recruiter.full_name,    
                 "job": obj.job.title,
+                "img": obj.recruiter.recruiter_profile.logo.url if obj.recruiter.recruiter_profile.logo else None,
             }
         else:
             return {
                 "id": obj.jobseeker.id,
                 "name": obj.jobseeker.jobseeker_profile.fullname,
                 "job": obj.job.title,
+                "img": obj.jobseeker.jobseeker_profile.profile_image.url if obj.jobseeker.jobseeker_profile.profile_image else None,
             }
 
     def get_last_message(self, obj):
