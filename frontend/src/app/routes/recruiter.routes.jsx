@@ -11,6 +11,7 @@ import RecruiterJobEditPage from "../../pages/recruiter/RecruiterJobEditPage";
 import RecruiterProfilePage from "../../pages/recruiter/RecruiterProfilePage";
 import RecruiterApplicationsListPage from "../../pages/recruiter/RecruiterApplicationsListPage";
 import ApplicantDetailsPage from "../../pages/recruiter/ApplicantDetailsPage";
+import MessagesPageResponsive from "../../pages/jobseeker/MessagesPageResponsive";
 
 const recruiterRoutes = [
   {
@@ -28,6 +29,14 @@ const recruiterRoutes = [
             path: "dashboard",
             element: <RecruiterDashboard />,
           },
+
+          {
+            path: "messages",
+            element: <MessagesPageResponsive />,
+          },
+
+
+
           {
             path: "jobs",
             element: <RecruiterJobsListPage />,

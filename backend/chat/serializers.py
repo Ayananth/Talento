@@ -59,7 +59,8 @@ class ConversationListSerializer(serializers.ModelSerializer):
         else:
             return {
                 "id": obj.jobseeker.id,
-                "name": obj.jobseeker.full_name,
+                "name": obj.jobseeker.jobseeker_profile.fullname,
+                "job": obj.job.title,
             }
 
     def get_last_message(self, obj):
