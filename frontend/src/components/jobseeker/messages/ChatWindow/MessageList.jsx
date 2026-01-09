@@ -1,12 +1,22 @@
 import React, { useEffect, useRef } from "react";
 
 const MessageList = ({ messages, currentUserId, loading }) => {
-  const endRef = useRef(null);
 
-  // Auto-scroll on new messages
+  const endRef = useRef(null);
+  const isFirstLoad = useRef(true);
+
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (loading) return;
+
+    if (isFirstLoad.current) {
+      // On first load → scroll to bottom WITHOUT animation
+      endRef.current?.scrollIntoView();
+      isFirstLoad.current = false;
+    } else {
+      // On new messages → smooth scroll
+      endRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, loading]);
 
   if (loading) {
     return (
@@ -25,7 +35,7 @@ const MessageList = ({ messages, currentUserId, loading }) => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-3">
+    <div className="flex-1 overflow-y-auto p-6 space-y-3 overscroll-contain">
       {messages.map((msg) => {
         console.log(msg.senderId, currentUserId);
         const isMine = msg.senderId === currentUserId;
