@@ -1,8 +1,20 @@
+from channels.db import database_sync_to_async
+from django.contrib.auth.models import AnonymousUser
+from .permissions import user_is_conversation_participant
+
+
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
 
+
+@database_sync_to_async
+def is_participant(user, conversation_id):
+    return user_is_conversation_participant(user, conversation_id)
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
+
     async def connect(self):
         user = self.scope["user"]
 
@@ -12,6 +24,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         self.user = user
         self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
+
+        allowed = await is_participant(user, self.conversation_id)
+
+        if not allowed:
+            await self.close(code=4003)  # Forbidden
+            return
+
         self.group_name = f"chat_{self.conversation_id}"
 
         await self.channel_layer.group_add(
@@ -20,6 +39,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
+
+
     async def disconnect(self, close_code):
         if hasattr(self, "group_name"):
             await self.channel_layer.group_discard(
