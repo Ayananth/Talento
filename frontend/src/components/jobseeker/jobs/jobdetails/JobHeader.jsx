@@ -65,11 +65,13 @@ const message = () => {
 };
 
 async function handleMessageRecruiter() {
+  console.log(job)
   const res = await api.get("v1/chat/conversation/", {
     params: { job_id: job.id },
   });
 
   const conversation = res.data.conversation;
+  console.log(conversation)
 
   if (conversation) {
     navigate("/messages", {
@@ -83,8 +85,8 @@ async function handleMessageRecruiter() {
         draftChat: {
           id: null,
           jobId: job.id,
-          otherUserId: recruiter.id,
-          name: recruiter.company_name,
+          otherUserId: job.recruiter_id,
+          name: companyName,
           jobTitle: job.title,
         },
       },
@@ -152,7 +154,7 @@ async function handleMessageRecruiter() {
   <Button
     size="lg"
     className="bg-blue-600 hover:bg-blue-700"
-    onClick={message}
+    onClick={handleMessageRecruiter}
   >
     Message
   </Button>
