@@ -161,7 +161,7 @@ const handleSelectChat = async (chat) => {
     <div className="flex h-[calc(100vh-64px)] bg-slate-50 overflow-hidden">
 
       {/* Desktop */}
-      <div className="hidden md:flex w-full max-w-screen-2xl mx-auto">
+      <div className="hidden md:flex w-full max-w-7xl mx-auto">
         {/* Conversation List */}
         <div className="hidden md:flex md:w-96 flex-col">
           
