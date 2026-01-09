@@ -1,58 +1,94 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
+
 import ChatList from "../../components/jobseeker/messages/ChatList";
 import EmptyState from "../../components/jobseeker/messages/EmptyState";
-import { ArrowLeft } from "lucide-react";
 import { fetchConversations } from "../../apis/common/fetchConversations";
 
 const MessagesPageResponsive = () => {
-  // ---- STATE ----
+  // --------------------
+  // STATE
+  // --------------------
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [selectedChat, setSelectedChat] = useState(null);
   const [showChatList, setShowChatList] = useState(true);
 
-  // ---- LOAD CONVERSATIONS ----
+  // --------------------
+  // LOAD CONVERSATIONS
+  // --------------------
   useEffect(() => {
+    let isMounted = true;
+
     async function loadConversations() {
       try {
         const data = await fetchConversations();
 
-        // Backend → UI mapping
-        const mapped = data.map((c) => ({
+        /**
+         * Normalize backend response → UI model
+         * This protects the UI from backend changes
+         */
+        const normalized = data.map((c) => ({
           id: c.id,
-          name: c.other_user.name,
-          jobTitle: `Job #${c.other_user.job}`,
+
+          // Person / company we are chatting with
+          name: c.other_user?.name ?? "Unknown",
+
+          // Job title (if backend provided it)
+          jobTitle: c.other_user?.job ?? "Job",
+
+          // Message preview
           lastMessage: c.last_message ?? "No messages yet",
-          time: c.last_message_time
+
+          // Timestamp (safe formatting)
+          timestamp: c.last_message_time
             ? new Date(c.last_message_time).toLocaleString()
             : "",
+
+          // Optional fields (future-ready)
+          unreadCount: 0,
+          isBlocked: false,
+          companyName: null,
+          companyLogo: null,
         }));
 
-        setConversations(mapped);
-        console.log("Fetched conversations:", mapped);
+        if (isMounted) {
+          setConversations(normalized);
+        }
       } catch (error) {
         console.error("Failed to load conversations", error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
     loadConversations();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // ---- UI HANDLERS ----
+  // --------------------
+  // UI HANDLERS
+  // --------------------
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
     setShowChatList(false);
   };
 
   const handleBackToList = () => {
-    setShowChatList(true);
     setSelectedChat(null);
+    setShowChatList(true);
   };
 
-  // ---- LOADING STATE ----
+  // --------------------
+  // LOADING STATE
+  // --------------------
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -61,11 +97,14 @@ const MessagesPageResponsive = () => {
     );
   }
 
-  // ---- RENDER ----
+  // --------------------
+  // RENDER
+  // --------------------
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
+      {/* Desktop */}
       <div className="hidden md:flex w-full max-w-screen-2xl mx-auto">
-        {/* Desktop: Chat List */}
+        {/* Conversation List */}
         <div className="hidden md:flex md:w-96 flex-col">
           <ChatList
             chats={conversations}
@@ -74,15 +113,15 @@ const MessagesPageResponsive = () => {
           />
         </div>
 
-        {/* Desktop: Empty State */}
+        {/* Right Pane (empty for now) */}
         <div className="hidden md:flex md:flex-1 flex-col items-stretch">
           <div className="w-full max-w-3xl flex-1 flex flex-col">
-            {selectedChat ? <EmptyState /> : <EmptyState />}
+            <EmptyState />
           </div>
         </div>
       </div>
 
-      {/* Mobile: Responsive View */}
+      {/* Mobile */}
       <div className="md:hidden w-full flex flex-col">
         <AnimatePresence mode="wait">
           {showChatList ? (
@@ -131,7 +170,3 @@ const MessagesPageResponsive = () => {
 };
 
 export default MessagesPageResponsive;
-// export async function fetchConversations() {
-//   const res = await api.get("v1/chat/conversations/");
-//   return res.data;
-// }chConversations from "../../apis/common/fetchConversations"; 
