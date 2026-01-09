@@ -138,6 +138,7 @@ const handleSelectChat = async (chat) => {
       <div className="hidden md:flex w-full max-w-screen-2xl mx-auto">
         {/* Conversation List */}
         <div className="hidden md:flex md:w-96 flex-col">
+          
           <ChatList
             chats={conversations}
             selectedChat={selectedChat}
