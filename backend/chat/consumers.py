@@ -1,8 +1,16 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.contrib.auth.models import AnonymousUser
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        user = self.scope["user"]
+
+        if not user or user.is_anonymous:
+            await self.close(code=4001)
+            return
+
+        self.user = user
         self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
         self.group_name = f"chat_{self.conversation_id}"
 
@@ -12,12 +20,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
-
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.group_name,
-            self.channel_name,
-        )
+        if hasattr(self, "group_name"):
+            await self.channel_layer.group_discard(
+                self.group_name,
+                self.channel_name,
+            )
+
 
     async def receive(self, text_data):
         """
