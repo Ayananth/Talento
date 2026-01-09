@@ -282,7 +282,8 @@ class PublicJobListSerializer(serializers.ModelSerializer):
             "published_at",
             "logo",
             'company_name',
-            "has_applied"
+            "has_applied",
+            "recruiter_id"
 
         ]
 
@@ -325,7 +326,8 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
             "company_about",
             "company_size",
             "company_website",
-            "has_applied"
+            "has_applied",
+            "recruiter_id"
 
         ]
 
