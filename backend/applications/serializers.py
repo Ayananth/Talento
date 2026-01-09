@@ -282,6 +282,8 @@ class RecruiterApplicationDetailSerializer(serializers.ModelSerializer):
         required=False
     )
 
+    applicant_id = serializers.IntegerField(source="applicant.id", read_only=True)
+
     jobTitle = serializers.CharField(source="job.title", read_only=True)
     status = serializers.CharField()
     applied_date = serializers.DateTimeField(source="applied_at", read_only=True)
@@ -326,6 +328,7 @@ class RecruiterApplicationDetailSerializer(serializers.ModelSerializer):
             "cover_letter",
 
             "recruiter_notes",
+            "applicant_id"
         ]
 
     def get_resume_url(self, obj):
