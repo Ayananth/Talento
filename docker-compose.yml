@@ -9,7 +9,7 @@ services:
     container_name: django_backend
     command: >
       sh -c "python manage.py migrate &&
-            python manage.py runserver 0.0.0.0:8002"
+            daphne -b 0.0.0.0 -p 8002 core.asgi:application"
     volumes:
       - ./backend:/app
     env_file:
@@ -19,6 +19,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
+
 
 
 
