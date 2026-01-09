@@ -1,6 +1,7 @@
 import { Button } from "flowbite-react";
 import { Briefcase, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const formatJobType = (value) =>
   value ? value.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase()) : "";
@@ -24,21 +25,43 @@ export default function JobHeader({
   job, recruiter,
 }) {
 
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    if (hasApplied && error) {
+      setError(null);
+    }
+  }, [hasApplied, error]);
+
   const navigate = useNavigate();
 
-  const message = () => {
-    navigate("/messages", {
-  state: {
-    draftChat: {
-      id: null, 
-      jobId: job.id,
-      otherUserId: job.recruiter_id,
-      name: companyName,
-      jobTitle: job.title,
-    },
-  },
-});
+  useEffect(() => {
+  if (!error) return;
+
+  const t = setTimeout(() => setError(null), 3000);
+  return () => clearTimeout(t);
+}, [error]);
+
+
+const message = () => {
+  if (!hasApplied) {
+    setError("Please Apply first");
+    return;
   }
+
+  setError(null);
+
+  navigate("/messages", {
+    state: {
+      draftChat: {
+        id: null,
+        jobId: job.id,
+        otherUserId: job.recruiter_id,
+        name: companyName,
+        jobTitle: job.title,
+      },
+    },
+  });
+};
 
 
 
@@ -95,18 +118,24 @@ export default function JobHeader({
 
         {/* RIGHT */}
 
-        {
-          hasApplied ? (
-                    <Button
-          size="lg"
-          className="bg-blue-600 hover:bg-blue-700 shrink-0"
-          onClick={message}
-        >
-          Message
-        </Button>) : (
-<div/>
-          )
-        }
+<div className="flex flex-col items-start shrink-0 self-start">
+  <Button
+    size="lg"
+    className="bg-blue-600 hover:bg-blue-700"
+    onClick={message}
+  >
+    Message
+  </Button>
+
+  <p className="mt-1 text-xs text-red-600 min-h-[1rem]">
+    {error || ""}
+    
+  </p>
+</div>
+
+
+
+
 
       </div>
     </div>
