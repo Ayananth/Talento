@@ -18,7 +18,7 @@ const MessageComposer = ({ onSend, disabled }) => {
   };
 
   return (
-    <div className="border-t border-slate-200 p-4 bg-white">
+    <div className="border-t border-slate-200 p-4 bg-white shrink-0 sticky bottom-4">
       <div className="flex items-end gap-3">
         <textarea
           rows={1}

@@ -11,7 +11,7 @@ const ChatWindow = ({ chat, messages, loadingMessages, currentUserId, onSendMess
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="flex-1 flex flex-col bg-white h-screen"
+      className="flex-1 flex flex-col bg-white h-full overflow-hidden"
     >
       {/* Header */}
       <div className="border-b border-slate-200 p-6">

@@ -141,7 +141,8 @@ const handleSelectChat = async (chat) => {
   // RENDER
   // --------------------
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-[calc(100vh-64px)] bg-slate-50 overflow-hidden">
+
       {/* Desktop */}
       <div className="hidden md:flex w-full max-w-screen-2xl mx-auto">
         {/* Conversation List */}
@@ -157,24 +158,19 @@ const handleSelectChat = async (chat) => {
         {/* Right Pane (empty for now) */}
 
 {selectedChat ? (
-  <div className="flex-1 overflow-y-auto p-6 space-y-4">
-    {messagesLoading ? (
-      <p className="text-slate-500">Loading messages...</p>
-    ) : messages.length === 0 ? (
-      <p className="text-slate-500">No messages yet</p>
-    ) : (
-      <ChatWindow
-  chat={selectedChat}
-  messages={messages}
-  loadingMessages={messagesLoading}
-  currentUserId={currentUserId}
-  onSendMessage={handleSendMessage}
-/>
-    )}
+  <div className="flex-1 flex flex-col h-full">
+    <ChatWindow
+      chat={selectedChat}
+      messages={messages}
+      loadingMessages={messagesLoading}
+      currentUserId={currentUserId}
+      onSendMessage={handleSendMessage}
+    />
   </div>
 ) : (
   <EmptyState />
 )}
+
 
 
 
