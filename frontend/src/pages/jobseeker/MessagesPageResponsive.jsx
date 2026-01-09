@@ -10,8 +10,6 @@ import { fetchConversationMessages } from "../../apis/common/fetchConversationMe
  import useAuth from "@/auth/context/useAuth";
  import { getAccessToken } from "../../auth/context/authUtils";
  import useChatSocket from "../../hooks/useChatSocket";
- import { getAccessToken } from "../../auth/context/authUtils";
- import useChatSocket from "../../hooks/useChatSocket";
 
 const MessagesPageResponsive = () => {
   // --------------------
@@ -50,7 +48,6 @@ const MessagesPageResponsive = () => {
 
 const handleSendMessage = (text) => {
   console.log("Send message:", text);
-  sendMessage(text);
   sendMessage(text);
 };
 
