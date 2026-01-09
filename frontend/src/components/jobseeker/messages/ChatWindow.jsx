@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import MessageList from "./ChatWindow/MessageList";
 import MessageComposer from "./ChatWindow/MessageComposer";
 
-const ChatWindow = ({ chat, messages, loadingMessages, currentUserId, onSendMessage, sendingDisabled=false }) => {
+const ChatWindow = ({ chat, messages, loadingMessages, currentUserId, onSendMessage, sendingDisabled=false, connected }) => {
   if (!chat) return null;
 
   return (
@@ -29,7 +29,7 @@ const ChatWindow = ({ chat, messages, loadingMessages, currentUserId, onSendMess
       />
       <MessageComposer
         onSend={onSendMessage}
-        disabled={sendingDisabled}
+        disabled={!connected}
       />
     </motion.div>
   );

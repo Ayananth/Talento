@@ -182,6 +182,7 @@ const handleSelectChat = async (chat) => {
       loadingMessages={messagesLoading}
       currentUserId={currentUserId}
       onSendMessage={handleSendMessage}
+      connected=  {connected}
     />
   </div>
 ) : (
