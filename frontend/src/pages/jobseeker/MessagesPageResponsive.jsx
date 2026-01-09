@@ -10,6 +10,8 @@ import { fetchConversationMessages } from "../../apis/common/fetchConversationMe
  import useAuth from "@/auth/context/useAuth";
  import { getAccessToken } from "../../auth/context/authUtils";
  import useChatSocket from "../../hooks/useChatSocket";
+ import { startConversation } from "../../apis/common/startConversation";
+ import { useLocation } from "react-router-dom";
 
 const MessagesPageResponsive = () => {
   // --------------------
@@ -44,11 +46,68 @@ const MessagesPageResponsive = () => {
     },
   });
 
+  const hasConversation = Boolean(selectedChat?.id);
+  const sendingDisabled = hasConversation && !connected;
 
 
-const handleSendMessage = (text) => {
-  console.log("Send message:", text);
-  sendMessage(text);
+const location = useLocation();
+
+useEffect(() => {
+  if (location.state?.draftChat) {
+    setSelectedChat(location.state.draftChat);
+    setShowChatList(false);
+  }
+}, []);
+
+
+
+
+const handleSendMessage = async (text) => {
+  if (!selectedChat) return;
+
+  // CASE A: conversation already exists → WebSocket
+  if (selectedChat.id) {
+    sendMessage(text);
+    return;
+  }
+
+  // CASE B: first message → REST API
+  try {
+    const data = await startConversation({
+      jobId: selectedChat.jobId,
+      recipientId: selectedChat.otherUserId,
+      content: text,
+    });
+
+    const { conversation_id, message } = data;
+
+    // 1️⃣ Update selected chat with real conversation id
+    const newChat = {
+      ...selectedChat,
+      id: conversation_id,
+      lastMessage: message.content,
+      timestamp: new Date(message.created_at).toLocaleString(),
+    };
+
+    // 2️⃣ Add to conversation list
+    setConversations((prev) => [newChat, ...prev]);
+
+    // 3️⃣ Select it (this will open WebSocket automatically)
+    setSelectedChat(newChat);
+
+    // 4️⃣ Add message to message list
+    setMessages([
+      {
+        id: message.id,
+        senderId: message.sender_id,
+        text: message.content,
+        timestamp: new Date(message.created_at).toLocaleString(),
+      },
+    ]);
+
+  } catch (err) {
+    console.error("Failed to start conversation", err);
+  }
 };
 
 
@@ -183,6 +242,7 @@ const handleSelectChat = async (chat) => {
       currentUserId={currentUserId}
       onSendMessage={handleSendMessage}
       connected=  {connected}
+      sendingDisabled={sendingDisabled}
     />
   </div>
 ) : (
@@ -245,6 +305,7 @@ const handleSelectChat = async (chat) => {
           currentUserId={currentUserId}
           onSendMessage={handleSendMessage}
           connected={connected}
+          sendingDisabled={sendingDisabled}
         />
       </motion.div>
     )}

@@ -42,7 +42,7 @@ const ChatWindow = ({
       <div className="shrink-0 border-t">
         <MessageComposer
           onSend={onSendMessage}
-          disabled={!connected || sendingDisabled}
+          disabled={sendingDisabled}
         />
       </div>
     </motion.div>

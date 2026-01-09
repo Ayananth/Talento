@@ -31,6 +31,8 @@ export default function JobDetailPage() {
         setError(false);
 
         const res = await getJobDetail(id);
+
+
         setJob(res);
               } catch (err) {
         console.error("Failed to fetch job detail", err);
@@ -79,6 +81,9 @@ export default function JobDetailPage() {
               jobType={job.job_type}
               workMode={job.work_mode}
               publishedAt={job.published_at}
+              hasApplied={job.has_applied}
+              job={job}
+              recruiter={job.recruiter}
             />
 
             <JobOverview
@@ -116,6 +121,7 @@ export default function JobDetailPage() {
               companySize={job.company_size}
               companyWebsite={job.company_website}
               logo={job.logo ? getCloudinaryUrl(job.logo) : null}
+
 
               /* placeholders for now */
               industry="Software Development"
