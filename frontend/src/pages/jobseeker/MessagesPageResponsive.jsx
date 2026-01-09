@@ -8,6 +8,8 @@ import EmptyState from "../../components/jobseeker/messages/EmptyState";
 import { fetchConversations } from "../../apis/common/fetchConversations";
 import { fetchConversationMessages } from "../../apis/common/fetchConversationMessages";
  import useAuth from "@/auth/context/useAuth";
+ import { getAccessToken } from "../../auth/context/authUtils";
+ import useChatSocket from "../../hooks/useChatSocket";
 
 const MessagesPageResponsive = () => {
   // --------------------
@@ -23,15 +25,30 @@ const MessagesPageResponsive = () => {
   const [messagesLoading, setMessagesLoading] = useState(false);
 
   const { user } = useAuth();
-  console.log("User in MessagesPageResponsive:", user);
+  // console.log("User in MessagesPageResponsive:", user);
   const currentUserId = Number(user?.user_id);
+
+  const accessToken  = getAccessToken();
+
+  const { connected, sendMessage } = useChatSocket({
+    conversationId: selectedChat?.id,
+    token: accessToken,
+    onMessage: (msg) => {
+      setMessages((prev) => [...prev, {
+        id: msg.id,
+        senderId: msg.sender_id,
+        senderName: msg.sender_name,
+        text: msg.content,
+        timestamp: new Date(msg.created_at).toLocaleString(),
+      }]);
+    },
+  });
 
 
 
 const handleSendMessage = (text) => {
   console.log("Send message:", text);
-  // Later:
-  // await api.post(...)
+  sendMessage(text);
 };
 
 
