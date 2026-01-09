@@ -1,16 +1,21 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Search, Lock } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Search, Lock } from "lucide-react";
 
-const ChatList = ({ chats, selectedChat, onSelectChat }) => {
-  const [searchQuery, setSearchQuery] = React.useState('');
+const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
+  const [searchQuery, setSearchQuery] = React.useState("");
 
-  const filteredChats = chats.filter(
-    (chat) =>
-      chat.recruiterName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const normalizedQuery = searchQuery.toLowerCase();
+
+  const filteredChats = chats.filter((chat) => {
+    const name = chat.name?.toLowerCase() || "";
+    const jobTitle = chat.jobTitle?.toLowerCase() || "";
+
+    return (
+      name.includes(normalizedQuery) ||
+      jobTitle.includes(normalizedQuery)
+    );
+  });
 
   return (
     <motion.div
@@ -21,7 +26,9 @@ const ChatList = ({ chats, selectedChat, onSelectChat }) => {
     >
       {/* Header */}
       <div className="p-6 border-b border-slate-200">
-        <h1 className="text-2xl font-bold text-slate-900 mb-4">Messages</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-4">
+          Messages
+        </h1>
 
         {/* Search Bar */}
         <div className="relative">
@@ -43,31 +50,35 @@ const ChatList = ({ chats, selectedChat, onSelectChat }) => {
       <div className="flex-1 overflow-y-auto">
         {filteredChats.length === 0 ? (
           <div className="flex items-center justify-center h-full text-center px-4">
-            <div>
-              <p className="text-slate-500 text-sm">No conversations found</p>
-            </div>
+            <p className="text-slate-500 text-sm">
+              No conversations found
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
             {filteredChats.map((chat) => (
               <motion.button
                 key={chat.id}
-                whileHover={{ backgroundColor: 'rgba(15, 23, 42, 0.02)' }}
+                whileHover={{ backgroundColor: "rgba(15, 23, 42, 0.02)" }}
                 onClick={() => onSelectChat(chat)}
                 className={`w-full p-4 text-left transition-colors ${
                   selectedChat?.id === chat.id
-                    ? 'bg-blue-50 border-l-4 border-blue-600'
-                    : 'hover:bg-slate-50'
+                    ? "bg-blue-50 border-l-4 border-blue-600"
+                    : "hover:bg-slate-50"
                 }`}
               >
                 <div className="flex items-start gap-3">
                   {/* Avatar */}
                   <div className="relative flex-shrink-0">
                     <img
-                      src={chat.companyLogo}
-                      alt={chat.companyName}
+                      src={
+                        chat.companyLogo ||
+                        "https://via.placeholder.com/48"
+                      }
+                      alt={chat.name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
+
                     {chat.isBlocked && (
                       <div className="absolute -bottom-1 -right-1 bg-red-500 rounded-full p-1">
                         <Lock size={10} className="text-white" />
@@ -79,14 +90,20 @@ const ChatList = ({ chats, selectedChat, onSelectChat }) => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-semibold text-slate-900 truncate">
-                        {chat.recruiterName}
+                        {chat.name}
                       </h3>
                       <span className="text-xs text-slate-500 ml-2 flex-shrink-0">
-                        {chat.timestamp}
+                        {chat.timestamp || chat.time || ""}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-500 mb-2">{chat.companyName}</p>
+                    {chat.companyName && (
+                      <p className="text-xs text-slate-500 mb-2">
+                        {chat.companyName}
+                      </p>
+                    )}
+
+
 
                     <div className="flex items-center justify-between">
                       <p className="text-sm text-slate-600 truncate">
@@ -99,7 +116,6 @@ const ChatList = ({ chats, selectedChat, onSelectChat }) => {
                         )}
                       </p>
 
-                      {/* Unread Badge */}
                       {chat.unreadCount > 0 && (
                         <motion.div
                           initial={{ scale: 0 }}
@@ -111,12 +127,14 @@ const ChatList = ({ chats, selectedChat, onSelectChat }) => {
                       )}
                     </div>
 
-                    {/* Job Title Tag */}
-                    <div className="mt-2">
-                      <span className="inline-block text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200">
-                        {chat.jobTitle}
-                      </span>
-                    </div>
+                    {/* Job Title */}
+                    {chat.jobTitle && (
+                      <div className="mt-2">
+                        <span className="inline-block text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200">
+                          {chat.jobTitle}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.button>
