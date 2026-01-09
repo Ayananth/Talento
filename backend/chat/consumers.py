@@ -1,11 +1,22 @@
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
 from .permissions import user_is_conversation_participant
+from django.utils.timezone import localtime
+from .models import Message, Conversation
 
 
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.contrib.auth.models import AnonymousUser
+
+
+@database_sync_to_async
+def create_message(conversation_id, sender, content):
+    conversation = Conversation.objects.get(id=conversation_id)
+    return Message.objects.create(
+        conversation=conversation,
+        sender=sender,
+        content=content,
+    )
 
 
 @database_sync_to_async
@@ -50,32 +61,39 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def receive(self, text_data):
-        """
-        Called when a message is received from WebSocket
-        """
         data = json.loads(text_data)
-        message = data.get("content")
+        content = data.get("content", "").strip()
 
-        if not message:
+        if not content:
             return
 
-        # broadcast message to the group
+        message = await create_message(
+            conversation_id=self.conversation_id,
+            sender=self.user,
+            content=content,
+        )
+
         await self.channel_layer.group_send(
             self.group_name,
             {
-                "type": "chat_message",  # calls chat_message()
-                "message": message,
+                "type": "chat_message",
+                "message": {
+                    "id": message.id,
+                    "conversation_id": self.conversation_id,
+                    "sender_id": self.user.id,
+                    "sender_name": self.user.email,  # or profile name
+                    "content": message.content,
+                    "created_at": localtime(message.created_at).isoformat(),
+                },
             },
         )
 
     async def chat_message(self, event):
-        message = event["message"]
-
-        # Send message to WebSocket
         await self.send(
             text_data=json.dumps(
                 {
-                    "message": message,
+                    "type": "message",
+                    **event["message"],
                 }
             )
         )
