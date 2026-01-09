@@ -1,8 +1,9 @@
 import React from "react";
 import { motion } from "framer-motion";
 import MessageList from "./ChatWindow/MessageList";
+import MessageComposer from "./ChatWindow/MessageComposer";
 
-const ChatWindow = ({ chat, messages, loadingMessages, currentUserId }) => {
+const ChatWindow = ({ chat, messages, loadingMessages, currentUserId, onSendMessage, sendingDisabled=false }) => {
   if (!chat) return null;
 
   return (
@@ -25,6 +26,10 @@ const ChatWindow = ({ chat, messages, loadingMessages, currentUserId }) => {
         messages={messages}
         currentUserId={currentUserId}
         loading={loadingMessages}
+      />
+      <MessageComposer
+        onSend={onSendMessage}
+        disabled={sendingDisabled}
       />
     </motion.div>
   );

@@ -27,6 +27,14 @@ const MessagesPageResponsive = () => {
   const currentUserId = Number(user?.user_id);
 
 
+
+const handleSendMessage = (text) => {
+  console.log("Send message:", text);
+  // Later:
+  // await api.post(...)
+};
+
+
   // --------------------
   // LOAD CONVERSATIONS
   // --------------------
@@ -160,6 +168,7 @@ const handleSelectChat = async (chat) => {
   messages={messages}
   loadingMessages={messagesLoading}
   currentUserId={currentUserId}
+  onSendMessage={handleSendMessage}
 />
     )}
   </div>
