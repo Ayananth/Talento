@@ -1,3 +1,4 @@
+import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -11,6 +12,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
+
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
             self.group_name,
@@ -18,4 +20,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
-        pass
+        """
+        Called when a message is received from WebSocket
+        """
+        data = json.loads(text_data)
+        message = data.get("content")
+
+        if not message:
+            return
+
+        # broadcast message to the group
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                "type": "chat_message",  # calls chat_message()
+                "message": message,
+            },
+        )
+
+    async def chat_message(self, event):
+        message = event["message"]
+
+        # Send message to WebSocket
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "message": message,
+                }
+            )
+        )
