@@ -2,6 +2,7 @@ import { Button } from "flowbite-react";
 import { Briefcase, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import api from "../../../../apis/api";
 
 const formatJobType = (value) =>
   value ? value.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase()) : "";
@@ -62,6 +63,35 @@ const message = () => {
     },
   });
 };
+
+async function handleMessageRecruiter() {
+  const res = await api.get("v1/chat/conversation/", {
+    params: { job_id: job.id },
+  });
+
+  const conversation = res.data.conversation;
+
+  if (conversation) {
+    navigate("/messages", {
+      state: {
+        openConversationId: conversation.id,
+      },
+    });
+  } else {
+    navigate("/messages", {
+      state: {
+        draftChat: {
+          id: null,
+          jobId: job.id,
+          otherUserId: recruiter.id,
+          name: recruiter.company_name,
+          jobTitle: job.title,
+        },
+      },
+    });
+  }
+}
+
 
 
 

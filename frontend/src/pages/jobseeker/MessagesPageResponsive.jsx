@@ -51,6 +51,18 @@ const MessagesPageResponsive = () => {
 
 
 const location = useLocation();
+useEffect(() => {
+  if (location.state?.openConversationId) {
+    const convo = conversations.find(
+      (c) => c.id === location.state.openConversationId
+    );
+
+    if (convo) {
+      handleSelectChat(convo);
+      setShowChatList(false);
+    }
+  }
+}, [location.state, conversations]);
 
 useEffect(() => {
   if (location.state?.draftChat) {
