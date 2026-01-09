@@ -2,11 +2,31 @@ from rest_framework import serializers
 from .models import Conversation, Message  
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender_name = serializers.CharField(source="sender.full_name")
+    sender_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
         fields = "__all__"
+
+    def get_sender_name(self, obj):
+        user = obj.sender
+
+        # Recruiter
+        if hasattr(user, "recruiter_profile"):
+            return (
+                user.recruiter_profile.company_name
+                or user.email
+            )
+
+        # Jobseeker
+        if hasattr(user, "jobseeker_profile"):
+            return (
+                user.jobseeker_profile.fullname
+                or user.email
+            )
+
+        # Fallback (admin/system)
+        return user.email
 
 
 

@@ -3,8 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
 import ChatList from "../../components/jobseeker/messages/ChatList";
+import ChatWindow from "../../components/jobseeker/messages/ChatWindow";
 import EmptyState from "../../components/jobseeker/messages/EmptyState";
 import { fetchConversations } from "../../apis/common/fetchConversations";
+import { fetchConversationMessages } from "../../apis/common/fetchConversationMessages";
+ import useAuth from "@/auth/context/useAuth";
 
 const MessagesPageResponsive = () => {
   // --------------------
@@ -15,6 +18,14 @@ const MessagesPageResponsive = () => {
 
   const [selectedChat, setSelectedChat] = useState(null);
   const [showChatList, setShowChatList] = useState(true);
+
+  const [messages, setMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+
+  const { user } = useAuth();
+  console.log("User in MessagesPageResponsive:", user);
+  const currentUserId = Number(user?.user_id);
+
 
   // --------------------
   // LOAD CONVERSATIONS
@@ -76,10 +87,31 @@ const MessagesPageResponsive = () => {
   // --------------------
   // UI HANDLERS
   // --------------------
-  const handleSelectChat = (chat) => {
-    setSelectedChat(chat);
-    setShowChatList(false);
-  };
+const handleSelectChat = async (chat) => {
+  setSelectedChat(chat);
+  setShowChatList(false);
+  setMessages([]);
+  setMessagesLoading(true);
+
+  try {
+    const data = await fetchConversationMessages(chat.id);
+
+    const mappedMessages = data.map((m) => ({
+      id: m.id,
+      senderId: m.sender,
+      senderName: m.sender_name,
+      text: m.content,
+      timestamp: new Date(m.created_at).toLocaleString(),
+    }));
+
+    setMessages(mappedMessages);
+  } catch (error) {
+    console.error("Failed to load messages", error);
+  } finally {
+    setMessagesLoading(false);
+  }
+};
+
 
   const handleBackToList = () => {
     setSelectedChat(null);
@@ -114,11 +146,34 @@ const MessagesPageResponsive = () => {
         </div>
 
         {/* Right Pane (empty for now) */}
-        <div className="hidden md:flex md:flex-1 flex-col items-stretch">
+
+{selectedChat ? (
+  <div className="flex-1 overflow-y-auto p-6 space-y-4">
+    {messagesLoading ? (
+      <p className="text-slate-500">Loading messages...</p>
+    ) : messages.length === 0 ? (
+      <p className="text-slate-500">No messages yet</p>
+    ) : (
+      <ChatWindow
+  chat={selectedChat}
+  messages={messages}
+  loadingMessages={messagesLoading}
+  currentUserId={currentUserId}
+/>
+    )}
+  </div>
+) : (
+  <EmptyState />
+)}
+
+
+
+
+        {/* <div className="hidden md:flex md:flex-1 flex-col items-stretch">
           <div className="w-full max-w-3xl flex-1 flex flex-col">
             <EmptyState />
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Mobile */}
