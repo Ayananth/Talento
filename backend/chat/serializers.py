@@ -70,3 +70,14 @@ class ConversationListSerializer(serializers.ModelSerializer):
     def get_last_message_time(self, obj):
         last_msg = obj.messages.order_by("-created_at").first()
         return last_msg.created_at if last_msg else None
+
+
+class StartConversationSerializer(serializers.Serializer):
+    job_id = serializers.IntegerField()
+    recipient_id = serializers.IntegerField()
+    content = serializers.CharField(max_length=5000)
+
+    def validate_content(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Message cannot be empty")
+        return value

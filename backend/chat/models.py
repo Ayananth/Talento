@@ -23,7 +23,12 @@ class Conversation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("job", "jobseeker")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["job", "jobseeker", "recruiter"],
+                name="unique_conversation_per_job"
+            )
+        ]
 
 
 class Message(models.Model):
