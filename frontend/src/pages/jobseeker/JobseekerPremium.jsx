@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Zap, Target, FileText, Eye, Activity, Sparkles } from 'lucide-react';
+import { Check,Crown, Zap, Target, FileText, Eye, Activity, Sparkles } from 'lucide-react';
 
 // Plans data structure
 const plans = [
@@ -78,11 +78,36 @@ export default function JobseekerPremium() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-slate-900">Premium Subscription</h1>
-          <p className="mt-2 text-slate-600">Unlock your career potential with premium features</p>
+      {/* Animated Banner Header */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full mix-blend-overlay filter blur-3xl animate-pulse"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-200 rounded-full mix-blend-overlay filter blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-blue-200 rounded-full mix-blend-overlay filter blur-3xl animate-pulse delay-2000"></div>
+        </div>
+        
+        {/* Content */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+          <div className="text-center">
+            <div className="inline-block mb-4">
+              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-white bg-opacity-20 text-white backdrop-blur-sm">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Limited Time Offer
+              </span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 animate-fade-in">
+              Talento Pro
+            </h1>
+            <p className="text-xl sm:text-2xl text-white text-opacity-90 max-w-3xl mx-auto">
+              Unlock your career potential with premium features
+            </p>
+            <div className="mt-6 flex justify-center space-x-2">
+              {/* <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-100"></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-200"></div> */}
+            </div>
+          </div>
         </div>
       </div>
 
