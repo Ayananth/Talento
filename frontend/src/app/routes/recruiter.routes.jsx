@@ -12,6 +12,7 @@ import RecruiterProfilePage from "../../pages/recruiter/RecruiterProfilePage";
 import RecruiterApplicationsListPage from "../../pages/recruiter/RecruiterApplicationsListPage";
 import ApplicantDetailsPage from "../../pages/recruiter/ApplicantDetailsPage";
 import MessagesPageResponsive from "../../pages/jobseeker/MessagesPageResponsive";
+import JobseekerPremium from "../../pages/jobseeker/JobseekerPremium";
 
 const recruiterRoutes = [
   {
@@ -74,6 +75,10 @@ const recruiterRoutes = [
           {
             path: "applications/:applicantId",
             element: <ApplicantDetailsPage />,
+          },
+          {
+            path: "premium",
+            element: <JobseekerPremium navigateTo="/recruiter/profile?payment=success" />,
           },
 
 

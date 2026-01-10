@@ -53,7 +53,7 @@ const features = [
   },
 ];
 
-export default function JobseekerPremium() {
+export default function JobseekerPremium({navigateTo="/profile?payment=success"}) {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -114,7 +114,7 @@ const handleCheckout = async () => {
 
       handler: async (response) => {
         await verifySubscriptionPayment(response);
-        navigate("/profile?payment=success");
+        navigate(navigateTo);
       },
 
       modal: {
