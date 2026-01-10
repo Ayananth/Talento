@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CreateSubscriptionOrderAPIView, VerifySubscriptionPaymentAPIView
+from .views import CreateSubscriptionOrderAPIView, VerifySubscriptionPaymentAPIView, SubscriptionStatusAPIView
 
 app_name = "subscriptions" 
 
@@ -15,4 +15,7 @@ urlpatterns = [
         VerifySubscriptionPaymentAPIView.as_view(),
         name="verify-subscription-payment"
     ),
+
+    path("status/", SubscriptionStatusAPIView.as_view()),
+
 ]

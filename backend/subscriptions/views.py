@@ -6,6 +6,8 @@ from rest_framework import status
 from .models import SubscriptionPlan, UserSubscription
 from .serializers import CreateOrderSerializer, VerifyPaymentSerializer
 from .razorpay_client import client
+from .services import get_active_subscription
+
 
 from razorpay.errors import SignatureVerificationError
 from django.utils import timezone
@@ -116,3 +118,17 @@ class VerifySubscriptionPaymentAPIView(APIView):
             status=status.HTTP_200_OK
         )
 
+
+
+
+class SubscriptionStatusAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        sub = get_active_subscription(request.user)
+
+        return Response({
+            "is_active": bool(sub),
+            "plan_name": sub.plan.name if sub else None,
+            "end_date": sub.end_date if sub else None
+        })
