@@ -8,11 +8,14 @@ import {
   Activity,
   Sparkles,
 } from "lucide-react";
-import api from "@/apis/api";
 
-/**
- * Static premium features (UI-only, safe to hardcode)
- */
+import {
+  getSubscriptionPlans,
+  createSubscriptionOrder,
+  verifySubscriptionPayment,
+} from "../../apis/common/subscriptions/subscriptions";
+
+
 const features = [
   {
     icon: Zap,
@@ -55,70 +58,57 @@ export default function JobseekerPremium() {
    * Fetch subscription plans from backend
    * GET /api/subscriptions/plans/
    */
-  useEffect(() => {
-    api
-      .get("v1/subscriptions/plans/")
-      .then((res) => setPlans(res.data))
-      .catch((err) => {
-        console.error("Failed to load plans", err);
-      });
-  }, []);
+useEffect(() => {
+  getSubscriptionPlans()
+    .then(setPlans)
+    .catch((err) => {
+      console.error("Failed to load plans", err);
+    });
+}, []);
 
   /**
    * Checkout handler
    */
-  const handleCheckout = async () => {
-    if (!selectedPlan || loading) return;
+const handleCheckout = async () => {
+  if (!selectedPlan || loading) return;
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      // 1️⃣ Create Razorpay order
-      const res = await api.post("v1/subscriptions/create-order/", {
-        plan_id: selectedPlan.id,
-      });
+    const order = await createSubscriptionOrder(selectedPlan.id);
 
-      const order = res.data;
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: order.amount * 100,
+      currency: "INR",
+      name: "Talento Pro",
+      description: "Premium Subscription",
+      order_id: order.order_id,
 
-      // 2️⃣ Open Razorpay Checkout
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: order.amount * 100, // paise
-        currency: "INR",
-        name: "Talento Pro",
-        description: "Premium Subscription",
-        order_id: order.order_id,
+      handler: async (response) => {
+        await verifySubscriptionPayment(response);
+        alert("🎉 Subscription activated successfully!");
+        window.location.reload();
+      },
 
-        handler: async function (response) {
-          // 3️⃣ Verify payment
-          await api.post(
-            "v1/subscriptions/verify-payment/",
-            response
-          );
+      theme: { color: "#2563eb" },
+    };
 
-          alert("🎉 Subscription activated successfully!");
-          window.location.reload();
-        },
-
-        theme: {
-          color: "#2563eb",
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
+    const rzp = new window.Razorpay(options);
 
       rzp.on("payment.failed", function () {
         alert("Payment failed. Please try again.");
       });
 
-      rzp.open();
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    rzp.open();
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -185,46 +175,57 @@ export default function JobseekerPremium() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                onClick={() => setSelectedPlan(plan)}
-                className={`relative bg-white rounded-xl p-6 cursor-pointer transition-all ${
-                  selectedPlan?.id === plan.id
-                    ? "ring-2 ring-blue-500 shadow-lg scale-105"
-                    : "border hover:shadow-md"
-                }`}
-              >
-                {selectedPlan?.id === plan.id && (
-                  <div className="absolute top-4 right-4 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
-                )}
+{plans.map((plan) => {
+  const badge = getPlanBadge(plan);
 
-                <div className="text-center pt-4">
-                  <h3 className="text-xl font-bold mb-2">
-                    {plan.duration_months} Month
-                    {plan.duration_months > 1 ? "s" : ""}
-                  </h3>
+  return (
+    <div
+      key={plan.id}
+      onClick={() => setSelectedPlan(plan)}
+      className={`relative bg-white rounded-xl p-6 cursor-pointer transition-all ${
+        selectedPlan?.id === plan.id
+          ? "ring-2 ring-blue-500 shadow-lg scale-105"
+          : "border hover:shadow-md"
+      }`}
+    >
+      {/* 🔖 Badge */}
+      {badge && (
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+          <span
+            className={`${badge.color} text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md`}
+          >
+            {badge.label}
+          </span>
+        </div>
+      )}
 
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold">
-                      ₹{plan.price}
-                    </span>
-                  </div>
+      {/* Selected indicator */}
+      {selectedPlan?.id === plan.id && (
+        <div className="absolute top-4 right-4 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+          <Check className="w-4 h-4 text-white" />
+        </div>
+      )}
 
-                  {plan.duration_months > 1 && (
-                    <p className="text-sm text-slate-600">
-                      ₹
-                      {Math.round(
-                        plan.price / plan.duration_months
-                      )}
-                      /month
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
+      <div className="text-center pt-4">
+        <h3 className="text-xl font-bold mb-2">
+          {plan.duration_months} Month
+          {plan.duration_months > 1 ? "s" : ""}
+        </h3>
+
+        <div className="mb-4">
+          <span className="text-4xl font-bold">₹{plan.price}</span>
+        </div>
+
+        {plan.duration_months > 1 && (
+          <p className="text-sm text-slate-600">
+            ₹{Math.round(plan.price / plan.duration_months)}/month
+          </p>
+        )}
+      </div>
+    </div>
+  );
+})}
+
           </div>
         </div>
 
@@ -250,3 +251,22 @@ export default function JobseekerPremium() {
     </div>
   );
 }
+
+const getPlanBadge = (plan) => {
+  if (plan.duration_months === 3) {
+    return {
+      label: "Most Popular",
+      color: "bg-blue-500",
+    };
+  }
+
+  if (plan.duration_months === 6) {
+    return {
+      label: "Best Value",
+      color: "bg-green-500",
+    };
+  }
+
+  return null;
+};
+
