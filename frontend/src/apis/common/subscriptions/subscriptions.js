@@ -35,3 +35,10 @@ export const createSubscriptionOrder = async (planId) => {
 export const verifySubscriptionPayment = async (payload) => {
   return api.post("v1/subscriptions/verify-payment/", payload);
 };
+
+
+
+export const getSubscriptionStatus = async () => {
+  const res = await api.get("v1/subscriptions/status/");
+  return res.data;
+};

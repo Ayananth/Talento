@@ -6,12 +6,22 @@ import Sidebar from "@/components/jobseeker/Sidebar"
 import { useLocation } from 'react-router-dom'
 import { useSearchParams } from "react-router-dom";
 import Toast from "../../components/common/Toast";
+import { getSubscriptionStatus } from "../../apis/common/subscriptions/subscriptions";
 
 
 const DashboardLayout = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [toastMessage, setToastMessage] = useState(null);
+
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getSubscriptionStatus()
+      .then(setSubscription)
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
@@ -39,7 +49,7 @@ const DashboardLayout = () => {
           
           {/* Profile Header Section */}
           <div className="mb-12 animate-fade-in">
-            <ProfileHeader />
+            <ProfileHeader subscription={subscription} />
           </div>
 
           {/* Main Dashboard Layout */}
@@ -48,7 +58,7 @@ const DashboardLayout = () => {
             {/* Sidebar Navigation */}
             <aside className="w-full lg:w-64 flex-shrink-0">
               <div className="lg:sticky lg:top-24">
-                <Sidebar />
+                <Sidebar subscription={subscription} />
               </div>
             </aside>
 

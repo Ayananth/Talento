@@ -8,6 +8,7 @@ import {
   Clock,
   Edit3,
   AlertCircle,
+  Crown
 } from "lucide-react";
 import ProfileEditModal from "./ProfileEditModal";
 
@@ -33,7 +34,7 @@ function AvatarPlaceholder({ size = 128 }) {
   );
 }
 
-export default function ProfileHeader() {
+export default function ProfileHeader({subscription}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -240,8 +241,15 @@ export default function ProfileHeader() {
                   className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
                   title="Edit profile"
                 >
+                  {/* 👑 PRO STATUS */}
                   <Edit3 size={18} className="text-slate-500 hover:text-blue-600" />
                 </button>
+{subscription?.is_active && (
+  <div className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-full bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm font-semibold w-fit">
+    <Crown size={14} className="text-yellow-500" />
+    Pro Member · Valid till {formatExpiry(subscription.end_date)}
+  </div>
+)}
               </div>
 
               <p className="text-lg text-slate-600 font-medium mb-1">
@@ -296,3 +304,12 @@ function StatBox({ number, label }) {
     </div>
   );
 }
+
+const formatExpiry = (dateStr) => {
+  if (!dateStr) return null;
+  return new Date(dateStr).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
