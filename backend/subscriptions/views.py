@@ -155,11 +155,33 @@ class SubscriptionStatusAPIView(APIView):
     
 
 class GetSubscriptionPlans(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
-        plans = SubscriptionPlan.objects.filter(
-            is_active=True,
-            plan_type="jobseeker"
-        ).order_by("duration_months")
+        user_role = request.user.role
+        user  = request.user
+
+        if not user.is_authenticated:
+            plans = SubscriptionPlan.objects.filter(
+                plan_type="jobseeker",
+                is_active=True
+            ).order_by("duration_months")
+
+        elif user.is_staff or user.role == "admin":
+            plans = SubscriptionPlan.objects.all().order_by("duration_months")
+
+        elif user.role == "recruiter":
+            plans = SubscriptionPlan.objects.filter(
+                plan_type="recruiter",
+                is_active=True
+            ).order_by("duration_months")
+
+        else:
+            plans = SubscriptionPlan.objects.filter(
+                plan_type="jobseeker",
+                is_active=True
+            ).order_by("duration_months")
+
 
         serializer = SubscriptionPlanSerializer(plans, many=True)
         return Response(serializer.data)
