@@ -59,7 +59,8 @@ INSTALLED_APPS = [
     "applications",
     "chat",
     "channels",
-    "subscriptions"
+    "subscriptions",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -269,3 +270,6 @@ LOGGING = {
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET")
+
+
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
