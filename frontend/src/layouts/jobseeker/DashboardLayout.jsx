@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom'
 import { useSearchParams } from "react-router-dom";
 import Toast from "../../components/common/Toast";
 import { getSubscriptionStatus } from "../../apis/common/subscriptions/subscriptions";
+import UpgradeBanner from "../../components/jobseeker/UpgradeBanner";
 
 
 const DashboardLayout = () => {
@@ -47,10 +48,19 @@ const DashboardLayout = () => {
       <div className="pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Profile Header Section */}
+{/* Profile Header Section */}
           <div className="mb-12 animate-fade-in">
-            <ProfileHeader subscription={subscription} />
-          </div>
+  <ProfileHeader subscription={subscription} />
+</div>
+
+
+    {/* 🚀 Upgrade Banner */}
+    {!loading && !subscription?.is_active && (
+      <UpgradeBanner />
+    )}
+
+
+
 
           {/* Main Dashboard Layout */}
           <div className="flex flex-col lg:flex-row gap-8">
