@@ -40,6 +40,22 @@ services:
       - postgres
       - django
 
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.celery
+    container_name: celery_beat
+    command: celery -A core beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - redis
+      - postgres
+      - django
+
+
   redis:
     image: redis:7
     container_name: redis

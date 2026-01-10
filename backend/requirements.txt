@@ -4,6 +4,7 @@ djangorestframework-simplejwt>=5.3
 django-cors-headers>=4.3
 
 celery>=5.3
+django-celery-beat>=2.8
 redis==4.6.0     
 kombu>=5.3       
 psycopg2-binary>=2.9
