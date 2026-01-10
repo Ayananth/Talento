@@ -16,6 +16,7 @@ import {
 } from "../../apis/common/subscriptions/subscriptions";
 
 import { useNavigate } from "react-router-dom";
+import api from "../../apis/api";
 
 
 
@@ -58,6 +59,7 @@ export default function JobseekerPremium() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [error, setError] = useState(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
 
 
 
@@ -71,6 +73,13 @@ useEffect(() => {
     .catch((err) => {
       console.error("Failed to load plans", err);
     });
+}, []);
+
+
+useEffect(() => {
+  api.get("v1/subscriptions/status/")
+    .then(res => setSubscriptionStatus(res.data))
+    .catch(() => {});
 }, []);
 
 useEffect(() => {
@@ -131,6 +140,29 @@ const handleCheckout = async () => {
     setLoading(false);
   }
 };
+
+if (subscriptionStatus?.is_active) {
+  return (
+    <div className="max-w-xl mx-auto mt-20 bg-green-50 border border-green-200 text-green-800 p-6 rounded-lg text-center">
+      <h2 className="text-xl font-semibold mb-2">
+        You’re already a Pro user 🎉
+      </h2>
+      <p className="mb-4">
+        Your subscription is valid until{" "}
+        <strong>
+          {new Date(subscriptionStatus.end_date).toLocaleDateString()}
+        </strong>
+      </p>
+      <button
+        onClick={() => navigate("/profile")}
+        className="bg-blue-600 text-white px-6 py-2 rounded-lg"
+      >
+        Go to Profile
+      </button>
+    </div>
+  );
+}
+
 
 
   return (
@@ -258,6 +290,8 @@ const handleCheckout = async () => {
     {error}
   </div>
 )}
+
+
 
         {/* ===== CHECKOUT BUTTON ===== */}
         <div className="flex justify-center">

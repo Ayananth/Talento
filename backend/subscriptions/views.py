@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 
 from .models import SubscriptionPlan, UserSubscription
 from .serializers import CreateOrderSerializer, VerifyPaymentSerializer, SubscriptionPlanSerializer
@@ -30,6 +31,17 @@ class CreateSubscriptionOrderAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         plan_id = serializer.validated_data["plan_id"]
+
+        existing_subscription = UserSubscription.objects.filter(
+            user=request.user,
+            status="active",
+            end_date__gt=timezone.now()
+        ).exists()
+
+        if existing_subscription:
+            raise ValidationError(
+                "You already have an active subscription."
+            )
 
         try:
             plan = SubscriptionPlan.objects.get(
