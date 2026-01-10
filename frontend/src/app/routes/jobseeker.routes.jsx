@@ -11,6 +11,7 @@ import JobDetailPage from "../../pages/jobseeker/JobDetailPage";
 import MessagesPageResponsive from '@/pages/jobseeker/MessagesPageResponsive';
 import AppliedJobsDashboard from "../../pages/jobseeker/AppliedJobsDashboard";
 import Chat from "../../pages/jobseeker/Chat";
+import JobseekerPremium from "../../pages/jobseeker/JobseekerPremium";
 
 
 const jobseekerRoutes = [
@@ -39,6 +40,10 @@ const jobseekerRoutes = [
     path: '/chat',
     element: <Chat />,
   },
+
+  { path: '/premium',
+    element: <JobseekerPremium/>
+  }
 
 
 
