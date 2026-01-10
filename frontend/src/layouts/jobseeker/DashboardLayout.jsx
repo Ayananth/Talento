@@ -1,13 +1,37 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { Navbar } from "../../components/common/Navbar";
 import ProfileHeader from '@/components/jobseeker/ProfileHeader'
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/components/jobseeker/Sidebar"
+import { useLocation } from 'react-router-dom'
+import { useSearchParams } from "react-router-dom";
+import Toast from "../../components/common/Toast";
+
 
 const DashboardLayout = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [toastMessage, setToastMessage] = useState(null);
+
+  useEffect(() => {
+    if (searchParams.get("payment") === "success") {
+      setToastMessage("🎉 You have unlocked Pro features!");
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("payment");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <Navbar />
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
       
       {/* Main Content Container */}
       <div className="pt-24 pb-12">

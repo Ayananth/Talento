@@ -15,6 +15,9 @@ import {
   verifySubscriptionPayment,
 } from "../../apis/common/subscriptions/subscriptions";
 
+import { useNavigate } from "react-router-dom";
+
+
 
 const features = [
   {
@@ -53,6 +56,10 @@ export default function JobseekerPremium() {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [error, setError] = useState(null);
+
+
 
   /**
    * Fetch subscription plans from backend
@@ -66,6 +73,16 @@ useEffect(() => {
     });
 }, []);
 
+useEffect(() => {
+  if (!error) return;
+
+  const timer = setTimeout(() => {
+    setError(null);
+  }, 5000); // 5 seconds
+
+  return () => clearTimeout(timer);
+}, [error]);
+
   /**
    * Checkout handler
    */
@@ -73,6 +90,7 @@ const handleCheckout = async () => {
   if (!selectedPlan || loading) return;
 
   try {
+    setError(null);
     setLoading(true);
 
     const order = await createSubscriptionOrder(selectedPlan.id);
@@ -87,8 +105,13 @@ const handleCheckout = async () => {
 
       handler: async (response) => {
         await verifySubscriptionPayment(response);
-        alert("🎉 Subscription activated successfully!");
-        window.location.reload();
+        navigate("/profile?payment=success");
+      },
+
+      modal: {
+        ondismiss: function () {
+          setError("Payment was cancelled. You can try again anytime.");
+        },
       },
 
       theme: { color: "#2563eb" },
@@ -96,14 +119,14 @@ const handleCheckout = async () => {
 
     const rzp = new window.Razorpay(options);
 
-      rzp.on("payment.failed", function () {
-        alert("Payment failed. Please try again.");
-      });
+    rzp.on("payment.failed", function () {
+      setError("Payment failed. Your amount was not deducted.");
+    });
 
     rzp.open();
   } catch (err) {
     console.error(err);
-    alert("Something went wrong. Please try again.");
+    setError("Something went wrong. Please try again.");
   } finally {
     setLoading(false);
   }
@@ -228,6 +251,13 @@ const handleCheckout = async () => {
 
           </div>
         </div>
+
+
+{error && (
+  <div className="mb-6 max-w-xl mx-auto bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-center">
+    {error}
+  </div>
+)}
 
         {/* ===== CHECKOUT BUTTON ===== */}
         <div className="flex justify-center">

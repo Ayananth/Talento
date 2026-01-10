@@ -6,8 +6,19 @@ import KeySkillsCard from '@/components/jobseeker/KeySkillsCard'
 import EmploymentCard from '@/components/jobseeker/EmploymentCard'
 import EducationCard from '@/components/jobseeker/EducationCard'
 import { Navbar } from '@/components/common/Navbar'
+import { useLocation } from 'react-router-dom'
 
 const Dashboard = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.fromPayment) {
+      console.log("payment success aanu")
+      alert("Payment success")
+    }
+  }, []);
+
+
   return (
     <>
         <Navbar />
