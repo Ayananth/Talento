@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
 from .models import SubscriptionPlan, UserSubscription
-from .serializers import CreateOrderSerializer, VerifyPaymentSerializer
+from .serializers import CreateOrderSerializer, VerifyPaymentSerializer, SubscriptionPlanSerializer
 from .razorpay_client import client
 from .services import get_active_subscription
 
@@ -132,3 +133,14 @@ class SubscriptionStatusAPIView(APIView):
             "plan_name": sub.plan.name if sub else None,
             "end_date": sub.end_date if sub else None
         })
+    
+
+class GetSubscriptionPlans(APIView):
+    def get(self, request):
+        plans = SubscriptionPlan.objects.filter(
+            is_active=True,
+            plan_type="jobseeker"
+        ).order_by("duration_months")
+
+        serializer = SubscriptionPlanSerializer(plans, many=True)
+        return Response(serializer.data)
