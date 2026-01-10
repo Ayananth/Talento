@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CreateSubscriptionOrderAPIView, VerifySubscriptionPaymentAPIView, SubscriptionStatusAPIView, GetSubscriptionPlans
+from .views import CreateSubscriptionOrderAPIView, VerifySubscriptionPaymentAPIView, SubscriptionStatusAPIView, GetSubscriptionPlans, RazorpayWebhookAPIView
 
 app_name = "subscriptions" 
 
@@ -19,6 +19,12 @@ urlpatterns = [
     path("status/", SubscriptionStatusAPIView.as_view()),
 
     path("plans/", GetSubscriptionPlans.as_view()),
+
+path(
+    "webhook/",
+    RazorpayWebhookAPIView.as_view(),
+    name="razorpay-webhook"
+),
 
 
 ]

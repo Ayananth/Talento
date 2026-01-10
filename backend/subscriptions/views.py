@@ -1,5 +1,4 @@
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,6 +12,14 @@ from .services import get_active_subscription
 from razorpay.errors import SignatureVerificationError
 from django.utils import timezone
 from datetime import timedelta
+
+import json
+import hmac
+import hashlib
+
+from django.conf import settings
+from rest_framework.permissions import AllowAny
+
 
 
 class CreateSubscriptionOrderAPIView(APIView):
@@ -144,3 +151,64 @@ class GetSubscriptionPlans(APIView):
 
         serializer = SubscriptionPlanSerializer(plans, many=True)
         return Response(serializer.data)
+    
+
+def verify_webhook_signature(body, signature):
+    secret = settings.RAZORPAY_WEBHOOK_SECRET.encode()
+    expected_signature = hmac.new(
+        secret,
+        body,
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(expected_signature, signature)
+
+
+class RazorpayWebhookAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        signature = request.headers.get("X-Razorpay-Signature")
+        body = request.body
+
+        if not verify_webhook_signature(body, signature):
+            return Response(
+                {"detail": "Invalid signature"},
+                status=400
+            )
+
+        payload = json.loads(body)
+
+        event = payload.get("event")
+
+        # Payment success
+        if event == "payment.captured":
+            payment = payload["payload"]["payment"]["entity"]
+
+            razorpay_order_id = payment["order_id"]
+            razorpay_payment_id = payment["id"]
+
+            try:
+                subscription = UserSubscription.objects.get(
+                    razorpay_order_id=razorpay_order_id,
+                    status="pending"
+                )
+            except UserSubscription.DoesNotExist:
+                # Already processed or invalid
+                return Response(status=200)
+
+            from django.utils import timezone
+            from datetime import timedelta
+
+            start_date = timezone.now()
+            end_date = start_date + timedelta(
+                days=30 * subscription.plan.duration_months
+            )
+
+            subscription.razorpay_payment_id = razorpay_payment_id
+            subscription.start_date = start_date
+            subscription.end_date = end_date
+            subscription.status = "active"
+            subscription.save()
+
+        return Response(status=200)
