@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from subscriptions.services import user_has_active_subscription
 
 class IsRecruiter(BasePermission):
     message = "You must be an recruiter."
@@ -30,3 +31,14 @@ class IsConversationParticipant(BasePermission):
     message = "You are not a participant of this conversation."
     def has_object_permission(self, request, view, obj):
         return request.user in [obj.jobseeker, obj.recruiter]
+    
+
+class IsPremiumUser(BasePermission):
+    message = "Active subscription required."
+
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and user_has_active_subscription(request.user)
+        )

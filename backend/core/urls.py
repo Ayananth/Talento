@@ -29,6 +29,7 @@ urlpatterns = [
     path("v1/jobs/", include("jobs.urls", namespace="jobs")),
     path("v1/applications/", include("applications.urls", namespace="applications")),
     path("v1/chat/", include("chat.urls", namespace="chat")),
+    path("v1/subscriptions/", include("subscriptions.urls", namespace="subscriptions")),
 
 
 ]

@@ -5,20 +5,44 @@ import {
   Bookmark,
   MessageSquare,
   Settings,
-  LogOut
+  LogOut,
+  Sparkles,
+  FileText,
+  Crown
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function Sidebar() {
+
+const baseMenuItems = [
+  { name: "My Profile", icon: <User size={18} />, path: "/profile" },
+  { name: "Applied Jobs", icon: <Briefcase size={18} />, path: "/profile/applied-jobs" },
+  { name: "Shortlisted Jobs", icon: <Bookmark size={18} />, path: "/shortlisted" },
+  { name: "Messages", icon: <MessageSquare size={18} />, path: "/messages" },
+  { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
+  // { name: "Logout", icon: <LogOut size={18} />, path: "/logout" },
+];
+
+const premiumMenuItems = [
+  {
+    name: "AI Job Matches",
+    icon: <Sparkles size={18} />,
+    path: "/profile/ai-jobs",
+    isPremium: true,
+  },
+  {
+    name: "Resume Analyzer",
+    icon: <FileText size={18} />,
+    path: "/profile/resume-analyzer",
+    isPremium: true,
+  },
+];;
+
+export default function Sidebar({subscription}) {
   const navigate = useNavigate();
-  const menuItems = [
-    { name: "My Profile", icon: <User size={18} />, path: "/profile" },
-    { name: "Applied Jobs", icon: <Briefcase size={18} />, path: "/profile/applied-jobs" },
-    { name: "Shortlisted Jobs", icon: <Bookmark size={18} />, path: "/shortlisted" },
-    { name: "Messages", icon: <MessageSquare size={18} />, path: "/messages" },
-    { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
-    { name: "Logout", icon: <LogOut size={18} />, path: "/logout" }
-  ];
+  console.log(subscription)
+  const menuItems = subscription?.is_active
+    ? [...baseMenuItems, ...premiumMenuItems]
+    : baseMenuItems;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
@@ -33,6 +57,14 @@ export default function Sidebar() {
               {item.icon}
             </span>
             <span>{item.name}</span>
+
+        {item.isPremium && (
+          <Crown
+            size={16}
+            className="text-yellow-500"
+            title="Pro feature"
+          />
+        )}
           </button>
         ))}
       </nav>

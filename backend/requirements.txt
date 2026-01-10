@@ -20,6 +20,7 @@ channels
 daphne>=4.2
 channels>=4.3
 channels-redis>=4.3
+razorpay>=2
 
 
 
