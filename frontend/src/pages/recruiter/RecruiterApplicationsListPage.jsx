@@ -35,8 +35,9 @@ const STATUS_LABELS = {
   applied: "Under Review",
   shortlisted: "Shortlisted",
   interview: "Interview Scheduled",
-  offered: "Offer Extended",
+  // offered: "Offer Extended",
   rejected: "Rejected",
+  hired: "Hired"
 };
 
 /* -------------------------
@@ -125,7 +126,7 @@ const RecruiterApplicationsListPage = () => {
     { value: "applied", label: "Under Review" },
     { value: "shortlisted", label: "Shortlisted" },
     { value: "interview", label: "Interview" },
-    { value: "offered", label: "Offered" },
+    { value: "hired", label: "Hired" },
     { value: "rejected", label: "Rejected" },
   ];
 

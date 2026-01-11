@@ -16,6 +16,7 @@ const STATUS_LABELS = {
   shortlisted: "shortlisted",
   interview_scheduled: "interview",
   rejected: "rejected",
+  hired: "hired"
 };
 
 const STATUS_COLORS = {
@@ -24,6 +25,7 @@ const STATUS_COLORS = {
   shortlisted: "bg-green-100 text-green-800",
   interview_scheduled: "bg-purple-100 text-purple-800",
   rejected: "bg-red-100 text-red-800",
+  hired: "bg-green-100 text-green-800"
 };
 
 
@@ -249,6 +251,7 @@ const handleStatusChange = async (newStatus) => {
             </div>
 
             {/* Quick Actions */}
+            {status !== "hired" && 
             <div className="flex gap-2">
               {status!=='shortlisted' && (
               <button
@@ -267,6 +270,17 @@ const handleStatusChange = async (newStatus) => {
                   Move to Under Review
                 </button>
               )}
+
+              {status === "shortlisted" && (
+              <button
+                onClick={() => handleStatusChange('hired')}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Hired
+              </button>
+              )}
+
 
               {status!=="rejected" && (
 
@@ -295,6 +309,7 @@ const handleStatusChange = async (newStatus) => {
                 Resume
               </a>
             </div>
+}
           </div>
         </div>
 
