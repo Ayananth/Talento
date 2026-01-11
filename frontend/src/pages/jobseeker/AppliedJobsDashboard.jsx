@@ -39,6 +39,26 @@ const STATUS_CONFIG = {
   },
 };
 
+const ORDERING_OPTIONS = [
+  {
+    label: "Newest first",
+    value: "-applied_at",
+  },
+  {
+    label: "Oldest first",
+    value: "applied_at",
+  },
+  {
+    label: "Recently updated",
+    value: "-updated_at",
+  },
+  {
+    label: "Status (A → Z)",
+    value: "status",
+  },
+];
+
+
 
 
 const AppliedJobsDashboard = () => {
@@ -48,11 +68,13 @@ const AppliedJobsDashboard = () => {
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [ordering, setOrdering] = useState("-applied_at");
+
   const PAGE_SIZE = 10; 
 
 useEffect(() => {
   setPage(1);
-}, [statusFilter, searchTerm]);
+}, [statusFilter, searchTerm, ordering]);
 
 
 useEffect(() => {
@@ -61,6 +83,7 @@ useEffect(() => {
       const data = await getMyApplications({
         page,
         status: statusFilter === "all" ? "" : statusFilter,
+        ordering,
 
       });
 
@@ -72,7 +95,7 @@ useEffect(() => {
   };
 
   fetchAppliedJobs();
-}, [page, statusFilter]);
+}, [page, statusFilter, ordering]);
 
 
 
@@ -121,6 +144,21 @@ useEffect(() => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               /> */}
             </div>
+
+<div className="relative">
+  <select
+    className="pl-4 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+    value={ordering}
+    onChange={(e) => setOrdering(e.target.value)}
+  >
+    {ORDERING_OPTIONS.map((option) => (
+      <option key={option.value} value={option.value}>
+        {option.label}
+      </option>
+    ))}
+  </select>
+</div>
+
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <select
