@@ -25,6 +25,16 @@ const STATUS_COLORS = {
   interview_scheduled: "bg-purple-100 text-purple-800",
   rejected: "bg-red-100 text-red-800",
 };
+
+
+const displayValue = (value, fallback = "Not provided") => {
+  if (value === null || value === undefined || value === "") {
+    return fallback;
+  }
+  return value;
+};
+
+
 export default function ApplicantDetailsPage() {
   const [status, setStatus] = useState('Applied');
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -38,6 +48,7 @@ export default function ApplicantDetailsPage() {
     const [loading, setLoading] = useState(true);
   const { applicantId } = useParams();
   console.log("Applicant ID from URL:", applicantId);
+  console.log(applicant)
 
 const [toast, setToast] = useState(null);
 
@@ -221,7 +232,7 @@ const handleStatusChange = async (newStatus) => {
               <div className="flex items-center gap-4 text-gray-600">
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4" />
-                  <span className="font-medium">{applicant.jobTitle}</span>
+                  <span className="font-medium">{displayValue(applicant.jobTitle)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -312,7 +323,7 @@ const handleStatusChange = async (newStatus) => {
                   <div>
                     <p className="text-sm text-gray-500">Email</p>
                     <a href={`mailto:${applicant.email}`} className="text-blue-600 hover:underline">
-                      {applicant.email}
+                      {displayValue(applicant.email)}
                     </a>
                   </div>
                 </div>
@@ -321,7 +332,7 @@ const handleStatusChange = async (newStatus) => {
                   <div>
                     <p className="text-sm text-gray-500">Phone</p>
                     <a href={`tel:${applicant.phone}`} className="text-blue-600 hover:underline">
-                      {applicant.phone}
+                      {displayValue(applicant.phone)}
                     </a>
                   </div>
                 </div>
@@ -329,14 +340,14 @@ const handleStatusChange = async (newStatus) => {
                   <MapPin className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500">Location</p>
-                    <p className="text-gray-900">Location</p>
+                    <p className="text-gray-900">{displayValue(applicant.location)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Briefcase className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500">Experience</p>
-                    <p className="text-gray-900">{applicant.experience}</p>
+                    <p className="text-gray-900">{displayValue(applicant.experience)}</p>
                   </div>
                 </div>
               </div>
@@ -348,19 +359,19 @@ const handleStatusChange = async (newStatus) => {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Current Role</span>
-                  <span className="font-medium text-gray-900">{applicant.currentRole||"current role"}</span>
+                  <span className="font-medium text-gray-900">{displayValue(applicant.currentRole)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Notice Period</span>
-                  <span className="font-medium text-gray-900">{applicant.notice_period}</span>
+                  <span className="font-medium text-gray-900">{displayValue(applicant.notice_period)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Expected Salary</span>
-                  <span className="font-medium text-gray-900">{applicant.expected_salary}</span>
+                  <span className="font-medium text-gray-900">{displayValue(applicant.expected_salary)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Current Salary</span>
-                  <span className="font-medium text-gray-900">{applicant.current_salary}</span>
+                  <span className="font-medium text-gray-900">{displayValue(applicant.current_salary)}</span>
                 </div>
               </div>
             </div>

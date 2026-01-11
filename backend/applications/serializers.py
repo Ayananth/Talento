@@ -300,71 +300,82 @@ class RecruiterApplicationListSerializer(serializers.ModelSerializer):
         return ", ".join(filter(None, parts))
 
 class RecruiterApplicationDetailSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="applicant.fullname", read_only=True)
-    email = serializers.EmailField(source="applicant.user.email", read_only=True)
-    phone = serializers.CharField(source="applicant.phone", allow_null=True)
-    experience = serializers.IntegerField(
-        source="applicant.experience_years",
+    name = serializers.CharField(source="applicant.fullname",read_only=True)
+    email = serializers.EmailField(source="applicant.user.email",read_only=True)
+    applicant_id = serializers.IntegerField(source="applicant.user.id",read_only=True)
+    
+    # phone = serializers.CharField()
+    # experience = serializers.DecimalField(
+    #     max_digits=4,
+    #     decimal_places=1
+    # )
+    # current_role = serializers.CharField()
+    # location = serializers.CharField()
+
+    jobTitle = serializers.CharField(
+        source="job.title",
         read_only=True
     )
-    current_role = serializers.CharField(
-        source="applicant.current_role",
-        allow_null=True,
-        required=False
-    )
-    summary = serializers.CharField(
-        source="applicant.summary",
-        allow_blank=True,
-        required=False
+    job_id = serializers.IntegerField(
+        source="job.id",
+        read_only=True
     )
 
-    applicant_id = serializers.IntegerField(source="applicant.user.id", read_only=True)
-
-    jobTitle = serializers.CharField(source="job.title", read_only=True)
     status = serializers.CharField()
-    applied_date = serializers.DateTimeField(source="applied_at", read_only=True)
+    applied_date = serializers.DateTimeField(
+        source="applied_at",
+        read_only=True
+    )
 
+    # --- Compensation ---
     expected_salary = serializers.IntegerField()
     current_salary = serializers.IntegerField(allow_null=True)
     notice_period = serializers.CharField(allow_blank=True)
 
+    # --- Resume & content ---
     resume_url = serializers.SerializerMethodField()
     cover_letter = serializers.CharField(allow_blank=True)
 
-    skills = serializers.SerializerMethodField()
-
+    # --- Recruiter fields ---
     recruiter_notes = serializers.CharField(
         allow_blank=True,
         required=False
     )
+
+    # --- Skills still come from profile ---
+    skills = serializers.SerializerMethodField()
 
     class Meta:
         model = JobApplication
         fields = [
             "id",
 
+            # applicant
             "name",
             "email",
+            "applicant_id",
             "phone",
+            "location",
             "experience",
             "current_role",
-            "summary",
 
             "jobTitle",
+            "job_id",
             "status",
             "applied_date",
-            "job_id",
 
+            # compensation
             "expected_salary",
             "current_salary",
             "notice_period",
 
+            # resume & content
             "resume_url",
-            "skills",
             "cover_letter",
 
+            # extras
+            "skills",
             "recruiter_notes",
-            "applicant_id"
         ]
 
     def get_resume_url(self, obj):
@@ -372,12 +383,12 @@ class RecruiterApplicationDetailSerializer(serializers.ModelSerializer):
 
     def get_skills(self, obj):
         """
-        Assumes applicant.skills is ManyToManyField
+        Skills still belong to JobSeekerProfile
         """
         return list(
             obj.applicant.skills.values_list("skill_name", flat=True)
         )
-    
+
 
 class UpdateApplicationStatusSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
