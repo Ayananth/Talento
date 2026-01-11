@@ -3,6 +3,44 @@ import { Briefcase, Calendar, MapPin, DollarSign, Clock, Filter, Search, IndianR
 import { getMyApplications } from '../../apis/jobseeker/apis';
 import Pagination from "../../components/common/Pagination"
 
+
+const STATUS_CONFIG = {
+  all: {
+    label: "All Status",
+    value: "",
+  },
+  applied: {
+    label: "Applied",
+    color: "bg-blue-100 text-blue-800",
+  },
+  shortlisted: {
+    label: "Shortlisted",
+    color: "bg-indigo-100 text-indigo-800",
+  },
+  interview: {
+    label: "Interview",
+    color: "bg-purple-100 text-purple-800",
+  },
+  offered: {
+    label: "Offered",
+    color: "bg-green-100 text-green-800",
+  },
+  hired: {
+    label: "Hired",
+    color: "bg-emerald-100 text-emerald-800",
+  },
+  rejected: {
+    label: "Rejected",
+    color: "bg-red-100 text-red-800",
+  },
+  withdrawn: {
+    label: "Withdrawn",
+    color: "bg-gray-200 text-gray-800",
+  },
+};
+
+
+
 const AppliedJobsDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -17,25 +55,25 @@ useEffect(() => {
 }, [statusFilter, searchTerm]);
 
 
-
 useEffect(() => {
   const fetchAppliedJobs = async () => {
     try {
       const data = await getMyApplications({
         page,
-        status: statusFilter !== "all" ? statusFilter : "",
-        search: searchTerm,
+        status: statusFilter === "all" ? "" : statusFilter,
+
       });
 
       setAppliedJobs(data.results || []);
-      setTotalPages(Math.ceil(data.count / PAGE_SIZE));
+      setTotalPages(Math.ceil(data.count / 10)); // match backend page size
     } catch (error) {
       console.error("Error fetching applied jobs:", error);
     }
   };
 
   fetchAppliedJobs();
-}, [page, statusFilter, searchTerm]);
+}, [page, statusFilter]);
+
 
 
   
@@ -54,14 +92,14 @@ useEffect(() => {
     }
   };
 
-  const filteredJobs = appliedJobs.filter(job => {
-    const matchesSearch = job.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.company_name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // const filteredJobs = appliedJobs.filter(job => {
+  //   const matchesSearch = job.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //                        job.company_name.toLowerCase().includes(searchTerm.toLowerCase());
+  //   const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
+  //   return matchesSearch && matchesStatus;
+  // });
 
-  const statusOptions = ['all', 'Under Review', 'Interview Scheduled', 'Offer Received', 'Rejected'];
+  // const statusOptions = ['all', 'Under Review', 'Interview Scheduled', 'Offer Received', 'Rejected'];
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -74,14 +112,14 @@ useEffect(() => {
         <div className="bg-white rounded-lg shadow-sm mb-6 p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search by position or company..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              /> */}
             </div>
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -90,12 +128,13 @@ useEffect(() => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
-                {statusOptions.map(option => (
-                  <option key={option} value={option}>
-                    {option === 'all' ? 'All Status' : option}
+                {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+                  <option key={key} value={key}>
+                    {config.label}
                   </option>
                 ))}
               </select>
+
             </div>
           </div>
         </div>
@@ -162,11 +201,16 @@ useEffect(() => {
                         {new Date(job.applied_at).toLocaleDateString()}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
-                        {job.status}
-                      </span>
-                    </td>
+<td className="px-6 py-4">
+  <span
+    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+      STATUS_CONFIG[job.status]?.color || "bg-gray-100 text-gray-800"
+    }`}
+  >
+    {STATUS_CONFIG[job.status]?.label || job.status}
+  </span>
+</td>
+
                     {/* <td className="px-6 py-4">
                       <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                         View Details
@@ -178,7 +222,7 @@ useEffect(() => {
             </table>
           </div>
 
-          {filteredJobs.length === 0 && (
+          {appliedJobs.length === 0 && (
             <div className="text-center py-12">
               <Clock className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No applications found</h3>
