@@ -2,8 +2,21 @@
 import { Crown, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function UpgradeBanner() {
+export default function UpgradeBanner({ role = "jobseeker" }) {
   const navigate = useNavigate();
+
+  const jobseekerMessage =
+    "Get AI job matches, resume analyzer, and priority visibility";
+  const recruiterMessage =
+    "Join Pro and recruit faster with priority access";
+
+  const jobseekerPath = "/premium";
+  const recruiterPath = "/recruiter/premium";
+
+  const isRecruiter = role === "recruiter";
+
+  const message = isRecruiter ? recruiterMessage : jobseekerMessage;
+  const path = isRecruiter ? recruiterPath : jobseekerPath;
 
   return (
     <div className="mb-10">
@@ -16,14 +29,12 @@ export default function UpgradeBanner() {
             <h3 className="text-lg font-bold text-slate-900">
               Unlock Talento Pro
             </h3>
-            <p className="text-sm text-slate-600">
-              Get AI job matches, resume analyzer, and priority visibility
-            </p>
+            <p className="text-sm text-slate-600">{message}</p>
           </div>
         </div>
 
         <button
-          onClick={() => navigate("/premium")}
+          onClick={() => navigate(path)}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-semibold transition"
         >
           Upgrade Now

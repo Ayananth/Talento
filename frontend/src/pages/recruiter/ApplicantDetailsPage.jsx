@@ -278,13 +278,13 @@ const handleStatusChange = async (newStatus) => {
                 Reject
               </button>
               )}
-              <button
+              {/* <button
                 onClick={() => handleStatusChange('interview')}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
                 <Calendar className="w-4 h-4" />
                 Schedule
-              </button>
+              </button> */}
               <a
                 href={applicant.resume_url}
                 target="_blank"
