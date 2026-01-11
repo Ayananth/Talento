@@ -41,6 +41,11 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
       setFieldErrors({});
       setFile(null);
       setLoading(false);
+setPhone("");
+setLocation("");
+setExperience("");
+setCurrentRole("");
+
     }
 
     
@@ -65,6 +70,12 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
     }
   };
 
+const isValidPhone = (value) => {
+  const cleaned = value.replace(/\s+/g, "");
+  return /^[0-9+]{10,15}$/.test(cleaned);
+};
+
+
 const handleApply = async () => {
   try {
     setError(null);
@@ -77,6 +88,28 @@ const handleApply = async () => {
       return;
     }
 
+if (!phone) {
+  setError("Phone number is required.");
+  return;
+}
+
+if (!isValidPhone(phone)) {
+  setError("Please enter a valid phone number.");
+  return;
+}
+
+if (!location || location.length < 2) {
+  setError("Location is required.");
+  return;
+}
+
+
+if (Number(experience) < 0) {
+  setError("Experience cannot be negative.");
+  return;
+}
+
+
     if (Number(expectedSalary) <= 0) {
       setError("Expected salary must be greater than zero.");
       return;
@@ -88,13 +121,17 @@ const handleApply = async () => {
       return;
     }
 
-    let payload = {
-      jobId,
-      coverLetter,
-      currentSalary: currentSalary || null,
-      expectedSalary,
-      noticePeriod,
-    };
+let payload = {
+  jobId,
+  phone,
+  location,
+  experience: experience === "" ? null : Number(experience),
+  currentRole,
+  coverLetter: coverLetter || "",
+  currentSalary: currentSalary ? Number(currentSalary) : null,
+  expectedSalary: Number(expectedSalary),
+  noticePeriod: noticePeriod || "",
+};
 
     // ---------- RESUME LOGIC ----------
     if (resumeType === "existing") {

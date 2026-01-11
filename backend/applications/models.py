@@ -57,6 +57,16 @@ class JobApplication(models.Model):
     )
     recruiter_notes = models.TextField(blank=True)
 
+    phone = models.CharField(max_length=20, blank=True)
+    location = models.CharField(max_length=100, blank=True)
+    experience = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        null=True,
+        blank=True
+    )
+    current_role = models.CharField(max_length=100, blank=True)
+
     applied_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

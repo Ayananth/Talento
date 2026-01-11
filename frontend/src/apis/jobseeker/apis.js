@@ -78,6 +78,10 @@ export const applyToJob = async ({
   jobId,
   resumeId,
   file,
+  phone,
+  location,
+  experience,
+  currentRole,
   coverLetter,
   currentSalary,
   expectedSalary,
@@ -85,47 +89,43 @@ export const applyToJob = async ({
 }) => {
   const formData = new FormData();
 
-  // 🔑 Required
-  formData.append("job", jobId);
-  formData.append("expected_salary", expectedSalary);
+  formData.append("job", Number(jobId));
+  formData.append("expected_salary", Number(expectedSalary));
+  formData.append("phone", phone);
+  formData.append("location", location);
+  if (experience !== null && experience !== undefined) {
+  formData.append("experience", Number(experience));
+}
+  formData.append("current_role", currentRole);
 
-  // 🔁 Resume logic (IMPORTANT)
   if (resumeId) {
-    // Existing resume → backend will copy in Cloudinary
     formData.append("resume_id", resumeId);
   } else if (file) {
-    // New resume → backend uploads file
     formData.append("resume", file);
   } else {
     throw new Error("Either resumeId or file must be provided");
   }
 
-  // Optional fields
   if (coverLetter) {
     formData.append("cover_letter", coverLetter);
   }
 
   if (currentSalary !== null && currentSalary !== undefined) {
-    formData.append("current_salary", currentSalary);
+    formData.append("current_salary", Number(currentSalary));
   }
 
   if (noticePeriod) {
     formData.append("notice_period", noticePeriod);
   }
 
-  const res = await api.post(
-    "/v1/applications/apply/",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
+  const res = await api.post("/v1/applications/apply/", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
   return res.data;
 };
-
 
 
 export const getMyApplications = async ({

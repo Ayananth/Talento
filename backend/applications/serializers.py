@@ -22,14 +22,50 @@ class ApplyJobSerializer(serializers.ModelSerializer):
             "current_salary",
             "expected_salary",
             "notice_period",
+            "phone",
+            "location",
+            "experience",
+            "current_role",
         ]
 
-    def validate_expected_salary(self, value):
-        if value <= 0:
-            raise serializers.ValidationError(
-                "Expected salary must be greater than zero."
-            )
+    def validate_phone(self, value):
+        if not value:
+            raise serializers.ValidationError("Phone number is required.")
+
+        cleaned = value.replace(" ", "")
+        if not re.match(r"^[0-9+]{10,15}$", cleaned):
+            raise serializers.ValidationError("Enter a valid phone number.")
+
         return value
+    
+    def validate_location(self, value):
+        if not value or len(value.strip()) < 2:
+            raise serializers.ValidationError("Location is required.")
+        return value
+
+    def validate_experience(self, value):
+        if value is None:
+            raise serializers.ValidationError("Experience is required.")
+
+        if value < 0:
+            raise serializers.ValidationError("Experience cannot be negative.")
+
+        return value
+    
+    def validate_current_role(self, value):
+        if not value or len(value.strip()) < 2:
+            raise serializers.ValidationError("Current role is required.")
+        return value
+
+
+
+    # def validate_expected_salary(self, value):
+    #     print(value, type(value))
+    #     if value <= 0:
+    #         raise serializers.ValidationError(
+    #             "Expected salary must be greater than zero."
+    #         )
+    #     return value
 
     def validate_notice_period(self, value):
         if not value:
