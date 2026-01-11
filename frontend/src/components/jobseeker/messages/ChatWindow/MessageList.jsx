@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { Check, CheckCheck } from "lucide-react";
 
 const MessageList = ({ messages, currentUserId, loading }) => {
   const containerRef = useRef(null);
@@ -12,7 +13,6 @@ const MessageList = ({ messages, currentUserId, loading }) => {
       return;
     }
 
-    // ✅ Scroll ONLY when a new message is added
     if (messages.length > prevMessageCount.current) {
       containerRef.current.scrollTop =
         containerRef.current.scrollHeight;
@@ -37,6 +37,24 @@ const MessageList = ({ messages, currentUserId, loading }) => {
     );
   }
 
+  const renderStatusIcon = (msg) => {
+    // Support both patterns safely
+    const status = msg.status;
+    const isRead = msg.isRead || status === "read";
+    const isDelivered =
+      msg.isDelivered || status === "delivered" || isRead;
+
+    if (isRead) {
+      return <CheckCheck size={14} className="text-blue-400" />;
+    }
+
+    if (isDelivered) {
+      return <CheckCheck size={14} className="text-slate-400" />;
+    }
+
+    return <Check size={14} className="text-slate-400" />;
+  };
+
   return (
     <div
       ref={containerRef}
@@ -58,9 +76,14 @@ const MessageList = ({ messages, currentUserId, loading }) => {
               }`}
             >
               <p>{msg.text}</p>
-              <span className="block text-xs opacity-70 mt-1 text-right">
-                {msg.timestamp}
-              </span>
+
+              <div className="flex items-center justify-end gap-1 mt-1">
+                <span className="text-xs opacity-70">
+                  {msg.timestamp}
+                </span>
+
+                {isMine && renderStatusIcon(msg)}
+              </div>
             </div>
           </div>
         );

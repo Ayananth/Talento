@@ -73,9 +73,9 @@ const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
                     <img
                       src={
                         chat.companyLogo ||
-                        "https://via.placeholder.com/48"
+                        "https://placehold.net/avatar.svg"
                       }
-                      alt={chat.name}
+                      // alt={chat.name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
 
