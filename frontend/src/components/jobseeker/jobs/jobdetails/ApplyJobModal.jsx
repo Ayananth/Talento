@@ -182,204 +182,212 @@ const parseApiError = (err) => {
   };
 };
 
+if (!open) return null;
 
+return (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden">
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-2xl w-full max-w-lg p-6">
-
-        <h2 className="text-xl font-semibold text-slate-900 mb-4">
+      {/* HEADER */}
+      <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-slate-900">
           Apply for this job
         </h2>
+        <button
+          onClick={onClose}
+          className="text-slate-400 hover:text-slate-600 rounded-lg p-1"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+      </div>
 
-        <div className="space-y-6">
+      {/* BODY */}
+      <div className="px-6 py-6 space-y-6 max-h-[75vh] overflow-y-auto">
+
+        {/* RESUME SECTION */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-slate-900">
+            Resume <span className="text-red-500">*</span>
+          </h3>
 
           {/* EXISTING RESUME */}
-          <div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                checked={resumeType === "existing"}
-                onChange={() => setResumeType("existing")}
-              />
-              <span className="font-medium">Select existing resume</span>
-            </label>
+          <label className="flex gap-3 p-4 border rounded-xl cursor-pointer hover:border-blue-400 transition">
+            <input
+              type="radio"
+              checked={resumeType === "existing"}
+              onChange={() => setResumeType("existing")}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <p className="font-medium text-slate-900">Use existing resume</p>
+              <p className="text-sm text-slate-500">
+                Select from resumes already uploaded
+              </p>
 
-            {resumeType === "existing" && (
-              <div className="ml-6 mt-3 space-y-2">
-                {resumes.length === 0 && (
-                  <p className="text-sm text-slate-500">
-                    No resumes uploaded yet
-                  </p>
-                )}
+              {resumeType === "existing" && (
+                <div className="mt-3 space-y-2">
+                  {resumes.length === 0 && (
+                    <p className="text-sm text-slate-500">
+                      No resumes uploaded yet
+                    </p>
+                  )}
 
-              {resumes.map((r) => (
-                <label
-                  key={r.id}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <input
-                    type="radio"
-                    name="resume"
-                    checked={selectedResume?.id === r.id}
-                    onChange={() => setSelectedResume(r)}
-                  />
-                  {r.title}
-                </label>
-              ))}
-
-              </div>
-            )}
-          </div>
+                  {resumes.map((r) => (
+                    <label
+                      key={r.id}
+                      className="flex items-center gap-2 text-sm cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="resume"
+                        checked={selectedResume?.id === r.id}
+                        onChange={() => setSelectedResume(r)}
+                      />
+                      {r.title}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          </label>
 
           {/* UPLOAD RESUME */}
-          <div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                checked={resumeType === "upload"}
-                onChange={() => setResumeType("upload")}
-              />
-              <span className="font-medium">Upload new resume</span>
-            </label>
+          <label className="flex gap-3 p-4 border rounded-xl cursor-pointer hover:border-blue-400 transition">
+            <input
+              type="radio"
+              checked={resumeType === "upload"}
+              onChange={() => setResumeType("upload")}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <p className="font-medium text-slate-900">Upload new resume</p>
+              <p className="text-sm text-slate-500">
+                PDF, DOC or DOCX format
+              </p>
 
-          {resumeType === "upload" && (
-            <div className="ml-6 mt-3 space-y-3">
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={(e) => setFile(e.target.files[0])}
-              />
+              {resumeType === "upload" && (
+                <div className="mt-3 space-y-3">
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => setFile(e.target.files[0])}
+                  />
 
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={saveToProfile}
-                  onChange={(e) => setSaveToProfile(e.target.checked)}
-                />
-                Save this resume to my profile
-              </label>
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={saveToProfile}
+                      onChange={(e) => setSaveToProfile(e.target.checked)}
+                    />
+                    Save this resume to my profile
+                  </label>
+                </div>
+              )}
             </div>
-          )}
+          </label>
 
+          {fieldErrors?.resume && (
+            <p className="text-sm text-red-600">
+              {fieldErrors.resume[0]}
+            </p>
+          )}
+        </div>
+
+        {/* COVER LETTER */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">
+            Cover letter <span className="text-slate-400">(optional)</span>
+          </label>
+          <textarea
+            rows={5}
+            value={coverLetter}
+            disabled={loading}
+            onChange={(e) => setCoverLetter(e.target.value)}
+            placeholder="Explain why you're a good fit for this role..."
+            className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>
+              {coverLetter.length > 0 && `${coverLetter.length} characters`}
+            </span>
+            <span>Optional</span>
+          </div>
+        </div>
+
+        {/* SALARY & NOTICE */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-slate-700">
+              Current Salary in LPA (optional)
+            </label>
+            <input
+              type="number"
+              value={currentSalary}
+              onChange={(e) => setCurrentSalary(e.target.value)}
+              className="mt-1 w-full rounded-lg border p-2"
+            />
           </div>
 
-
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Cover letter (optional)
+            <label className="text-sm font-medium text-slate-700">
+              Expected Salary in LPA <span className="text-red-500">*</span>
             </label>
-
-            <textarea
-              rows={5}
-              value={coverLetter}
-              disabled={loading}
-              onChange={(e) => setCoverLetter(e.target.value)}
-              placeholder="Explain why you're a good fit for this role..."
-              className="w-full rounded-lg border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            <input
+              type="number"
+              required
+              value={expectedSalary}
+              onChange={(e) => setExpectedSalary(e.target.value)}
+              className="mt-1 w-full rounded-lg border p-2"
             />
-
-            <div className="flex justify-between mt-1 text-xs text-slate-500">
-              <span>
-                {coverLetter.length > 0 && `${coverLetter.length} characters`}
-              </span>
-              <span>Optional</span>
-            </div>
-
-            {fieldErrors?.cover_letter && (
-              <p className="mt-1 text-sm text-red-600">
-                {fieldErrors.cover_letter[0]}
+            {fieldErrors?.expected_salary && (
+              <p className="text-sm text-red-600">
+                {fieldErrors.expected_salary[0]}
               </p>
             )}
           </div>
 
-
-<div className="grid grid-cols-1 gap-4">
-
-  {/* CURRENT SALARY */}
-  <div>
-    <label className="block text-sm font-medium text-slate-700">
-      Current Salary in LPA (optional)
-    </label>
-    <input
-      type="number"
-      value={currentSalary}
-      onChange={(e) => setCurrentSalary(e.target.value)}
-      className="mt-1 w-full rounded-lg border p-2"
-      placeholder="e.g. 600000"
-    />
-  </div>
-
-  {/* EXPECTED SALARY */}
-  <div>
-    <label className="block text-sm font-medium text-slate-700">
-      Expected Salary in LPA <span className="text-red-500">*</span>
-    </label>
-    <input
-      type="number"
-      required
-      value={expectedSalary}
-      onChange={(e) => setExpectedSalary(e.target.value)}
-      className="mt-1 w-full rounded-lg border p-2"
-      placeholder="e.g. 800000"
-    />
-    {fieldErrors?.expected_salary && (
-      <p className="text-sm text-red-600">
-        {fieldErrors.expected_salary[0]}
-      </p>
-    )}
-  </div>
-
-  {/* NOTICE PERIOD */}
-  <div>
-    <label className="block text-sm font-medium text-slate-700">
-      Notice Period (optional)
-    </label>
-    <input
-      type="text"
-      value={noticePeriod}
-      onChange={(e) => setNoticePeriod(e.target.value)}
-      className="mt-1 w-full rounded-lg border p-2"
-      placeholder="e.g. 30 days / Immediate"
-    />
-  </div>
-</div>
-
-
+          <div className="sm:col-span-2">
+            <label className="text-sm font-medium text-slate-700">
+              Notice Period (optional)
+            </label>
+            <input
+              type="text"
+              value={noticePeriod}
+              onChange={(e) => setNoticePeriod(e.target.value)}
+              className="mt-1 w-full rounded-lg border p-2"
+              placeholder="e.g. 30 days / Immediate"
+            />
+          </div>
         </div>
 
-        {fieldErrors?.resume && (
-          <p className="mt-2 text-sm text-red-600">
-            {fieldErrors.resume[0]}
-          </p>
-        )}
-
-
+        {/* ERROR */}
         {error && (
-          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
+      </div>
 
-
-        {/* FOOTER */}
-        <div className="mt-8 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg border"
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={handleApply}
-            disabled={loading}
-            className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? "Applying..." : "Apply"}
-          </button>
-        </div>
+      {/* FOOTER */}
+      <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-slate-50">
+        <button
+          onClick={onClose}
+          disabled={loading}
+          className="px-4 py-2 rounded-lg border text-slate-700 hover:bg-slate-100"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleApply}
+          disabled={loading}
+          className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loading ? "Applying..." : "Apply"}
+        </button>
       </div>
     </div>
-  );
+  </div>
+);
+
 }
