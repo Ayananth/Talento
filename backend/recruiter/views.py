@@ -1,28 +1,32 @@
-from rest_framework import generics, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
-from django.utils import timezone
+import logging
 
-from .models import RecruiterProfile
-from .serializers import RecruiterDraftCreateSerializer, AdminRecruiterListSerializer, RecruiterProfileSerializer, AdminRecruiterDetailSerializer
-from core.permissions import IsRecruiter, IsAdmin
-
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
-from .filters import RecruiterProfileFilter
 from django.db.models import Q
+from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 
+from rest_framework import generics, status
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from core.permissions import IsAdmin, IsRecruiter
+
+from .filters import RecruiterProfileFilter
+from .models import RecruiterProfile
+from .serializers import (
+    AdminRecruiterDetailSerializer,
+    AdminRecruiterListSerializer,
+    RecruiterDraftCreateSerializer,
+    RecruiterProfileSerializer,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class RecruiterProfileDraftCreateView(generics.GenericAPIView):
     """
     POST /api/recruiter/profile/draft/create/
-
-    - Creates or overwrites the draft for the logged-in recruiter.
-    - Stores text fields in `pending_data`
-    - Stores files in `draft_logo` / `draft_business_registration_doc`
-    - Sets status = 'pending'
     """
 
     serializer_class = RecruiterDraftCreateSerializer
@@ -30,19 +34,15 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
+        logger.info(
+            "Recruiter profile draft create requested",
+            extra={"recruiter_id": request.user.id},
+        )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = request.user
-
-        profile, _ = RecruiterProfile.objects.get_or_create(user=user)
-
-        # if profile.status in ["approved"]:
-        #     return Response(
-        #         {"detail": "Profile already submitted"},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
-
+        profile, _ = RecruiterProfile.objects.get_or_create(user=request.user)
 
         data = serializer.validated_data.copy()
 
@@ -61,6 +61,14 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
         profile.rejection_reason = None
         profile.save()
 
+        logger.info(
+            "Recruiter profile draft created",
+            extra={
+                "recruiter_id": request.user.id,
+                "status": profile.status,
+            },
+        )
+
         return Response(
             {
                 "detail": "Recruiter company profile draft submitted for review.",
@@ -69,27 +77,33 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
             },
             status=status.HTTP_201_CREATED,
         )
-    
+
 
 class RecruiterProfileDraftUpdateView(generics.GenericAPIView):
     """
-
-    - Updates only parts of the draft.
-    - Does NOT touch published fields.
-    - Any update puts status back to "pending".
+    PATCH recruiter draft
     """
+
     serializer_class = RecruiterDraftCreateSerializer
     permission_classes = [IsAuthenticated, IsRecruiter]
-    parser_classes = [MultiPartParser, FormParser]  # supports file upload
+    parser_classes = [MultiPartParser, FormParser]
 
     def patch(self, request, *args, **kwargs):
-        user = request.user
-        profile = user.recruiter_profile
+        profile = request.user.recruiter_profile
+
+        logger.info(
+            "Recruiter profile draft update requested",
+            extra={"recruiter_id": request.user.id},
+        )
 
         if profile.pending_data is None:
+            logger.warning(
+                "Recruiter attempted draft update without existing draft",
+                extra={"recruiter_id": request.user.id},
+            )
             return Response(
                 {"error": "No draft exists. Submit a draft first."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = self.get_serializer(data=request.data, partial=True)
@@ -112,6 +126,11 @@ class RecruiterProfileDraftUpdateView(generics.GenericAPIView):
         profile.rejection_reason = ""
         profile.save()
 
+        logger.info(
+            "Recruiter profile draft updated",
+            extra={"recruiter_id": request.user.id},
+        )
+
         return Response(
             {
                 "detail": "Draft updated successfully.",
@@ -122,19 +141,9 @@ class RecruiterProfileDraftUpdateView(generics.GenericAPIView):
         )
 
 
-
-
-
-
-
-
 class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
     """
-    Admin approves the draft:
-    - pending_data → published fields
-    - draft files → live files
-    - clear draft fields
-    - status = "published"
+    Admin approves recruiter draft
     """
 
     permission_classes = [IsAdmin]
@@ -143,7 +152,20 @@ class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
     def patch(self, request, *args, **kwargs):
         profile = self.get_object()
 
-        if not profile.pending_data and not profile.draft_logo and not profile.draft_business_registration_doc:
+        logger.info(
+            "Admin recruiter profile approval requested",
+            extra={"profile_id": profile.id},
+        )
+
+        if (
+            not profile.pending_data
+            and not profile.draft_logo
+            and not profile.draft_business_registration_doc
+        ):
+            logger.warning(
+                "Admin attempted to approve recruiter without draft",
+                extra={"profile_id": profile.id},
+            )
             return Response(
                 {"error": "No draft exists to approve."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -167,8 +189,12 @@ class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
         profile.status = "published"
         profile.rejection_reason = ""
         profile.verified_at = timezone.now()
-
         profile.save()
+
+        logger.info(
+            "Recruiter profile approved",
+            extra={"profile_id": profile.id},
+        )
 
         return Response(
             {
@@ -186,15 +212,11 @@ class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
             },
             status=status.HTTP_200_OK,
         )
-    
+
 
 class AdminRejectRecruiterProfileView(generics.UpdateAPIView):
     """
-    - Admin rejects the draft
-    - Keeps pending_data intact
-    - Keeps draft files intact
-    - Sets status = 'rejected'
-    - Saves rejection reason
+    Admin rejects recruiter draft
     """
 
     permission_classes = [IsAdmin]
@@ -203,7 +225,20 @@ class AdminRejectRecruiterProfileView(generics.UpdateAPIView):
     def patch(self, request, *args, **kwargs):
         profile = self.get_object()
 
-        if not profile.pending_data and not profile.draft_logo and not profile.draft_business_registration_doc:
+        logger.info(
+            "Admin recruiter profile rejection requested",
+            extra={"profile_id": profile.id},
+        )
+
+        if (
+            not profile.pending_data
+            and not profile.draft_logo
+            and not profile.draft_business_registration_doc
+        ):
+            logger.warning(
+                "Admin attempted to reject recruiter without draft",
+                extra={"profile_id": profile.id},
+            )
             return Response(
                 {"error": "No draft exists to reject."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -220,6 +255,11 @@ class AdminRejectRecruiterProfileView(generics.UpdateAPIView):
         profile.status = "rejected"
         profile.rejection_reason = reason
         profile.save()
+
+        logger.info(
+            "Recruiter profile rejected",
+            extra={"profile_id": profile.id},
+        )
 
         return Response(
             {
@@ -272,13 +312,12 @@ class AdminRecruiterProfileDetailView(generics.RetrieveAPIView):
 
 class BaseAdminRecruiterListView(generics.ListAPIView):
     """
-    Shared logic for:
-      - Recruiter list
-      - Pending recruiter list
+    Shared base for recruiter admin lists
     """
 
     permission_classes = [IsAuthenticated, IsAdmin]
     serializer_class = AdminRecruiterListSerializer
+    queryset = RecruiterProfile.objects.all()
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = RecruiterProfileFilter
@@ -286,31 +325,47 @@ class BaseAdminRecruiterListView(generics.ListAPIView):
     search_fields = ["company_name", "industry", "user__email"]
     ordering_fields = ["updated_at", "company_name", "status", "user__username"]
 
-    queryset = RecruiterProfile.objects.all()
-
     def list(self, request, *args, **kwargs):
+        logger.info(
+            "Admin recruiter list requested",
+            extra={"admin_id": request.user.id},
+        )
+
         paginated_response = super().list(request, *args, **kwargs)
-        return Response({
-            "count": paginated_response.data.get("count"),
-            "next": paginated_response.data.get("next"),
-            "previous": paginated_response.data.get("previous"),
-            "results": paginated_response.data.get("results"),
-        })
-    
+        return Response(
+            {
+                "count": paginated_response.data.get("count"),
+                "next": paginated_response.data.get("next"),
+                "previous": paginated_response.data.get("previous"),
+                "results": paginated_response.data.get("results"),
+            }
+        )
+
+
 class AdminRecruiterListView(BaseAdminRecruiterListView):
     queryset = RecruiterProfile.objects.all()
 
 
 class PendingRecruiterListView(BaseAdminRecruiterListView):
     def get_queryset(self):
-        return RecruiterProfile.objects.filter(status="pending").order_by('-updated_at')
+        return RecruiterProfile.objects.filter(
+            status="pending"
+        ).order_by("-updated_at")
 
-    
+
+class AdminRecruiterProfileDetailView(generics.RetrieveAPIView):
+    serializer_class = AdminRecruiterDetailSerializer
+    queryset = RecruiterProfile.objects.all()
+    permission_classes = [IsAuthenticated, IsAdmin]
+
 
 class RecruiterProfileDetailView(generics.RetrieveAPIView):
     serializer_class = RecruiterProfileSerializer
     permission_classes = [IsAuthenticated, IsRecruiter]
 
     def get_object(self):
+        logger.info(
+            "Recruiter profile detail requested",
+            extra={"recruiter_id": self.request.user.id},
+        )
         return self.request.user.recruiter_profile
-

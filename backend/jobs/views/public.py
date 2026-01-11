@@ -1,27 +1,38 @@
+import logging
+
 from django.contrib.postgres.search import (
     SearchQuery,
     SearchRank,
-    SearchVector,
-    TrigramSimilarity
-    )
-
-from django.db.models import Q
-
-
-from django.utils import timezone
-from rest_framework.generics import ListAPIView, RetrieveAPIView
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.exceptions import NotFound
-from django.db.models import F,Exists, OuterRef, Value, BooleanField
+    TrigramSimilarity,
+)
+from django.db.models import (
+    BooleanField,
+    Exists,
+    F,
+    OuterRef,
+    Q,
+    Value,
+)
 from django.db.models.functions import Coalesce
+from django.utils import timezone
+
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework.exceptions import NotFound
+from rest_framework.filters import OrderingFilter
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+
 from applications.models import JobApplication
-
-
-from jobs.models.job import Job
-from jobs.serializers import PublicJobListSerializer, PublicJobDetailSerializer
 from jobs.filters import PublicJobFilter
+from jobs.models.job import Job
 from jobs.pagination import RecruiterJobPagination
+from jobs.serializers import (
+    PublicJobDetailSerializer,
+    PublicJobListSerializer,
+)
+
+logger = logging.getLogger(__name__)
+
 
 class PublicJobListView(ListAPIView):
     serializer_class = PublicJobListSerializer
@@ -40,6 +51,15 @@ class PublicJobListView(ListAPIView):
         ordering_param = self.request.query_params.get("ordering")
         search = self.request.query_params.get("search")
         user = self.request.user
+
+        logger.info(
+            "Public job list requested",
+            extra={
+                "search": bool(search),
+                "ordering": ordering_param,
+                "user_authenticated": user.is_authenticated,
+            },
+        )
 
         queryset = Job.objects.filter(
             status=Job.Status.PUBLISHED,
@@ -60,15 +80,17 @@ class PublicJobListView(ListAPIView):
 
             if not ordering_param:
                 queryset = queryset.order_by(
-                    "-rank", "-similarity", "-published_at"
+                    "-rank",
+                    "-similarity",
+                    "-published_at",
                 )
 
-        if user.is_authenticated and user.role == "jobseeker":
+        if user.is_authenticated and getattr(user, "role", None) == "jobseeker":
             queryset = queryset.annotate(
                 has_applied=Exists(
                     JobApplication.objects.filter(
                         job=OuterRef("pk"),
-                        applicant=user.jobseeker_profile
+                        applicant=user.jobseeker_profile,
                     )
                 )
             )
@@ -79,20 +101,26 @@ class PublicJobListView(ListAPIView):
 
         return queryset
 
+
 class PublicJobDetailView(RetrieveAPIView):
     serializer_class = PublicJobDetailSerializer
 
     def get_queryset(self):
         user = self.request.user
 
+        logger.info(
+            "Public job detail queryset requested",
+            extra={
+                "user_authenticated": user.is_authenticated,
+            },
+        )
+
         queryset = Job.objects.filter(
             status=Job.Status.PUBLISHED,
             is_active=True,
-        )
-
-        queryset = queryset.exclude(
+        ).exclude(
             expires_at__isnull=False,
-            expires_at__lte=timezone.now()
+            expires_at__lte=timezone.now(),
         )
 
         if user.is_authenticated and getattr(user, "role", None) == "jobseeker":
@@ -100,7 +128,7 @@ class PublicJobDetailView(RetrieveAPIView):
                 has_applied=Exists(
                     JobApplication.objects.filter(
                         job=OuterRef("pk"),
-                        applicant=user.jobseeker_profile
+                        applicant=user.jobseeker_profile,
                     )
                 )
             )
@@ -113,8 +141,17 @@ class PublicJobDetailView(RetrieveAPIView):
 
     def get_object(self):
         job = super().get_object()
+
         Job.objects.filter(id=job.id).update(
             view_count=F("view_count") + 1
+        )
+
+        logger.info(
+            "Public job viewed",
+            extra={
+                "job_id": job.id,
+                "new_view_increment": True,
+            },
         )
 
         return job

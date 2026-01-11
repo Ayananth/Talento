@@ -4,6 +4,11 @@ from django.shortcuts import get_object_or_404
 
 from jobs.models.job import Job
 from core.permissions import IsJobseeker
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 # from jobs.serializers import JobApplySerializer
 
 

@@ -256,16 +256,32 @@ DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
+
+    "formatters": {
+        "json": {
+            "format": "{levelname} {asctime} {name} {message}",
+            "style": "{",
         },
     },
+
+    "handlers": {
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR, "logs/django.log"),
+            "maxBytes": 1024 * 1024 * 5,
+            "backupCount": 5,
+            "formatter": "json",
+        },
+    },
+
     "root": {
-        "handlers": ["console"],
+        "handlers": ["file"],
         "level": "INFO",
     },
 }
+
+
+
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
