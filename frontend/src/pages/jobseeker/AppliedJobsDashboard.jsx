@@ -15,7 +15,7 @@ const STATUS_CONFIG = {
   },
   shortlisted: {
     label: "Shortlisted",
-    color: "bg-indigo-100 text-indigo-800",
+    color: "bg-green-100 text-green-800",
   },
   interview: {
     label: "Interview",
