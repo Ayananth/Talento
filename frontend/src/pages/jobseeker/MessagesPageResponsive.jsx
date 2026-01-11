@@ -104,13 +104,13 @@ const handleSendMessage = async (text) => {
       timestamp: new Date(message.created_at).toLocaleString(),
     };
 
-    // 2️⃣ Add to conversation list
+    // Add to conversation list
     setConversations((prev) => [newChat, ...prev]);
 
-    // 3️⃣ Select it (this will open WebSocket automatically)
+    //  Select it (this will open WebSocket automatically)
     setSelectedChat(newChat);
 
-    // 4️⃣ Add message to message list
+    // Add message to message list
     setMessages([
       {
         id: message.id,
