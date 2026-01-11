@@ -137,10 +137,7 @@ const handleSendMessage = async (text) => {
         const data = await fetchConversations();
         console.log("Fetched conversations:", data);
 
-        /**
-         * Normalize backend response → UI model
-         * This protects the UI from backend changes
-         */
+
         const normalized = data.map((c) => ({
           id: c.id,
 
