@@ -170,7 +170,7 @@ class StartConversationAPIView(APIView):
             "Conversation started",
             extra={
                 "conversation_id": conversation.id,
-                "created": created,
+                "conversation_created": created,
                 "sender_id": user.id,
             },
         )
