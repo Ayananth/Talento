@@ -19,6 +19,11 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
   const [currentSalary, setCurrentSalary] = useState("");
   const [expectedSalary, setExpectedSalary] = useState("");
   const [noticePeriod, setNoticePeriod] = useState("");
+  const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState("");
+  const [experience, setExperience] = useState("");
+  const [currentRole, setCurrentRole] = useState("");
+
 
 
 
@@ -315,6 +320,76 @@ return (
           </div>
         </div>
 
+{/* CANDIDATE DETAILS */}
+<div className="space-y-4">
+  <h3 className="text-sm font-semibold text-slate-900">
+    Candidate Details
+  </h3>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+    {/* PHONE */}
+    <div>
+      <label className="text-sm font-medium text-slate-700">
+        Phone Number
+      </label>
+      <input
+        type="tel"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        placeholder="e.g +91 98765 43210"
+        className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
+    </div>
+
+    {/* LOCATION */}
+    <div>
+      <label className="text-sm font-medium text-slate-700">
+        Current Location
+      </label>
+      <input
+        type="text"
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        placeholder="e.g. Kochi, Kerala"
+        className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
+    </div>
+
+    {/* EXPERIENCE */}
+    <div>
+      <label className="text-sm font-medium text-slate-700">
+        Total Experience (years)
+      </label>
+      <input
+        type="number"
+        min="0"
+        step="0.5"
+        value={experience}
+        onChange={(e) => setExperience(e.target.value)}
+        placeholder="e.g. 2.5"
+        className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
+    </div>
+
+    {/* CURRENT ROLE */}
+    <div>
+      <label className="text-sm font-medium text-slate-700">
+        Current Role
+      </label>
+      <input
+        type="text"
+        value={currentRole}
+        onChange={(e) => setCurrentRole(e.target.value)}
+        placeholder="e.g. Junior Python Developer"
+        className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
+    </div>
+
+  </div>
+</div>
+
+
         {/* SALARY & NOTICE */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -324,6 +399,7 @@ return (
             <input
               type="number"
               value={currentSalary}
+              placeholder="e.g. 600000"
               onChange={(e) => setCurrentSalary(e.target.value)}
               className="mt-1 w-full rounded-lg border p-2"
             />
@@ -336,6 +412,7 @@ return (
             <input
               type="number"
               required
+              placeholder="e.g. 600000"
               value={expectedSalary}
               onChange={(e) => setExpectedSalary(e.target.value)}
               className="mt-1 w-full rounded-lg border p-2"
