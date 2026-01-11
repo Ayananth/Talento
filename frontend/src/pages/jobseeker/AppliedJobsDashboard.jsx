@@ -1,28 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { Briefcase, Calendar, MapPin, DollarSign, Clock, Filter, Search, IndianRupee } from 'lucide-react';
 import { getMyApplications } from '../../apis/jobseeker/apis';
+import Pagination from "../../components/common/Pagination"
 
 const AppliedJobsDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [appliedJobs, setAppliedJobs] = useState([]);
 
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 10; 
 
-  useEffect(() => {
-    // Fetch applied jobs from backend
-    const fetchAppliedJobs = async () => {
-      try {
-        const data = await getMyApplications();
-        console.log('Fetched applied jobs:', data);
-        setAppliedJobs(data.results || []);
-        console.log('Applied jobs set in state:', data.results || []);
-      } catch (error) {
-        console.error('Error fetching applied jobs:', error);
-      }
-    };
+useEffect(() => {
+  setPage(1);
+}, [statusFilter, searchTerm]);
 
-    fetchAppliedJobs();
-  }, []);
+
+
+useEffect(() => {
+  const fetchAppliedJobs = async () => {
+    try {
+      const data = await getMyApplications({
+        page,
+        status: statusFilter !== "all" ? statusFilter : "",
+        search: searchTerm,
+      });
+
+      setAppliedJobs(data.results || []);
+      setTotalPages(Math.ceil(data.count / PAGE_SIZE));
+    } catch (error) {
+      console.error("Error fetching applied jobs:", error);
+    }
+  };
+
+  fetchAppliedJobs();
+}, [page, statusFilter, searchTerm]);
+
 
   
   const getStatusColor = (status) => {
@@ -106,13 +120,13 @@ const AppliedJobsDashboard = () => {
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {/* <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
-                  </th>
+                  </th> */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredJobs.map((job) => (
+                {appliedJobs.map((job) => (
                   <tr key={job.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-start">
@@ -153,11 +167,11 @@ const AppliedJobsDashboard = () => {
                         {job.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    {/* <td className="px-6 py-4">
                       <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                         View Details
                       </button>
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
               </tbody>
@@ -173,10 +187,21 @@ const AppliedJobsDashboard = () => {
           )}
         </div>
 
+        {totalPages >= 1 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(num) => setPage(num)}
+            />
+          </div>
+        )}
+
+
         <div className="mt-6 flex items-center justify-between">
           <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">{filteredJobs.length}</span> of{' '}
-            <span className="font-medium">{appliedJobs.length}</span> applications
+            Showing {appliedJobs.length} applications
+
           </div>
         </div>
       </div>

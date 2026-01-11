@@ -131,7 +131,7 @@ export const applyToJob = async ({
 export const getMyApplications = async ({
   page = 1,
   status = "",
-  ordering = "-applied_date",
+  ordering = "-applied_at",
   search = "",
 } = {}) => {
   const res = await api.get("/v1/applications/my-applications/", {
