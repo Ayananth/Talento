@@ -11,6 +11,7 @@ const ChatWindow = ({
   onSendMessage,
   sendingDisabled = false,
   connected,
+  sendRead
 }) => {
   if (!chat) return null;
 
@@ -35,6 +36,7 @@ const ChatWindow = ({
           messages={messages}
           currentUserId={currentUserId}
           loading={loadingMessages}
+           sendRead={sendRead}
         />
       </div>
 

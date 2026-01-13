@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ConstructionIcon } from "lucide-react";
 
 import ChatList from "../../components/jobseeker/messages/ChatList";
 import ChatWindow from "../../components/jobseeker/messages/ChatWindow";
@@ -12,6 +12,7 @@ import { fetchConversationMessages } from "../../apis/common/fetchConversationMe
  import useChatSocket from "../../hooks/useChatSocket";
  import { startConversation } from "../../apis/common/startConversation";
  import { useLocation } from "react-router-dom";
+
 
 const MessagesPageResponsive = () => {
   // --------------------
@@ -26,28 +27,52 @@ const MessagesPageResponsive = () => {
   const [messages, setMessages] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
 
+  const [activeConversationId, setActiveConversationId] = useState(null);
+
+
   const { user } = useAuth();
   // console.log("User in MessagesPageResponsive:", user);
   const currentUserId = Number(user?.user_id);
 
-  const accessToken  = getAccessToken();
+const accessToken = useMemo(() => getAccessToken(), []);
 
-  const { connected, sendMessage } = useChatSocket({
-    conversationId: selectedChat?.id,
-    token: accessToken,
-    onMessage: (msg) => {
-      setMessages((prev) => [...prev, {
-        id: msg.id,
-        senderId: msg.sender_id,
-        senderName: msg.sender_name,
-        text: msg.content,
-        timestamp: new Date(msg.created_at).toLocaleString(),
-      }]);
+ const handleWsMessage = useCallback((msg) => {
+  setMessages((prev) => [
+    ...prev,
+    {
+      id: msg.id,
+      senderId: Number(msg.sender_id),
+      senderName: msg.sender_name,
+      text: msg.content,
+      timestamp: new Date(msg.created_at).toLocaleString(),
+      isRead: false,
     },
-  });
+  ]);
+}, []);
+
+const handleReadAck = useCallback((messageId) => {
+  setMessages((prev) =>
+    prev.map((m) =>
+      m.id === messageId ? { ...m, isRead: true } : m
+    )
+  );
+}, []);
+
+
+const { connected, sendMessage, sendRead } = useChatSocket({
+conversationId: activeConversationId,
+  token: accessToken,
+  onMessage: handleWsMessage,
+  onReadAck: handleReadAck,
+});
+
+
 
   const hasConversation = Boolean(selectedChat?.id);
   const sendingDisabled = hasConversation && !connected;
+
+
+
 
 
 const location = useLocation();
@@ -114,7 +139,7 @@ const handleSendMessage = async (text) => {
     setMessages([
       {
         id: message.id,
-        senderId: message.sender_id,
+        senderId: Number(message.sender_id),
         text: message.content,
         timestamp: new Date(message.created_at).toLocaleString(),
       },
@@ -186,6 +211,7 @@ const handleSendMessage = async (text) => {
   // --------------------
 const handleSelectChat = async (chat) => {
   setSelectedChat(chat);
+  setActiveConversationId(chat.id);
   setShowChatList(false);
   setMessages([]);
   setMessagesLoading(true);
@@ -195,10 +221,11 @@ const handleSelectChat = async (chat) => {
 
     const mappedMessages = data.map((m) => ({
       id: m.id,
-      senderId: m.sender,
+      senderId: Number(m.sender),
       senderName: m.sender_name,
       text: m.content,
       timestamp: new Date(m.created_at).toLocaleString(),
+      isRead: m.is_read ?? false,
     }));
 
     setMessages(mappedMessages);
@@ -213,6 +240,7 @@ const handleSelectChat = async (chat) => {
   const handleBackToList = () => {
     setSelectedChat(null);
     setShowChatList(true);
+    setActiveConversationId(null);
   };
 
   // --------------------
@@ -256,6 +284,7 @@ const handleSelectChat = async (chat) => {
       onSendMessage={handleSendMessage}
       connected=  {connected}
       sendingDisabled={sendingDisabled}
+      sendRead={sendRead}
     />
   </div>
 ) : (
