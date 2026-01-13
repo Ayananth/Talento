@@ -1,10 +1,11 @@
 import axios from "axios";
-import { API_BASE_URL } from "../constants";
-import { getAccessToken, getRefreshToken, saveTokens, clearTokens } from "../auth/authUtils";
+import { API_BASE_URL } from "../constants/constants";
+import { getAccessToken, saveTokens, clearTokens } from '../auth/context/authUtils'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 // Attach access token to all requests
@@ -13,7 +14,6 @@ api.interceptors.request.use((config) => {
   if (access) {
     config.headers.Authorization = `Bearer ${access}`;
   }
-  console.log("➡️ API Request:", config.method?.toUpperCase(), config.url);
   return config;
 });
 
@@ -23,43 +23,58 @@ api.interceptors.response.use(
 
   async (error) => {
     const originalRequest = error.config;
+    const status = error.response?.status;
 
-    // Not a 401 → nothing to do
-    if (error.response?.status !== 401) {
+    // BLOCKED / FORBIDDEN → FORCE LOGOUT
+    if (status === 403) {
+      clearTokens();
+
+      //  avoid infinite loop
+      if (!originalRequest._forcedLogout) {
+        originalRequest._forcedLogout = true;
+        window.location.href = "/login";
+      }
+
       return Promise.reject(error);
     }
 
-    // Prevent infinite loop
+    //  ACCESS TOKEN EXPIRED
+    if (status !== 401) {
+      return Promise.reject(error);
+    }
+
+    // Prevent infinite retry loop
     if (originalRequest._retry) {
+      clearTokens();
+      window.location.href = "/login";
       return Promise.reject(error);
     }
+
     originalRequest._retry = true;
 
-    // Try refresh token
     try {
-      const refresh = getRefreshToken();
-      if (!refresh) throw new Error("No refresh token");
+      console.log("Attempting access token refresh...");
 
-      const response = await axios.post(`${API_BASE_URL}/v1/auth/token/refresh/`, {
-        refresh: refresh,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/v1/auth/token/refresh/`,
+        {},
+        { withCredentials: true }
+      );
 
       const newAccess = response.data.access;
-      const newRefresh = response.data.refresh || refresh;
+      saveTokens({ access: newAccess });
 
-      // Save new tokens
-      saveTokens({ access: newAccess, refresh: newRefresh });
-
-      // Retry original request with new access token
       originalRequest.headers.Authorization = `Bearer ${newAccess}`;
       return api(originalRequest);
 
     } catch (err) {
-      // Refresh failed → logout user
+      console.log("Refresh failed → logging out");
       clearTokens();
+      window.location.href = "/login";
       return Promise.reject(err);
     }
   }
 );
+
 
 export default api;

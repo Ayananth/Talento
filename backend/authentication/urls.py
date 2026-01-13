@@ -17,8 +17,8 @@ urlpatterns = [
     # path(route="sign_in", view=views.SignInView.as_view(), name="sign_in"),
     # path(route="pwreset", view=views.PasswordResetView.as_view(), name="pwreset"),
 
-    path('sign_in', views.MyTokenObtainPairView.as_view(), name='sign_in'),
-    path('sign_out', views.LogoutView.as_view(), name='sign_out'),
+    path('signin', views.MyTokenObtainPairView.as_view(), name='sign_in'),
+    path('signout', views.LogoutView.as_view(), name='sign_out'),
 
 
     path('token/refresh/', TokenRefreshView.as_view(), name='jwt_refresh'),
@@ -27,6 +27,12 @@ urlpatterns = [
     path("request-password-reset/", views.PasswordResetRequestView.as_view(), name="request-password-reset"),
     path("reset-password/", views.ResetPasswordView.as_view(), name="reset-password"),
     path('google-login/', views.GoogleLoginAPIView.as_view(), name='google-login'),
+
+
+
+
+    path("admin/users/", views.AdminUserListView.as_view(), name="admin-user-list"),
+    path("admin/users/<int:pk>/", views.AdminUserDetailView.as_view(), name="admin-user-detail"),
 
 
 

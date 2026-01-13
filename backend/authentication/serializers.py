@@ -10,6 +10,10 @@ from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
 
 
+from profiles.models import JobSeekerProfile
+from recruiter.models import RecruiterProfile
+
+
 
 
 
@@ -57,11 +61,14 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         if requested_role and user.role != requested_role:
             raise AuthenticationFailed("Invalid credentials")
         refresh = self.get_token(user)
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
+        # data['refresh'] = str(refresh)
+        # data['access'] = str(refresh.access_token)
+        access = str(refresh.access_token)
         # data['role'] = user.role
         # data['email'] = user.email
-        return data
+        return {
+            'access': access
+        }
     
     @classmethod
     def get_token(cls, user):
@@ -110,3 +117,97 @@ class ResetPasswordSerializer(serializers.Serializer):
 class GoogleAuthSerializer(serializers.Serializer):
     id_token = serializers.CharField(write_only=True)
     role = serializers.ChoiceField(choices=["jobseeker", "recruiter"])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#------------------- Admin----------------------
+
+
+
+
+
+
+class AdminUserListSerializer(serializers.ModelSerializer):
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
+
+    class Meta:
+        model = USER
+        fields = [
+            "id",
+            "email",
+            "username",
+            "role",
+            "role_display",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "is_email_verified",
+            "is_blocked"
+
+        ]
+
+
+
+
+
+
+class JobSeekerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobSeekerProfile
+        fields = [
+            "fullname",
+            "headline",
+            "experience_years",
+            "open_to_work",
+        ]
+
+
+class RecruiterProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecruiterProfile
+        fields = [
+            "id",
+            "company_name",
+            "status",
+            "verified_at",
+            "can_post_jobs"
+        ]
+
+
+class AdminUserDetailSerializer(serializers.ModelSerializer):
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
+
+    jobseeker_profile = JobSeekerProfileSerializer(read_only=True)
+    recruiter_profile = RecruiterProfileSerializer(read_only=True)
+
+    class Meta:
+        model = USER
+        fields = [
+            "id",
+            "email",
+            "username",
+            "role",
+            "role_display",
+            "is_active",
+            "is_email_verified",
+            "is_staff",
+            "date_joined",
+            "last_login",
+            "is_blocked",
+
+            "jobseeker_profile",
+            "recruiter_profile",
+        ]
+
+

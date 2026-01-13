@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import JobSeekerProfile, RecruiterProfile
+from .models import JobSeekerProfile
 
 from django.contrib.auth import get_user_model
 
@@ -18,10 +18,4 @@ def create_user_profile(sender, instance, created, **kwargs):
             user=instance,
             fullname=getattr(instance, "full_name", "") or getattr(instance, "username", "") or "",
 
-        )
-
-    # If recruiter
-    elif instance.role == "recruiter":
-        RecruiterProfile.objects.create(
-            user=instance,
         )

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuth from "../../auth/useAuth";
+import useAuth from "../../auth/context/useAuth";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
+
+
 
 export default function LoginForm({ role }) {
   const [email, setEmail] = useState("");
@@ -39,7 +41,7 @@ export default function LoginForm({ role }) {
 
     try {
       await login({ email, password, role: "admin" });
-      navigate("/admin/dashboard");
+      navigate("/admin");
     } catch (err) {
       setLoginError("Login failed. Check your credentials.");
     } finally {
