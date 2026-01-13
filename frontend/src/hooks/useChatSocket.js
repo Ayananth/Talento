@@ -42,6 +42,8 @@ export default function useChatSocket({
       console.error("WS error", e);
     };
 
+
+
     return () => {
       socket.close();
     };
@@ -59,10 +61,22 @@ export default function useChatSocket({
     );
   };
 
+  const sendRead = (messageId) => {
+    if (!socketRef.current || socketRef.current.readyState !== 1) return;
+
+    socketRef.current.send(
+      JSON.stringify({
+        type: "read",
+        message_id: messageId,
+      })
+    );
+  };
+
   console.log("WS connected state:", connected);
 
   return {
     connected,
     sendMessage,
+    sendRead
   };
 }
