@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ConstructionIcon } from "lucide-react";
 
 import ChatList from "../../components/jobseeker/messages/ChatList";
 import ChatWindow from "../../components/jobseeker/messages/ChatWindow";
@@ -42,6 +42,7 @@ const MessagesPageResponsive = () => {
         senderName: msg.sender_name,
         text: msg.content,
         timestamp: new Date(msg.created_at).toLocaleString(),
+        isRead: false,
       }]);
     },
   });
@@ -199,6 +200,7 @@ const handleSelectChat = async (chat) => {
       senderName: m.sender_name,
       text: m.content,
       timestamp: new Date(m.created_at).toLocaleString(),
+      isRead: m.is_read ?? false,
     }));
 
     setMessages(mappedMessages);
