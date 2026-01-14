@@ -31,8 +31,9 @@ export const Attachment = ({ attachment }) => {
   return (
     <a
     //   href={file_url} //open in preview
-     href={file_url.replace("/upload/", "/upload/fl_attachment/")} //download
+    //  href={file_url.replace("/upload/", "/upload/fl_attachment/")} //download
     //   href={file_url.replace("/upload/", "/upload/fl_inline/")} // Open in browser tab
+    href={getCloudinaryUrl(file_url, "download")}
 
       target="_blank"
       rel="noopener noreferrer"
@@ -47,3 +48,20 @@ export const Attachment = ({ attachment }) => {
     </a>
   );
 };
+
+
+
+const getCloudinaryUrl = (url, mode) => {
+  if (!url.includes("/upload/")) return url;
+
+  if (mode === "inline") {
+    return url.replace("/upload/", "/upload/fl_inline/");
+  }
+
+  if (mode === "download") {
+    return url.replace("/upload/", "/upload/fl_attachment/");
+  }
+
+  return url;
+};
+
