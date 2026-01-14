@@ -30,7 +30,10 @@ export const Attachment = ({ attachment }) => {
   // Non-image attachments (PDF / DOC)
   return (
     <a
-      href={file_url}
+    //   href={file_url} //open in preview
+     href={file_url.replace("/upload/", "/upload/fl_attachment/")} //download
+    //   href={file_url.replace("/upload/", "/upload/fl_inline/")} // Open in browser tab
+
       target="_blank"
       rel="noopener noreferrer"
       className="mt-2 flex items-center gap-2 rounded-md bg-white/20 px-2 py-1 text-sm hover:bg-white/30"
