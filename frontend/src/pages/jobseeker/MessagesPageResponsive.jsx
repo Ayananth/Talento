@@ -285,6 +285,7 @@ const handleSelectChat = async (chat) => {
       connected=  {connected}
       sendingDisabled={sendingDisabled}
       sendRead={sendRead}
+      activeConversationId={activeConversationId}
     />
   </div>
 ) : (
