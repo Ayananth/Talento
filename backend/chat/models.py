@@ -42,3 +42,22 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
     is_read = models.BooleanField(default=False)
+
+
+class ChatAttachmet(models.Model):
+    message = models.OneToOneField(
+        "Message",
+        on_delete=models.CASCADE,
+        related_name="attachment",
+        null=True,
+        blank=True
+    )
+    file_name = models.CharField(max_length=255)
+    file_url = models.TextField()
+    file_type = models.CharField(max_length=100)
+    file_size = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add = True)
+
+    def __str__(self):
+        return self.file_name
+    
