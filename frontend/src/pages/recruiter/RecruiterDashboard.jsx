@@ -4,6 +4,7 @@ import UpgradeBanner from "../../components/jobseeker/UpgradeBanner";
 import useAuth from "../../auth/context/useAuth"
 import { useSearchParams } from "react-router-dom";
 import Toast from "@/components/common/Toast";
+import { useState, useEffect } from "react";
 
 
 
