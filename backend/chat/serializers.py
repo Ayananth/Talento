@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Conversation, Message  
+from .constants import ALLOWED_MIME_TYPES, MAX_FILE_SIZE
 
 class MessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.SerializerMethodField()
@@ -83,3 +84,17 @@ class StartConversationSerializer(serializers.Serializer):
         if not value.strip():
             raise serializers.ValidationError("Message cannot be empty")
         return value
+    
+
+class ChatFileUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+    def validate_file(self, file):
+        if file.content_type not in ALLOWED_MIME_TYPES:
+            raise serializers.ValidationError("Unsupported file type")
+        
+        if file.size > MAX_FILE_SIZE:
+            raise serializers.ValidationError("File size exeeds 5MB limit")
+        
+        return file
+

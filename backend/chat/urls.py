@@ -11,4 +11,11 @@ urlpatterns = [
     # path("conversations/<int:pk>/messages/send/", views.SendMessageView.as_view(), name="send-message"),
     path("conversations/start/", views.StartConversationAPIView.as_view()),
     path("conversation/", views.GetConversationAPIView.as_view()),
+
+    path("conversations/<int:chat_id>/upload/", views.ChatFileUploadAPIView.as_view()),
+    
+
+
+
+
 ]
