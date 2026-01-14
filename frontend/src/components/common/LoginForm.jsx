@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAsyncError, useNavigate } from "react-router-dom";
 import useAuth from '../../auth/context/useAuth'
 import { Eye, EyeOff } from "lucide-react";
@@ -15,6 +15,17 @@ export default function     LoginForm({role, redirectAfterLogin}) {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+useEffect(() => {
+  if (!loginError) return;
+
+  const timer = setTimeout(() => {
+    setLoginError(null);
+  }, 4000); // 4 seconds
+
+  return () => clearTimeout(timer);
+}, [loginError]);
+
 
 
 
@@ -37,25 +48,24 @@ export default function     LoginForm({role, redirectAfterLogin}) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoginError(null);
-    
-    // Validate before API call
-    if (!validateForm()) return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoginError(null);
 
-    setLoading(true);
+  if (!validateForm()) return;
 
-    try {
-      await login({ email, password, role });
-      navigate(redirectAfterLogin);
-    } catch (err) {
-      setLoginError("Login failed. Check your credentials.");
-      console.error(err);
-    } finally{
-      setLoading(false)
-    }
-  };
+  setLoading(true);
+
+  try {
+    await login({ email, password, role });
+    navigate(redirectAfterLogin);
+  } catch (err) {
+    setLoginError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // const handleNavigate = () => navigate("/signup");
 
@@ -99,7 +109,7 @@ export default function     LoginForm({role, redirectAfterLogin}) {
           <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
         {/* <GoogleLoginButton role={"jobseeker"} /> */}
-          {role !== "admin" && <GoogleLoginButton role={role} />}
+          {role !== "admin" && <GoogleLoginButton role={role} setLoginError={setLoginError} />}
 
 
         </button>
