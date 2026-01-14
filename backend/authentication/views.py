@@ -81,7 +81,7 @@ class SignUpView(APIView):
                 )
 
             return Response(
-                {"error": "User already exists and is verified. Please log in."},
+                {"error": "You can not register with that email id."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
