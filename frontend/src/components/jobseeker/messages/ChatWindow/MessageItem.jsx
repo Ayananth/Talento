@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Check, CheckCheck } from "lucide-react";
+import { Attachment } from "./Attachment";
 
 
 
@@ -20,16 +21,7 @@ const MessageItem = ({
   const hasMarkedRead = useRef(false);
 
   useEffect(() => {
-
-console.log("READ CHECK", {
-  msgId: msg.id,
-  msgSender: msg.senderId,
-  currentUserId,
-  isMine,
-});
-
-
-
+    console.log("msg", msg)
     if (isMine) return;
     if (msg.isRead) return;
     if (!isTabVisible) return;
@@ -39,7 +31,6 @@ console.log("READ CHECK", {
       ([entry]) => {
         if (entry.isIntersecting && !hasMarkedRead.current) {
           hasMarkedRead.current = true;
-          console.log("sending to read:", msg, msg.id)
           sendRead(msg.id);
           observer.disconnect();
         }
@@ -48,9 +39,11 @@ console.log("READ CHECK", {
     );
 
     observer.observe(ref.current);
-
     return () => observer.disconnect();
   }, [isTabVisible]);
+
+  // 🔹 HIDE EMPTY MESSAGE (optional but recommended)
+  if (!msg.text && !msg.attachment) return null;
 
   return (
     <div
@@ -61,21 +54,27 @@ console.log("READ CHECK", {
           : "bg-slate-100 text-slate-900 rounded-bl-none"
       }`}
     >
-      <p>{msg.text}</p>
-<div className="flex items-center justify-end gap-2 text-xs opacity-70 mt-1">
-  <span>{msg.timestamp}</span>
+      {/* TEXT */}
+      {msg.text && (
+        <p className="whitespace-pre-wrap">{msg.text}</p>
+      )}
 
-  {isMine && (
-    <span className="select-none">
-      {msg.isRead ? "Seen" : "Sent"}
-    </span>
-  )}
-</div>
+      {/* ATTACHMENT */}
+      {msg.attachment && (
+        <Attachment attachment={msg.attachment} />
+      )}
 
-
-
+      <div className="flex items-center justify-end gap-2 text-xs opacity-70 mt-1">
+        <span>{msg.timestamp}</span>
+        {isMine && (
+          <span className="select-none">
+            {msg.isRead ? "Seen" : "Sent"}
+          </span>
+        )}
+      </div>
     </div>
   );
 };
+
 
 export default MessageItem;
