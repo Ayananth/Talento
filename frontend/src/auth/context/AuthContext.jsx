@@ -123,9 +123,42 @@ const login = async ({ email, password, role = "jobseeker" }) => {
   };
 
   // --- REGISTER ---
-  const register = async (payload) => {
-    return await api.post("/v1/auth/sign_up", payload);
-  };
+const register = async (payload) => {
+  try {
+    const res = await api.post("/v1/auth/sign_up", payload);
+    return res;
+  } catch (err) {
+    let error = {
+      message: "Signup failed. Please try again.",
+      fields: {},
+    };
+
+    if (err.response?.data) {
+      const data = err.response.data;
+
+      // ✅ FIELD ERRORS (Django / DRF)
+      if (typeof data === "object") {
+        Object.keys(data).forEach((key) => {
+          if (Array.isArray(data[key])) {
+            error.fields[key] = data[key][0];
+          }
+        });
+      }
+
+      // ✅ GENERAL ERROR KEYS (IMPORTANT)
+      if (data.detail) error.message = data.detail;
+      else if (data.message) error.message = data.message;
+      else if (data.error) error.message = data.error;   // 🔥 FIX
+    } 
+    else if (err.request) {
+      error.message = "Server not reachable. Please try again later.";
+    }
+
+    throw error;
+  }
+};
+
+
 
   // -------------------------------------------------
   // LOGOUT
