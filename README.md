@@ -11,6 +11,8 @@ Built with **Django REST Framework**, **PostgreSQL**, and **React**.
 - Python
 - Django
 - Django REST Framework
+- WebSocket
+- Django Channels
 - PostgreSQL
 - PostgreSQL Full-Text Search
 

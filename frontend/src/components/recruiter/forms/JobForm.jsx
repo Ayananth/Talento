@@ -54,7 +54,7 @@ export default function JobForm({
         : "",
       skills: Array.isArray(initialData.skills)
         ? initialData.skills.join(", ")
-        : "",
+        : initialData.skills,
     });
   }, [initialData]);
 
