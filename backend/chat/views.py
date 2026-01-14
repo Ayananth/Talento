@@ -89,6 +89,7 @@ class ConversationMessagesAPIView(APIView):
             Message.objects
             .filter(conversation=conversation)
             .select_related("sender")
+            .select_related("attachment")
             .order_by("created_at")
         )
 
