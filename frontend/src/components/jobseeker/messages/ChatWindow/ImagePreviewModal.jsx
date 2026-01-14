@@ -31,7 +31,8 @@ const ImagePreviewModal = ({ src, fileName, onClose }) => {
 
         {/* Download */}
         <a
-          href={src}
+         href={`${src.replace("/upload/", "/upload/fl_attachment/")}`}
+
           download={fileName}
           className="absolute -top-10 right-12 text-white hover:opacity-80"
         >
