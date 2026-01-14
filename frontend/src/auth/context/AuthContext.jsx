@@ -8,11 +8,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const refreshTimer = useRef(null);
+  const [subscription, setSubscription] = useState(null);
 
 
 
   // On app start: check if an access token exists and set user if valid
-  useEffect(() => {
+useEffect(() => {
+  const init = async () => {
     const access = getAccessToken();
 
     if (access) {
@@ -20,15 +22,20 @@ export const AuthProvider = ({ children }) => {
       if (decoded) {
         setUser(decoded);
         scheduleAutoRefresh(access);
+        await fetchSubscription();
       }
     }
 
     setLoading(false);
+  };
 
-    return () => {
-      if (refreshTimer.current) clearTimeout(refreshTimer.current);
-    };
-  }, []);
+  init();
+
+  return () => {
+    if (refreshTimer.current) clearTimeout(refreshTimer.current);
+  };
+}, []);
+
 
   // --- Auto Refresh Token ---
   const scheduleAutoRefresh = (accessToken) => {
@@ -47,70 +54,35 @@ export const AuthProvider = ({ children }) => {
     console.log("Auto-refresh scheduled in ");
   };
 
-  const refreshAccessToken = async () => {
-    try {
-      const response = await api.post(
-        "/v1/auth/token/refresh/",
-        {},
-        { withCredentials: true }
-      );
+const refreshAccessToken = async () => {
+  const res = await api.post("/v1/auth/token/refresh/", {}, { withCredentials: true });
+  const newAccess = res.data.access;
 
-      const newAccess = response.data.access;
+  saveTokens({ access: newAccess });
 
-      saveTokens({ access: newAccess });
+  const decoded = decodeToken(newAccess);
+  setUser(decoded);
 
-      const decoded = decodeToken(newAccess);
-      setUser(decoded);
+  scheduleAutoRefresh(newAccess);
+  await fetchSubscription();
+};
 
-      scheduleAutoRefresh(newAccess);
-
-      console.log("Access token refreshed");
-    } catch (err) {
-      console.log("Auto refresh failed → logging out");
-      logout();
-    }
-  };
 
   // --- LOGIN (role optional, default = jobseeker) ---
 const login = async ({ email, password, role = "jobseeker" }) => {
-  try {
-    const res = await api.post(
-      "/v1/auth/signin",
-      { email, password, role },
-      { withCredentials: true }
-    );
+  const res = await api.post("/v1/auth/signin", { email, password, role }, { withCredentials: true });
 
-    const { access } = res.data;
+  const { access } = res.data;
 
-    saveTokens({ access });
+  saveTokens({ access });
 
-    const decoded = decodeToken(access);
-    setUser(decoded);
+  const decoded = decodeToken(access);
+  setUser(decoded);
 
-    scheduleAutoRefresh(access);
-
-    return res;
-  } catch (err) {
-    let message = "Login failed. Please try again.";
-
-    if (err.response?.data) {
-      const data = err.response.data;
-
-      if (typeof data === "string") {
-        message = data;
-      } else if (data.detail) {
-        message = data.detail;
-      } else if (data.message) {
-        message = data.message;
-      } else if (Array.isArray(data.non_field_errors)) {
-        message = data.non_field_errors[0];
-      }
-    } else if (err.request) {
-      message = "Server not reachable. Please try again later.";
-    }
-    throw new Error(message);
-  }
+  scheduleAutoRefresh(access);
+  await fetchSubscription();
 };
+
 
 
   // --- GOOGLE LOGIN (role optional, default = jobseeker) ---
@@ -136,7 +108,6 @@ const register = async (payload) => {
     if (err.response?.data) {
       const data = err.response.data;
 
-      // ✅ FIELD ERRORS (Django / DRF)
       if (typeof data === "object") {
         Object.keys(data).forEach((key) => {
           if (Array.isArray(data[key])) {
@@ -145,10 +116,9 @@ const register = async (payload) => {
         });
       }
 
-      // ✅ GENERAL ERROR KEYS (IMPORTANT)
       if (data.detail) error.message = data.detail;
       else if (data.message) error.message = data.message;
-      else if (data.error) error.message = data.error;   // 🔥 FIX
+      else if (data.error) error.message = data.error;  
     } 
     else if (err.request) {
       error.message = "Server not reachable. Please try again later.";
@@ -168,6 +138,7 @@ const register = async (payload) => {
 
     clearTokens();
     setUser(null);
+    setSubscription(null);
 
     if (refreshTimer.current) clearTimeout(refreshTimer.current);
 
@@ -180,10 +151,26 @@ const register = async (payload) => {
     else window.location.href = "/login";
   };
 
+
+
+  const fetchSubscription = async () => {
+  try {
+    const res = await api.get("v1/subscriptions/status/", {
+      withCredentials: true,
+    });
+    setSubscription(res.data);
+  } catch (err) {
+    setSubscription(null);
+  }
+};
+
+
   return (
     <AuthContext.Provider
       value={{
         user,
+        subscription,
+        fetchSubscription,
         loading,
         isAuthenticated: !!user,
         login,

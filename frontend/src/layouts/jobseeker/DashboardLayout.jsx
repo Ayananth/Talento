@@ -8,6 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import Toast from "../../components/common/Toast";
 import { getSubscriptionStatus } from "../../apis/common/subscriptions/subscriptions";
 import UpgradeBanner from "../../components/jobseeker/UpgradeBanner";
+import useAuth from "../../auth/context/useAuth";
 
 
 const DashboardLayout = () => {
@@ -15,14 +16,9 @@ const DashboardLayout = () => {
 
   const [toastMessage, setToastMessage] = useState(null);
 
-  const [subscription, setSubscription] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const {subscription} = useAuth();
 
-  useEffect(() => {
-    getSubscriptionStatus()
-      .then(setSubscription)
-      .finally(() => setLoading(false));
-  }, []);
+
 
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
@@ -55,7 +51,7 @@ const DashboardLayout = () => {
 
 
     {/* 🚀 Upgrade Banner */}
-    {!loading && !subscription?.is_active && (
+    {!subscription?.is_active && (
       <UpgradeBanner />
     )}
 

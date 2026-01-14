@@ -78,7 +78,7 @@ const recruiterRoutes = [
           },
           {
             path: "premium",
-            element: <JobseekerPremium navigateTo="/recruiter/profile?payment=success" />,
+            element: <JobseekerPremium navigateTo="/recruiter/dashboard?payment=sucess" />,
           },
 
 
