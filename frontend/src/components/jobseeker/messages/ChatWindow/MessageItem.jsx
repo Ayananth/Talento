@@ -21,7 +21,6 @@ const MessageItem = ({
   const hasMarkedRead = useRef(false);
 
   useEffect(() => {
-    console.log("msg", msg)
     if (isMine) return;
     if (msg.isRead) return;
     if (!isTabVisible) return;

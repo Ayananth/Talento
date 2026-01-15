@@ -117,13 +117,13 @@ const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
                         )}
                       </p>
 
-                      {chat.unreadCount > 0 && (
+                      {chat.unread_count > 0 && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           className="ml-2 flex-shrink-0 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold"
                         >
-                          {chat.unreadCount}
+                          {chat.unread_count}
                         </motion.div>
                       )}
                     </div>
