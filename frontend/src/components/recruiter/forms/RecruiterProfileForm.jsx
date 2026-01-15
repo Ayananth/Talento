@@ -3,6 +3,7 @@ import {
   FileText,
   X,
   Image as ImageIcon,
+  Loader2,
 } from "lucide-react";
 import {
   isValidEmail,
@@ -11,7 +12,7 @@ import {
   MAX_LOGO_SIZE,
   MAX_DOC_SIZE,
 } from "@/utils/recruiter/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getCloudinaryUrl } from "../../../utils/common/getCloudinaryUrl";
 
 export default function RecruiterProfileForm({
@@ -22,14 +23,18 @@ export default function RecruiterProfileForm({
 }) {
   const [formData, setFormData] = useState(null);
   const [errors, setErrors] = useState({});
+  const initialized = useRef(false);
+
 
   useEffect(() => {
-    if (initialData) {
+    if (!initialized.current && initialData) {
       setFormData(initialData);
+      initialized.current = true;
     }
   }, [initialData]);
 
   if (!formData) return null;
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -55,6 +60,7 @@ export default function RecruiterProfileForm({
         return;
       }
 
+      setErrors((p) => ({ ...p, [name]: null }));
       setFormData((p) => ({ ...p, [name]: file }));
       return;
     }
@@ -62,8 +68,12 @@ export default function RecruiterProfileForm({
     setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  /* ---------------- Submit ---------------- */
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+
     const errs = {};
 
     if (!formData.company_name) errs.company_name = "Required";
@@ -78,7 +88,7 @@ export default function RecruiterProfileForm({
       return;
     }
 
-    onSubmit(formData, setErrors);
+    await onSubmit(formData, setErrors);
   };
 
   return (
@@ -123,12 +133,28 @@ export default function RecruiterProfileForm({
             existing={formData.existing_doc}
             error={errors.draft_business_registration_doc}
             onChange={handleChange}
-            onRemove={() => setFormData((p) => ({ ...p, existing_doc: null }))}
+            onRemove={() =>
+              setFormData((p) => ({
+                ...p,
+                draft_business_registration_doc: null,
+                existing_doc: null,
+              }))
+            }
           />
         </Section>
 
+        {/* SUBMIT */}
         <div className="pt-6 border-t flex justify-end">
-          <button className="bg-blue-600 text-white px-8 py-2.5 rounded-lg">
+          <button
+            type="submit"
+            disabled={loading}
+            className={`px-8 py-2.5 rounded-lg flex items-center gap-2
+              ${loading
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"}
+              text-white`}
+          >
+            {loading && <Loader2 size={18} className="animate-spin" />}
             {submitText}
           </button>
         </div>
