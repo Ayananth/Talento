@@ -11,7 +11,8 @@ const ChatWindow = ({
   onSendMessage,
   sendingDisabled = false,
   connected,
-  sendRead
+  sendRead,
+  activeConversationId
 }) => {
   if (!chat) return null;
 
@@ -26,6 +27,7 @@ const ChatWindow = ({
       <div className="border-b border-slate-200 p-4 shrink-0">
         <h2 className="text-lg font-semibold text-slate-900">
           {chat.name}
+          {console.log(chat)}
         </h2>
         <p className="text-sm text-slate-600">{chat.jobTitle}</p>
       </div>
@@ -45,6 +47,7 @@ const ChatWindow = ({
         <MessageComposer
           onSend={onSendMessage}
           disabled={sendingDisabled}
+          chatId={activeConversationId}
         />
       </div>
     </motion.div>

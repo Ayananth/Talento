@@ -36,7 +36,7 @@ const MessagesPageResponsive = () => {
 
 const accessToken = useMemo(() => getAccessToken(), []);
 
- const handleWsMessage = useCallback((msg) => {
+const handleWsMessage = useCallback((msg) => {
   setMessages((prev) => [
     ...prev,
     {
@@ -44,11 +44,13 @@ const accessToken = useMemo(() => getAccessToken(), []);
       senderId: Number(msg.sender_id),
       senderName: msg.sender_name,
       text: msg.content,
+      attachment: msg.attachment ?? null,
       timestamp: new Date(msg.created_at).toLocaleString(),
       isRead: false,
     },
   ]);
 }, []);
+
 
 const handleReadAck = useCallback((messageId) => {
   setMessages((prev) =>
@@ -121,7 +123,7 @@ const handleSendMessage = async (text) => {
 
     const { conversation_id, message } = data;
 
-    // 1️⃣ Update selected chat with real conversation id
+    //  Update selected chat with real conversation id
     const newChat = {
       ...selectedChat,
       id: conversation_id,
@@ -219,14 +221,16 @@ const handleSelectChat = async (chat) => {
   try {
     const data = await fetchConversationMessages(chat.id);
 
-    const mappedMessages = data.map((m) => ({
-      id: m.id,
-      senderId: Number(m.sender),
-      senderName: m.sender_name,
-      text: m.content,
-      timestamp: new Date(m.created_at).toLocaleString(),
-      isRead: m.is_read ?? false,
-    }));
+  const mappedMessages = data.map((m) => ({
+    id: m.id,
+    senderId: Number(m.sender),
+    senderName: m.sender_name,
+    text: m.content,
+    attachment: m.attachment ?? null,
+    timestamp: new Date(m.created_at).toLocaleString(),
+    isRead: m.is_read ?? false,
+  }));
+
 
     setMessages(mappedMessages);
   } catch (error) {
@@ -285,6 +289,7 @@ const handleSelectChat = async (chat) => {
       connected=  {connected}
       sendingDisabled={sendingDisabled}
       sendRead={sendRead}
+      activeConversationId={activeConversationId}
     />
   </div>
 ) : (

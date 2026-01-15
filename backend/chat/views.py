@@ -12,11 +12,15 @@ from rest_framework.views import APIView
 from authentication.models import UserModel as User
 from jobs.models.job import Job
 
+from .services import upload_chat_file_to_cloudinary
+
+
 from .models import Conversation, Message
 from .serializers import (
     ConversationListSerializer,
     MessageSerializer,
     StartConversationSerializer,
+    ChatFileUploadSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -85,6 +89,7 @@ class ConversationMessagesAPIView(APIView):
             Message.objects
             .filter(conversation=conversation)
             .select_related("sender")
+            .select_related("attachment")
             .order_by("created_at")
         )
 
@@ -300,4 +305,27 @@ class GetConversationAPIView(APIView):
                 }
             },
             status=status.HTTP_200_OK,
+        )
+
+
+class ChatFileUploadAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, chat_id):
+        serializer = ChatFileUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        file = serializer.validated_data["file"]
+
+        upload_data = upload_chat_file_to_cloudinary(file, chat_id)
+
+        return Response(
+            {
+                "file_url": upload_data["file_url"],
+                "file_name": upload_data["file_name"],
+                "file_type": upload_data["file_type"],
+                "file_size": upload_data["file_size"],
+                "public_id": upload_data["public_id"],
+            },
+            status=status.HTTP_201_CREATED,
         )

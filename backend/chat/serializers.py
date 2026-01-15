@@ -1,7 +1,15 @@
 from rest_framework import serializers
-from .models import Conversation, Message  
+from .models import Conversation, Message, ChatAttachment  
+from .constants import ALLOWED_MIME_TYPES, MAX_FILE_SIZE
+
+
+class ChatAttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatAttachment
+        fields = ["file_url", "file_name", "file_type", "file_size"]
 
 class MessageSerializer(serializers.ModelSerializer):
+    attachment = ChatAttachmentSerializer(read_only=True)
     sender_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -83,3 +91,17 @@ class StartConversationSerializer(serializers.Serializer):
         if not value.strip():
             raise serializers.ValidationError("Message cannot be empty")
         return value
+    
+
+class ChatFileUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+    def validate_file(self, file):
+        if file.content_type not in ALLOWED_MIME_TYPES:
+            raise serializers.ValidationError("Unsupported file type")
+        
+        if file.size > MAX_FILE_SIZE:
+            raise serializers.ValidationError("File size exeeds 5MB limit")
+        
+        return file
+

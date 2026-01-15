@@ -2,7 +2,8 @@ from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
 from .permissions import user_is_conversation_participant
 from django.utils.timezone import localtime, now
-from .models import Message, Conversation
+from .models import Message, Conversation, ChatAttachment
+
 
 
 import json
@@ -47,13 +48,27 @@ def mark_message_as_read(message_id, user, conversation_id):
 
 
 @database_sync_to_async
-def create_message(conversation_id, sender, content):
+def create_message(conversation_id, sender, text, attachment):
     conversation = Conversation.objects.get(id=conversation_id)
-    return Message.objects.create(
+
+    message = Message.objects.create(
         conversation=conversation,
         sender=sender,
-        content=content,
+        content=text,
     )
+
+    if attachment:
+        ChatAttachment.objects.create(
+            message=message,
+            file_url=attachment["file_url"],
+            file_name=attachment["file_name"],
+            file_type=attachment["file_type"],
+            file_size=attachment["file_size"],
+            cloudinary_public_id=attachment.get("public_id"),
+        )
+
+    return message
+
 
 
 @database_sync_to_async
@@ -97,14 +112,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
 
-    async def receive(self, text_data):
+    async def receive(self, text_data=None, bytes_data=None):
+        if not text_data:
+            return
+
         data = json.loads(text_data)
 
         event_type = data.get("type", "message")
 
         logger.info(f"{data=}")
         logger.info(f"{event_type=}")
-
 
         # READ RECEIPT
         if event_type == "read":
@@ -130,21 +147,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     },
                 )
             except Exception as e:
-                # 🔥 THIS PREVENTS SOCKET FROM DYING
-                print("READ ERROR:", e)
+                logger.error("READ ERROR", exc_info=e)
             return
 
+        # NORMAL MESSAGE (text + attachment)
+        payload = data.get("content", {})
 
-        # NORMAL MESSAGE
-        content = data.get("content", "").strip()
+        text = payload.get("text", "")
+        attachment = payload.get("attachment")
 
-        if not content:
+        if isinstance(text, str):
+            text = text.strip()
+        else:
+            text = ""
+
+        if not text and not attachment:
             return
 
         message = await create_message(
             conversation_id=self.conversation_id,
             sender=self.user,
-            content=content,
+            text=text,
+            attachment=attachment,
         )
 
         await self.channel_layer.group_send(
@@ -157,6 +181,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "sender_id": self.user.id,
                     "sender_name": self.user.email,
                     "content": message.content,
+                    "attachment": attachment,
                     "created_at": localtime(message.created_at).isoformat(),
                     "is_read": False,
                 },
