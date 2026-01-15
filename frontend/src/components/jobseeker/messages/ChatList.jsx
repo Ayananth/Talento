@@ -93,7 +93,7 @@ const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
                         {chat.name}
                       </h3>
                       <span className="text-xs text-slate-500 ml-2 flex-shrink-0">
-                        {chat.timestamp || chat.time || ""}
+                        {/* {chat.timestamp || chat.time || ""} */}
                       </span>
                     </div>
 
@@ -112,7 +112,8 @@ const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
                             You have blocked this recruiter
                           </span>
                         ) : (
-                          chat.lastMessage
+                          ""
+                          // chat.lastMessage
                         )}
                       </p>
 
