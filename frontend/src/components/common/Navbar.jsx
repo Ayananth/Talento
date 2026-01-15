@@ -28,7 +28,10 @@ export function Navbar({ role }) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200 shadow-sm">
+    <nav
+  className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200 shadow-sm"
+  style={{ height: "72px" }}
+>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-4">
           {/* Logo Section */}
