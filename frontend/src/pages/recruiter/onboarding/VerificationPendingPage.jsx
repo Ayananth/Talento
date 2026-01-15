@@ -1,20 +1,31 @@
-import { Clock, CheckCircle, HelpCircle } from "lucide-react";
+import { Clock, CheckCircle, HelpCircle,LogOut } from "lucide-react";
+import useAuth from "../../../auth/context/useAuth";
 
 export default function VerificationPendingPage() {
+  const {logout} = useAuth();
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex flex-col">
 
       {/* HEADER */}
       <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">
-            T
-          </div>
-          <span className="text-xl font-semibold text-gray-800">
-            Talento
-          </span>
-        </div>
-      </header>
+              <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">
+                    T
+                  </div>
+                  <span className="text-xl font-semibold text-gray-800">
+                    Talento
+                  </span>
+                </div>
+                <button
+                  onClick={logout}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Logout"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            </header>
 
       {/* CONTENT */}
       <main className="flex-1 flex items-center justify-center px-4">
