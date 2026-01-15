@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const LandingLayout = () => {
   const location = useLocation();
+  const hideFooter = location.pathname.startsWith("/messages");
 
   // Scroll to top on route change
   useEffect(() => {
@@ -93,7 +94,7 @@ const LandingLayout = () => {
       </main>
 
       {/* Footer */}
-      <Footer />
+       {!hideFooter && <Footer />}
     </div>
   );
 };

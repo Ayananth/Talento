@@ -15,18 +15,14 @@ const MessageList = ({
   loading,
   sendRead,
 }) => {
-  const containerRef = useRef(null);
-  const prevMessageCount = useRef(0);
+  const bottomRef = useRef(null);
 
   useEffect(() => {
-    if (loading) return;
-
-    if (messages.length > prevMessageCount.current) {
-      containerRef.current.scrollTop =
-        containerRef.current.scrollHeight;
+    if (!loading) {
+      bottomRef.current?.scrollIntoView({
+        behavior: "smooth",
+      });
     }
-
-    prevMessageCount.current = messages.length;
   }, [messages, loading]);
 
   if (loading) {
@@ -34,9 +30,7 @@ const MessageList = ({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="flex-1 overflow-y-auto p-6 pb-24 space-y-3"
+    <div className="p-6 pb-24 space-y-3"
     >
       {messages.map((msg) => {
         const isMine = msg.senderId === currentUserId;
@@ -56,6 +50,8 @@ const MessageList = ({
           </div>
         );
       })}
+
+      <div ref={bottomRef} />
     </div>
   );
 };
