@@ -1,0 +1,19 @@
+Talento — Recruiter Verification Update
+
+Hi {{ recruiter_name }},
+
+Thank you for submitting your company profile {{ company_name }}.
+
+After reviewing your submission, our team found some issues that need to be addressed before approval.
+
+Reason from Admin:
+------------------
+{{ rejection_reason }}
+
+Please update your profile and resubmit for review:
+{{ resubmit_url }}
+
+Once updated, you can submit it again for approval.
+
+— Talento Team
+© {{ year }} Talento

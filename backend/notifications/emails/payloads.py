@@ -2,6 +2,8 @@ import logging
 
 from django.utils import timezone
 
+import os
+
 logger = logging.getLogger(__name__)
 
 
@@ -33,7 +35,40 @@ def build_recruiter_approval_email(admin, recruiter_profile):
             "submitted_at": timezone.localtime(
                 recruiter_profile.updated_at
             ),
-            "admin_review_url": f"/admin/recruiters/{recruiter_profile.id}/",
+            "admin_review_url": f"{os.getenv('FRONTEND_URL')}/admin/recruiter/approvals/{recruiter_profile.id}/",
             "year": timezone.now().year,
         },
     }
+
+
+
+
+def build_recruiter_approved_email(recruiter_profile):
+    return {
+        "to": recruiter_profile.user.email,
+        "subject": "Your recruiter profile has been approved",
+        "template": "recruiter_approved",
+        "context": {
+            "company_name": recruiter_profile.company_name,
+            "recruiter_name": recruiter_profile.user.get_username(),
+            "dashboard_url": f"{os.getenv('FRONTEND_URL')}/recruiter/dashboard/",
+            "year": timezone.now().year,
+        },
+    }
+
+
+def build_recruiter_rejected_email(recruiter_profile):
+    return {
+        "to": recruiter_profile.user.email,
+        "subject": "Your recruiter profile needs changes",
+        "template": "recruiter_rejected",
+        "context": {
+            "company_name": (
+                recruiter_profile.pending_data or {}
+            ).get("company_name"),
+            "rejection_reason": recruiter_profile.rejection_reason,
+            "resubmit_url": f"{os.getenv('FRONTEND_URL')}/recruiter/profile/",
+            "year": timezone.now().year,
+        },
+    }
+
