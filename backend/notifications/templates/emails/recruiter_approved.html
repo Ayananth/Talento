@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" style="margin:0; padding:0;">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Recruiter Profile Approved</title>
+  </head>
+
+  <body style="padding:0; margin:0; background:#f0f2f5; font-family:'Segoe UI', Arial, sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5; padding:40px 0;">
+      <tr>
+        <td align="center">
+
+          <table width="600" cellpadding="0" cellspacing="0"
+            style="background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 8px 18px rgba(0,0,0,0.15);">
+
+            <!-- Header -->
+            <tr>
+              <td style="
+                background: linear-gradient(135deg, #16a34a, #22c55e);
+                padding: 40px 20px;
+                text-align: center;
+                color: white;
+              ">
+                <h1 style="margin:0; font-size:28px; font-weight:700;">Talento</h1>
+                <p style="margin-top:10px; font-size:16px; opacity:0.95;">
+                  Recruiter Verification Complete
+                </p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:40px; color:#333;">
+
+                <h2 style="margin:0; font-size:22px; font-weight:600;">
+                  Your Profile Has Been Approved!
+                </h2>
+
+                <p style="margin:20px 0; font-size:16px; line-height:1.6;">
+                  Hi <strong>{{ recruiter_name }}</strong>,
+                </p>
+
+                <p style="font-size:16px; line-height:1.6;">
+                  Great news! Your company profile
+                  <strong>{{ company_name }}</strong>
+                  has been successfully reviewed and approved by our team.
+                </p>
+
+                <p style="font-size:16px; line-height:1.6;">
+                  You can now start posting jobs and connecting with top talent on Talento.
+                </p>
+
+                <!-- CTA -->
+                <div style="text-align:center; margin:40px 0;">
+                  <a href="{{ dashboard_url }}"
+                    style="
+                      background:linear-gradient(135deg, #16a34a, #22c55e);
+                      padding:14px 32px;
+                      color:#fff;
+                      text-decoration:none;
+                      font-size:16px;
+                      font-weight:600;
+                      border-radius:6px;
+                      display:inline-block;
+                    ">
+                    Go to Recruiter Dashboard
+                  </a>
+                </div>
+
+                <p style="font-size:14px; color:#555;">
+                  If you have any questions, feel free to reach out to our support team.
+                </p>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#f5f7fa; padding:20px; text-align:center; color:#888; font-size:12px;">
+                © {{ year }} Talento. All rights reserved.<br />
+                Connecting talent with opportunity.
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+</html>
