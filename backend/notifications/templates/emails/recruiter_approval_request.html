@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" style="margin:0; padding:0;">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Recruiter Approval Requested</title>
+  </head>
+
+  <body style="padding:0; margin:0; background:#f0f2f5; font-family: 'Segoe UI', Arial, sans-serif;">
+
+    <!-- Outer Container -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5; padding:40px 0;">
+      <tr>
+        <td align="center">
+
+          <!-- Card -->
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 8px 18px rgba(0,0,0,0.15);">
+
+            <!-- Header -->
+            <tr>
+              <td style="
+                background: linear-gradient(135deg, #3b82f6, #06b6d4);
+                padding: 40px 20px;
+                text-align: center;
+                color: white;
+              ">
+                <h1 style="margin:0; font-size:28px; font-weight:700;">Talento</h1>
+                <p style="margin:10px 0 0; font-size:16px; opacity:0.9;">
+                  Admin Notification
+                </p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 40px 40px; color:#333;">
+
+                <h2 style="margin:0; font-size:22px; font-weight:600;">
+                  Recruiter Approval Requested
+                </h2>
+
+                <p style="margin:20px 0; font-size:16px; line-height:1.6;">
+                  A recruiter has submitted their company profile and is requesting approval.
+                </p>
+
+                <!-- Details -->
+                <table cellpadding="0" cellspacing="0" width="100%" style="margin:20px 0; font-size:15px;">
+                  <tr>
+                    <td style="padding:6px 0; color:#555; width:40%;">Company Name</td>
+                    <td style="padding:6px 0; font-weight:600;">{{ company_name }}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0; color:#555;">Recruiter Name</td>
+                    <td style="padding:6px 0; font-weight:600;">{{ recruiter_name }}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0; color:#555;">Recruiter Email</td>
+                    <td style="padding:6px 0; font-weight:600;">{{ recruiter_email }}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0; color:#555;">Industry</td>
+                    <td style="padding:6px 0; font-weight:600;">
+                      {{ industry|default:"—" }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0; color:#555;">Company Size</td>
+                    <td style="padding:6px 0; font-weight:600;">
+                      {{ company_size|default:"—" }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0; color:#555;">Submitted At</td>
+                    <td style="padding:6px 0; font-weight:600;">
+                      {{ submitted_at }}
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Button -->
+                <div style="text-align:center; margin:40px 0;">
+                  <a href="{{ admin_review_url }}"
+                    style="
+                      background:#3b82f6;
+                      background:linear-gradient(135deg, #3b82f6, #06b6d4);
+                      padding: 14px 32px;
+                      color: #fff;
+                      text-decoration:none;
+                      font-size:16px;
+                      font-weight:600;
+                      border-radius:6px;
+                      display:inline-block;
+                    "
+                  >
+                    Review Recruiter Profile
+                  </a>
+                </div>
+
+                <p style="margin:0; font-size:14px; line-height:1.6; color:#555;">
+                  Please review the recruiter’s company information and approve or reject
+                  the request from the admin dashboard.
+                </p>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#f5f7fa; padding:20px; text-align:center; color:#888; font-size:12px;">
+                © {{ year }} Talento. All rights reserved.<br />
+                Talento Admin System — Recruiter verification workflow.
+              </td>
+            </tr>
+
+          </table>
+          <!-- End Card -->
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+</html>
