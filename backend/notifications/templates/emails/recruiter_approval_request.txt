@@ -1,0 +1,14 @@
+New Recruiter Approval Request
+
+A recruiter has submitted their company profile for approval.
+
+Company Name: {{ company_name }}
+Recruiter Email: {{ recruiter_email }}
+Recruiter Name: {{ recruiter_name }}
+Industry: {{ industry }}
+Submitted At: {{ submitted_at }}
+
+Review the recruiter profile here:
+{{ admin_review_url }}
+
+This action requires your approval.
