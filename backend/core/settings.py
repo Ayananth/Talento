@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "channels",
     "subscriptions",
     "django_celery_beat",
+    "notifications"
 ]
 
 MIDDLEWARE = [
