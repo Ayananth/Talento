@@ -24,6 +24,7 @@ from .serializers import (
 from django.db import transaction
 from notifications.events import NotificationEvent
 from notifications.service import notify_admin
+from notifications.tasks import notify_admin_task
 
 
 logger = logging.getLogger(__name__)
@@ -66,15 +67,16 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
         profile.rejection_reason = None
         profile.save()
 
+        profile_id = profile.id
+
         if profile.is_first_submission():
             transaction.on_commit(
-                lambda: notify_admin(
+                lambda pid=profile_id: notify_admin_task.delay(
                     event=NotificationEvent.RECRUITER_APPROVAL_REQUESTED,
-                    payload={
-                        "recruiter_profile_id": profile.id
-                    }
+                    payload={"recruiter_profile_id": pid}
                 )
             )
+
 
 
         logger.info(
