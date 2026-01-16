@@ -1,7 +1,15 @@
 from rest_framework import serializers
-from .models import Conversation, Message  
+from .models import Conversation, Message, ChatAttachment  
+from .constants import ALLOWED_MIME_TYPES, MAX_FILE_SIZE
+
+
+class ChatAttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatAttachment
+        fields = ["file_url", "file_name", "file_type", "file_size"]
 
 class MessageSerializer(serializers.ModelSerializer):
+    attachment = ChatAttachmentSerializer(read_only=True)
     sender_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -34,6 +42,7 @@ class ConversationListSerializer(serializers.ModelSerializer):
     other_user = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
     last_message_time = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
@@ -43,8 +52,17 @@ class ConversationListSerializer(serializers.ModelSerializer):
             "other_user",
             "last_message",
             "last_message_time",
+            "unread_count",
             "created_at",
         ]
+
+    def get_unread_count(self, obj):
+        request = self.context["request"]
+        user = request.user
+
+        return obj.messages.filter(
+            is_read=False
+        ).exclude(sender=user).count()
 
     def get_other_user(self, obj):
         request = self.context["request"]
@@ -79,7 +97,27 @@ class StartConversationSerializer(serializers.Serializer):
     recipient_id = serializers.IntegerField()
     content = serializers.CharField(max_length=5000)
 
-    def validate_content(self, value):
-        if not value.strip():
-            raise serializers.ValidationError("Message cannot be empty")
-        return value
+    def validate(self, data):
+        content = data.get("content", "").strip()
+        attachment = self.context.get("attachment")
+
+        if not content and not attachment:
+            raise serializers.ValidationError(
+                "Message must contain text or an attachment"
+            )
+
+        return data
+    
+
+class ChatFileUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+    def validate_file(self, file):
+        if file.content_type not in ALLOWED_MIME_TYPES:
+            raise serializers.ValidationError("Unsupported file type")
+        
+        if file.size > MAX_FILE_SIZE:
+            raise serializers.ValidationError("File size exeeds 5MB limit")
+        
+        return file
+

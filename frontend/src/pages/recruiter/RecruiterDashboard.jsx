@@ -1,6 +1,11 @@
 import { Crown } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import UpgradeBanner from "../../components/jobseeker/UpgradeBanner";
+import useAuth from "../../auth/context/useAuth"
+import { useSearchParams } from "react-router-dom";
+import Toast from "@/components/common/Toast";
+import { useState, useEffect } from "react";
+
 
 
 const formatExpiry = (date) => {
@@ -13,8 +18,19 @@ const formatExpiry = (date) => {
 };
 
 const RecruiterDashboard = () => {
-  const { subscription } = useOutletContext() || {};
+  const { subscription } = useAuth();
   const isPro = subscription?.is_active;
+   const [searchParams, setSearchParams] = useSearchParams();
+   const [toastMessage, setToastMessage] = useState(null);
+
+  useEffect(() => {
+    if (searchParams.get("payment") === "success") {
+      setToastMessage("🎉 You have unlocked Pro features!");
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("payment");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, []);
 
   return (
     <div>
@@ -33,6 +49,14 @@ const RecruiterDashboard = () => {
 
       {/* FREE USER CTA */}
       {!isPro && <UpgradeBanner role="recruiter" />}
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+      
 
       <h1 className="text-xl font-semibold">
         This is recruiter dashboard

@@ -42,3 +42,28 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
     is_read = models.BooleanField(default=False)
+
+
+# chat/models.py
+
+class ChatAttachment(models.Model):
+    message = models.OneToOneField(
+        "Message",
+        on_delete=models.CASCADE,
+        related_name="attachment",
+        null=True,
+        blank=True,
+    )
+
+    file_url = models.TextField()
+    file_name = models.CharField(max_length=255)
+    file_type = models.CharField(max_length=100)
+    file_size = models.PositiveIntegerField()
+
+    cloudinary_public_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)

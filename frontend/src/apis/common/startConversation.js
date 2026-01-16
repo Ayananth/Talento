@@ -6,5 +6,7 @@ export async function startConversation({ jobId, recipientId, content }) {
     content,
   });
 
+  console.log(res.data)
+
   return res.data;
 }

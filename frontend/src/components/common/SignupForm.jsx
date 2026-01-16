@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import useAuth from "@/auth/context/useAuth"
@@ -8,6 +8,17 @@ import GoogleLoginButton from "./GoogleLoginButton";
 const SignupForm = ({role}) => {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState(null);               // General or backend error
+  const [fieldErrors, setFieldErrors] = useState({});     // For per-field errors
+  const [loading, setLoading] = useState(false);          // Disable button + spinner
+
+useEffect(() => {
+  if (!error) return;
+
+  const timer = setTimeout(() => setError(null), 4000);
+  return () => clearTimeout(timer);
+}, [error]);
+
 
   const [form, setForm] = useState({
     username: "",
@@ -16,9 +27,7 @@ const SignupForm = ({role}) => {
     password_confirmed: "",
   });
 
-  const [error, setError] = useState(null);               // General or backend error
-  const [fieldErrors, setFieldErrors] = useState({});     // For per-field errors
-  const [loading, setLoading] = useState(false);          // Disable button + spinner
+
 
   const handleChange = (e) => {
     setForm({
@@ -34,46 +43,31 @@ const SignupForm = ({role}) => {
     setError(null);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setFieldErrors({});
-    
-    // BASIC FRONTEND VALIDATION
-    if (form.password !== form.password_confirmed) {
-      setFieldErrors({ password_confirmed: "Passwords do not match" });
-      return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError(null);
+  setFieldErrors({});
+
+  if (form.password !== form.password_confirmed) {
+    setFieldErrors({ password_confirmed: "Passwords do not match" });
+    return;
+  }
+
+  try {
+    setLoading(true);
+    await register({ ...form, role });
+    navigate("/email-verification", { state: { email: form.email } });
+  } catch (err) {
+    if (err.fields && Object.keys(err.fields).length > 0) {
+      setFieldErrors(err.fields);
+    } else {
+      setError(err.message);
     }
+  } finally {
+    setLoading(false);
+  }
+};
 
-    try {
-      form.role = role
-      setLoading(true);
-
-      await register(form);
-
-      navigate("/email-verification", { state: { email: form.email } });
-
-
-    } catch (err) {
-      console.log(err.response?.data);
-
-      // Backend validation errors
-      const backend = err.response?.data;
-
-      if (typeof backend === "object") {
-        let fe = {};
-        Object.keys(backend).forEach((key) => {
-          fe[key] = backend[key]?.[0];
-        });
-        setFieldErrors(fe);
-      } else {
-        setError("Signup failed. Try again.");
-      }
-
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">

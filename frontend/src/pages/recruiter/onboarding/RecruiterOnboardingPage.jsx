@@ -1,4 +1,4 @@
-import { HelpCircle, Mail, ShieldCheck } from "lucide-react";
+import { HelpCircle, Mail, ShieldCheck, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "@/apis/api";
@@ -35,6 +35,7 @@ export default function RecruiterOnboardingPage() {
   /* ---------------- Submit ---------------- */
 
   const handleSubmit = async (formData, setErrors) => {
+    if (loading) return; // prevent double submit
     setLoading(true);
 
     try {
@@ -56,7 +57,6 @@ export default function RecruiterOnboardingPage() {
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      // let RecruiterRedirect decide next screen
       navigate(0);
     } catch (err) {
       console.error(err);
@@ -69,7 +69,17 @@ export default function RecruiterOnboardingPage() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-gray-100">
+
+      {/* LOADING OVERLAY */}
+      {loading && (
+        <div className="absolute inset-0 z-50 bg-white/70 backdrop-blur-sm flex items-center justify-center">
+          <div className="flex items-center gap-3 text-blue-600 font-medium">
+            <Loader2 className="animate-spin" />
+            Submitting for verification...
+          </div>
+        </div>
+      )}
 
       {/* NAVBAR */}
       <header className="bg-white border-b">
@@ -95,7 +105,7 @@ export default function RecruiterOnboardingPage() {
           <RecruiterProfileForm
             initialData={initialData}
             onSubmit={handleSubmit}
-            submitText="Submit for Verification"
+            submitText={loading ? "Submitting..." : "Submit for Verification"}
             loading={loading}
           />
         </div>

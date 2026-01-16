@@ -17,6 +17,7 @@ import {
 
 import { useNavigate } from "react-router-dom";
 import api from "../../apis/api";
+import useAuth from "../../auth/context/useAuth";
 
 
 
@@ -60,6 +61,7 @@ export default function JobseekerPremium({navigateTo="/profile?payment=success"}
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const {fetchSubscription} = useAuth();
 
 
 
@@ -114,6 +116,7 @@ const handleCheckout = async () => {
 
       handler: async (response) => {
         await verifySubscriptionPayment(response);
+        await fetchSubscription()
         navigate(navigateTo);
       },
 

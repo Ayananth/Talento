@@ -26,7 +26,7 @@ const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
     >
       {/* Header */}
       <div className="p-6 border-b border-slate-200">
-        <h1 className="text-2xl font-bold text-slate-900 mb-4">
+        <h1 className="text-2xl font-bold text-slate-900 mb-4 mt-12">
           Messages
         </h1>
 
@@ -93,7 +93,7 @@ const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
                         {chat.name}
                       </h3>
                       <span className="text-xs text-slate-500 ml-2 flex-shrink-0">
-                        {chat.timestamp || chat.time || ""}
+                        {/* {chat.timestamp || chat.time || ""} */}
                       </span>
                     </div>
 
@@ -112,17 +112,18 @@ const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
                             You have blocked this recruiter
                           </span>
                         ) : (
-                          chat.lastMessage
+                          ""
+                          // chat.lastMessage
                         )}
                       </p>
 
-                      {chat.unreadCount > 0 && (
+                      {chat.unread_count > 0 && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           className="ml-2 flex-shrink-0 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold"
                         >
-                          {chat.unreadCount}
+                          {chat.unread_count}
                         </motion.div>
                       )}
                     </div>

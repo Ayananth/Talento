@@ -21,6 +21,12 @@ from .serializers import (
     RecruiterProfileSerializer,
 )
 
+from django.db import transaction
+from notifications.events import NotificationEvent
+from notifications.service import notify_admin
+from notifications.tasks import notify_admin_task, notify_recruiter_task
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -60,6 +66,18 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
         profile.status = "pending"
         profile.rejection_reason = None
         profile.save()
+
+        profile_id = profile.id
+
+        if profile.is_first_submission():
+            transaction.on_commit(
+                lambda pid=profile_id: notify_admin_task.delay(
+                    event=NotificationEvent.RECRUITER_APPROVAL_REQUESTED,
+                    payload={"recruiter_profile_id": pid}
+                )
+            )
+
+
 
         logger.info(
             "Recruiter profile draft created",
@@ -191,6 +209,16 @@ class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
         profile.verified_at = timezone.now()
         profile.save()
 
+        profile_id = profile.id
+
+        transaction.on_commit(
+            lambda pid=profile_id: notify_recruiter_task.delay(
+                event=NotificationEvent.RECRUITER_APPROVED,
+                payload={"recruiter_profile_id": pid},
+            )
+        )
+
+
         logger.info(
             "Recruiter profile approved",
             extra={"profile_id": profile.id},
@@ -255,6 +283,16 @@ class AdminRejectRecruiterProfileView(generics.UpdateAPIView):
         profile.status = "rejected"
         profile.rejection_reason = reason
         profile.save()
+
+        profile_id = profile.id
+
+        transaction.on_commit(
+            lambda pid=profile_id: notify_recruiter_task.delay(
+                event=NotificationEvent.RECRUITER_REJECTED,
+                payload={"recruiter_profile_id": pid},
+            )
+        )
+
 
         logger.info(
             "Recruiter profile rejected",
@@ -363,9 +401,16 @@ class RecruiterProfileDetailView(generics.RetrieveAPIView):
     serializer_class = RecruiterProfileSerializer
     permission_classes = [IsAuthenticated, IsRecruiter]
 
-    def get_object(self):
+    def get(self, request, *args, **kwargs):
         logger.info(
             "Recruiter profile detail requested",
-            extra={"recruiter_id": self.request.user.id},
+            extra={"recruiter_id": request.user.id},
         )
-        return self.request.user.recruiter_profile
+
+        try:
+            profile = request.user.recruiter_profile
+        except RecruiterProfile.DoesNotExist:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        serializer = self.get_serializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
