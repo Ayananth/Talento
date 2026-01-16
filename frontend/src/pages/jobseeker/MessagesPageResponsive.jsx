@@ -107,31 +107,37 @@ useEffect(() => {
 const handleSendMessage = async (payload) => {
   if (!selectedChat) return;
 
-  const text = payload?.text;
+  const text = payload?.text ?? "";
   const attachment = payload?.attachment ?? null;
 
-  if (typeof text !== "string" || !text.trim()) {
+  const hasText =
+    typeof text === "string" && text.trim().length > 0;
+  const hasAttachment = Boolean(attachment);
+
+  if (!hasText && !hasAttachment) {
     console.warn("Invalid message payload:", payload);
     return;
   }
 
-  // CASE A: existing conversation → WebSocket
+  // --------------------
+  // Existing conversation → WebSocket
+  // --------------------
   if (selectedChat.id) {
     sendMessage({
-      text: text.trim(),
+      text: hasText ? text.trim() : "",
       attachment,
     });
     return;
   }
 
   // --------------------
-  // CASE B: first message → REST API
+  // First message → REST API
   // --------------------
   try {
     const data = await startConversation({
       jobId: selectedChat.jobId,
       recipientId: selectedChat.otherUserId,
-      content: text.trim(),
+      content: hasText ? text.trim() : "", // allowed
     });
 
     const { conversation_id, message } = data;
@@ -152,7 +158,7 @@ const handleSendMessage = async (payload) => {
         id: message.id,
         senderId: Number(message.sender_id),
         text: message.content,
-        attachment: null,
+        attachment: attachment ?? null,
         timestamp: new Date(message.created_at).toLocaleString(),
       },
     ]);
@@ -160,6 +166,7 @@ const handleSendMessage = async (payload) => {
     console.error("Failed to start conversation", err);
   }
 };
+
 
 
 
