@@ -167,25 +167,13 @@ const handleSendMessage = async (text) => {
 
         const normalized = data.map((c) => ({
           id: c.id,
-
-          // Person / company we are chatting with
           name: c.other_user?.name ?? "Unknown",
-
-          // Job title (if backend provided it)
           jobTitle: c.other_user?.job ?? "Job",
-
-          // Message preview
           lastMessage: c.last_message ?? "No messages yet",
-
-          // Timestamp (safe formatting)
           timestamp: c.last_message_time
             ? new Date(c.last_message_time).toLocaleString()
             : "",
-
-          // Optional fields (future-ready)
-          // unread_count: c.unread_count,
           unread_count: 0,
-
           isBlocked: false,
           companyName: null,
           companyLogo: c.other_user?.img ?? null,
