@@ -26,7 +26,7 @@ const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
     >
       {/* Header */}
       <div className="p-6 border-b border-slate-200">
-        <h1 className="text-2xl font-bold text-slate-900 mb-4">
+        <h1 className="text-2xl font-bold text-slate-900 mb-4 mt-12">
           Messages
         </h1>
 

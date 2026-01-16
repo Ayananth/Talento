@@ -25,7 +25,7 @@ const ChatWindow = ({
     >
       {/* Header */}
       <div className="border-b border-slate-200 p-4 shrink-0">
-        <h2 className="text-lg font-semibold text-slate-900 mt-6">
+        <h2 className="text-lg font-semibold text-slate-900 mt-14">
           {chat.name}
           {console.log(chat)}
         </h2>
