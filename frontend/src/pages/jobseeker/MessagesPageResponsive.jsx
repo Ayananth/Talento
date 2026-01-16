@@ -104,26 +104,44 @@ useEffect(() => {
 
 
 
-const handleSendMessage = async (text) => {
+const handleSendMessage = async (payload) => {
   if (!selectedChat) return;
 
-  // CASE A: conversation already exists → WebSocket
-  if (selectedChat.id) {
-    sendMessage(text);
+  const text = payload?.text ?? "";
+  const attachment = payload?.attachment ?? null;
+
+  const hasText =
+    typeof text === "string" && text.trim().length > 0;
+  const hasAttachment = Boolean(attachment);
+
+  if (!hasText && !hasAttachment) {
+    console.warn("Invalid message payload:", payload);
     return;
   }
 
-  // CASE B: first message → REST API
+  // --------------------
+  // Existing conversation → WebSocket
+  // --------------------
+  if (selectedChat.id) {
+    sendMessage({
+      text: hasText ? text.trim() : "",
+      attachment,
+    });
+    return;
+  }
+
+  // --------------------
+  // First message → REST API
+  // --------------------
   try {
     const data = await startConversation({
       jobId: selectedChat.jobId,
       recipientId: selectedChat.otherUserId,
-      content: text,
+      content: hasText ? text.trim() : "", // allowed
     });
 
     const { conversation_id, message } = data;
 
-    //  Update selected chat with real conversation id
     const newChat = {
       ...selectedChat,
       id: conversation_id,
@@ -131,26 +149,25 @@ const handleSendMessage = async (text) => {
       timestamp: new Date(message.created_at).toLocaleString(),
     };
 
-    // Add to conversation list
     setConversations((prev) => [newChat, ...prev]);
-
-    //  Select it (this will open WebSocket automatically)
     setSelectedChat(newChat);
+    setActiveConversationId(conversation_id);
 
-    // Add message to message list
     setMessages([
       {
         id: message.id,
         senderId: Number(message.sender_id),
         text: message.content,
+        attachment: attachment ?? null,
         timestamp: new Date(message.created_at).toLocaleString(),
       },
     ]);
-
   } catch (err) {
     console.error("Failed to start conversation", err);
   }
 };
+
+
 
 
   // --------------------

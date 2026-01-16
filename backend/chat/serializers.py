@@ -97,10 +97,16 @@ class StartConversationSerializer(serializers.Serializer):
     recipient_id = serializers.IntegerField()
     content = serializers.CharField(max_length=5000)
 
-    def validate_content(self, value):
-        if not value.strip():
-            raise serializers.ValidationError("Message cannot be empty")
-        return value
+    def validate(self, data):
+        content = data.get("content", "").strip()
+        attachment = self.context.get("attachment")
+
+        if not content and not attachment:
+            raise serializers.ValidationError(
+                "Message must contain text or an attachment"
+            )
+
+        return data
     
 
 class ChatFileUploadSerializer(serializers.Serializer):
