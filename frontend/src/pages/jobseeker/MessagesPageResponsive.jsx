@@ -183,7 +183,9 @@ const handleSendMessage = async (text) => {
             : "",
 
           // Optional fields (future-ready)
-          unreadCount: 0,
+          // unread_count: c.unread_count,
+          unread_count: 0,
+
           isBlocked: false,
           companyName: null,
           companyLogo: c.other_user?.img ?? null,

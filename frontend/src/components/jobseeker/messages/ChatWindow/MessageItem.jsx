@@ -21,7 +21,6 @@ const MessageItem = ({
   const hasMarkedRead = useRef(false);
 
   useEffect(() => {
-    console.log("msg", msg)
     if (isMine) return;
     if (msg.isRead) return;
     if (!isTabVisible) return;
@@ -65,7 +64,7 @@ const MessageItem = ({
       )}
 
       <div className="flex items-center justify-end gap-2 text-xs opacity-70 mt-1">
-        <span>{msg.timestamp}</span>
+        <span>{formatTime(msg.timestamp)}</span>
         {isMine && (
           <span className="select-none">
             {msg.isRead ? "Seen" : "Sent"}
@@ -78,3 +77,36 @@ const MessageItem = ({
 
 
 export default MessageItem;
+
+
+const parseTimestamp = (timestamp) => {
+  if (!timestamp) return null;
+
+  // Expected: "DD/MM/YYYY, HH:mm:ss"
+  const [datePart, timePart] = timestamp.split(", ");
+  if (!datePart || !timePart) return null;
+
+  const [day, month, year] = datePart.split("/");
+  return new Date(`${year}-${month}-${day}T${timePart}`);
+};
+
+const formatDate = (timestamp) => {
+  const d = parseTimestamp(timestamp);
+  if (!d || isNaN(d)) return "";
+
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const formatTime = (timestamp) => {
+  const d = parseTimestamp(timestamp);
+  if (!d || isNaN(d)) return "";
+
+  return d.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
