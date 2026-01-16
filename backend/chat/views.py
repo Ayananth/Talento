@@ -113,6 +113,7 @@ class StartConversationAPIView(APIView):
         job_id = serializer.validated_data["job_id"]
         recipient_id = serializer.validated_data["recipient_id"]
         content = serializer.validated_data["content"]
+        logger.info(f"{content=}")
 
         try:
             job = Job.objects.select_related("recruiter").get(id=job_id)

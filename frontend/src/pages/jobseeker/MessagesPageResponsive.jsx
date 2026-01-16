@@ -104,26 +104,38 @@ useEffect(() => {
 
 
 
-const handleSendMessage = async (text) => {
+const handleSendMessage = async (payload) => {
   if (!selectedChat) return;
 
-  // CASE A: conversation already exists → WebSocket
-  if (selectedChat.id) {
-    sendMessage(text);
+  const text = payload?.text;
+  const attachment = payload?.attachment ?? null;
+
+  if (typeof text !== "string" || !text.trim()) {
+    console.warn("Invalid message payload:", payload);
     return;
   }
 
+  // CASE A: existing conversation → WebSocket
+  if (selectedChat.id) {
+    sendMessage({
+      text: text.trim(),
+      attachment,
+    });
+    return;
+  }
+
+  // --------------------
   // CASE B: first message → REST API
+  // --------------------
   try {
     const data = await startConversation({
       jobId: selectedChat.jobId,
       recipientId: selectedChat.otherUserId,
-      content: text,
+      content: text.trim(),
     });
 
     const { conversation_id, message } = data;
 
-    //  Update selected chat with real conversation id
     const newChat = {
       ...selectedChat,
       id: conversation_id,
@@ -131,26 +143,24 @@ const handleSendMessage = async (text) => {
       timestamp: new Date(message.created_at).toLocaleString(),
     };
 
-    // Add to conversation list
     setConversations((prev) => [newChat, ...prev]);
-
-    //  Select it (this will open WebSocket automatically)
     setSelectedChat(newChat);
+    setActiveConversationId(conversation_id);
 
-    // Add message to message list
     setMessages([
       {
         id: message.id,
         senderId: Number(message.sender_id),
         text: message.content,
+        attachment: null,
         timestamp: new Date(message.created_at).toLocaleString(),
       },
     ]);
-
   } catch (err) {
     console.error("Failed to start conversation", err);
   }
 };
+
 
 
   // --------------------
