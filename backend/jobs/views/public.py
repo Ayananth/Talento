@@ -25,12 +25,13 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from applications.models import JobApplication
 from jobs.filters import PublicJobFilter
 from jobs.models.job import Job, SavedJob
-from jobs.pagination import RecruiterJobPagination
+from jobs.pagination import RecruiterJobPagination, Pagination
 from jobs.serializers import (
     PublicJobDetailSerializer,
     PublicJobListSerializer,
     SavedJobListSerializer
 )
+from core.permissions import IsJobseeker
 
 logger = logging.getLogger(__name__)
 
@@ -156,29 +157,34 @@ class PublicJobDetailView(RetrieveAPIView):
         )
 
         return job
-    
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def PublicSavedJobsListView(request):
-    user = request.user
-    queryset = SavedJob.objects.filter(
-        user=request.user,
-    ).select_related(
-        "job",
-        "job__recruiter",
-        "job__recruiter__recruiter_profile"
-    )
 
-    logger.info(queryset)
-    cleanned = SavedJobListSerializer(queryset, many=True)
-    logger.info(cleanned)
-    return Response(cleanned.data)
 
+
+class PublicSavedJobsListView(ListAPIView):
+    permission_classes = [IsJobseeker]
+    serializer_class = SavedJobListSerializer
+    pagination_class = Pagination
+
+    ordering_fields = [
+        "created_at"
+    ]
+    ordering = ["-created_at"]
+    filter_backends = [OrderingFilter]
+
+
+    def get_queryset(self):
+        logger.info(
+            "saved applications list requested",
+            extra={"jobseeker_id": self.request.user.id},
+        )
+        return SavedJob.objects.filter(
+        user=self.request.user,
+        ).select_related(
+            "job",
+            "job__recruiter",
+            "job__recruiter__recruiter_profile"
+        )
 
 
 

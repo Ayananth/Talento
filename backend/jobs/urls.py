@@ -69,7 +69,7 @@ urlpatterns = [
 
     path(
         "jobs/public/saved/",
-        PublicSavedJobsListView,
+        PublicSavedJobsListView.as_view(),
         name='public-saved-job-list'
     )
 
