@@ -11,6 +11,7 @@ import JobDetailPage from "../../pages/jobseeker/JobDetailPage";
 import MessagesPageResponsive from '@/pages/jobseeker/MessagesPageResponsive';
 import AppliedJobsDashboard from "../../pages/jobseeker/AppliedJobsDashboard";
 import JobseekerPremium from "../../pages/jobseeker/JobseekerPremium";
+import SavedJobsDashboard from "../../pages/jobseeker/SavedJobsDashboard";
 
 
 const jobseekerRoutes = [
@@ -64,6 +65,11 @@ const jobseekerRoutes = [
       {
         element: <RoleRoute allowedRoles={["jobseeker"]} />,
         children: [{ path: "applied-jobs", element: <AppliedJobsDashboard /> }],
+      },
+
+      {
+        element: <RoleRoute allowedRoles={["jobseeker"]} />,
+        children: [{ path: "saved-jobs", element: <SavedJobsDashboard /> }],
       },
 
 

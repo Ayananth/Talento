@@ -24,12 +24,14 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from applications.models import JobApplication
 from jobs.filters import PublicJobFilter
-from jobs.models.job import Job
-from jobs.pagination import RecruiterJobPagination
+from jobs.models.job import Job, SavedJob
+from jobs.pagination import RecruiterJobPagination, Pagination
 from jobs.serializers import (
     PublicJobDetailSerializer,
     PublicJobListSerializer,
+    SavedJobListSerializer
 )
+from core.permissions import IsJobseeker
 
 logger = logging.getLogger(__name__)
 
@@ -155,3 +157,34 @@ class PublicJobDetailView(RetrieveAPIView):
         )
 
         return job
+
+
+
+
+class PublicSavedJobsListView(ListAPIView):
+    permission_classes = [IsJobseeker]
+    serializer_class = SavedJobListSerializer
+    pagination_class = Pagination
+
+    ordering_fields = [
+        "created_at"
+    ]
+    ordering = ["-created_at"]
+    filter_backends = [OrderingFilter]
+
+
+    def get_queryset(self):
+        logger.info(
+            "saved applications list requested",
+            extra={"jobseeker_id": self.request.user.id},
+        )
+        return SavedJob.objects.filter(
+        user=self.request.user,
+        ).select_related(
+            "job",
+            "job__recruiter",
+            "job__recruiter__recruiter_profile"
+        )
+
+
+

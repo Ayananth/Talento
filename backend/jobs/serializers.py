@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from rest_framework import serializers
 from django.utils import timezone
-from jobs.models.job import Job
+from jobs.models.job import Job, SavedJob
 from jobs.models.skill import JobSkill
 
 from datetime import timedelta
@@ -341,7 +341,16 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
     def get_skills(self, obj):
         return [skill.name for skill in obj.skills.all()]
 
+class SavedJobListSerializer(serializers.ModelSerializer):
+    job = PublicJobListSerializer(read_only=True)
 
+    class Meta:
+        model = SavedJob
+        fields = [
+            "id",
+            "created_at",
+            "job",
+        ]
 
 
 # =========================================

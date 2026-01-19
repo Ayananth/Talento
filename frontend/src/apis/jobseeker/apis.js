@@ -146,3 +146,13 @@ export const getMyApplications = async ({
   return res.data;
 };
 
+
+export const getSavedJobs = async({ordering = "-created_at",})=>{
+  const res =await api.get("v1/jobs/jobs/public/saved/", {
+    params: {
+      ...(ordering && {ordering})
+    }
+  })
+  return res.data
+}
+

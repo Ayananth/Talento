@@ -108,6 +108,7 @@ class ApplyJobView(APIView):
             JobApplicationSerializer(application).data,
             status=status.HTTP_201_CREATED
         )
+
 class MyApplicationsView(ListAPIView):
     permission_classes = [IsJobseeker]
     serializer_class = JobApplicationListSerializer
@@ -141,6 +142,7 @@ class MyApplicationsView(ListAPIView):
                 "job__recruiter__recruiter_profile",
             )
         )
+
 class JobApplicationsForRecruiterView(ListAPIView):
     permission_classes = [IsRecruiter]
     serializer_class = RecruiterApplicationListSerializer

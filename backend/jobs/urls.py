@@ -6,7 +6,7 @@ from jobs.views.recruiter import (
     RecruiterJobUpdateView,
     RecruiterJobDeleteView,
 )
-from jobs.views.public import PublicJobListView, PublicJobDetailView
+from jobs.views.public import PublicJobListView, PublicJobDetailView, PublicSavedJobsListView
 # from jobs.views.jobseeker import JobApplyView
 
 app_name = "jobs"
@@ -66,6 +66,12 @@ urlpatterns = [
         PublicJobDetailView.as_view(),
         name="public-job-detail"
     ),
+
+    path(
+        "jobs/public/saved/",
+        PublicSavedJobsListView.as_view(),
+        name='public-saved-job-list'
+    )
 
     # ---------------------------
     # JOBSEEKER
