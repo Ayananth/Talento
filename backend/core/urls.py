@@ -18,6 +18,10 @@ import os
 from django.contrib import admin
 from django.urls import path, include
 
+
+from django.conf import settings
+from django.conf.urls.static import static
+
 ADMIN_PATH = os.getenv("ADMIN_PATH",  "admin/")
 
 urlpatterns = [
@@ -33,3 +37,9 @@ urlpatterns = [
 
 
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.STATIC_URL,
+        document_root=settings.STATIC_ROOT,
+    )
