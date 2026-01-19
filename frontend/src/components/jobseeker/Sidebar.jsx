@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 const baseMenuItems = [
   { name: "My Profile", icon: <User size={18} />, path: "/profile" },
   { name: "Applied Jobs", icon: <Briefcase size={18} />, path: "/profile/applied-jobs" },
-  { name: "Saved Jobs", icon: <Bookmark size={18} />, path: "/shortlisted" },
+  { name: "Saved Jobs", icon: <Bookmark size={18} />, path: "/profile/saved-jobs" },
   { name: "Messages", icon: <MessageSquare size={18} />, path: "/messages" },
   { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
   // { name: "Logout", icon: <LogOut size={18} />, path: "/logout" },
