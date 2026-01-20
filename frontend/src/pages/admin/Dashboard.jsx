@@ -1,35 +1,176 @@
-import React from 'react'
+import React, { useState } from 'react';
+import { Users, Briefcase, DollarSign, FileText, TrendingUp, Bell, CheckCircle, XCircle, AlertTriangle, Send } from 'lucide-react';
 
 const Dashboard = () => {
+  const [activeMetric, setActiveMetric] = useState(null);
+
+  const metrics = [
+    { id: 1, label: 'Total Candidates', value: '12,847', icon: Users, change: '+12%', trend: 'up' },
+    { id: 2, label: 'Total Recruiters', value: '3,421', icon: Briefcase, change: '+8%', trend: 'up' },
+    { id: 3, label: 'Active Jobs', value: '1,879', icon: FileText, change: '+24%', trend: 'up' },
+    { id: 4, label: 'Revenue', value: '$284,392', icon: DollarSign, change: '+18%', trend: 'up' },
+    { id: 5, label: 'Applications Today', value: '542', icon: TrendingUp, change: '+5%', trend: 'up' },
+  ];
+
+  const activities = [
+    { id: 1, type: 'job', icon: Briefcase, text: 'New job posted by TechCorp Solutions', time: '5 mins ago', color: 'blue' },
+    { id: 2, type: 'candidate', icon: Users, text: 'Sarah Johnson applied for Senior Developer', time: '12 mins ago', color: 'green' },
+    { id: 3, type: 'alert', icon: AlertTriangle, text: 'Job listing flagged for review', time: '23 mins ago', color: 'yellow' },
+    { id: 4, type: 'recruiter', icon: CheckCircle, text: 'New recruiter verified: InnovateCo', time: '1 hour ago', color: 'green' },
+    { id: 5, type: 'application', icon: FileText, text: '45 new applications received', time: '2 hours ago', color: 'blue' },
+    { id: 6, type: 'payment', icon: DollarSign, text: 'Payment received from Acme Corp', time: '3 hours ago', color: 'green' },
+    { id: 7, type: 'job', icon: Briefcase, text: 'Job posting expired: Marketing Manager', time: '4 hours ago', color: 'gray' },
+    { id: 8, type: 'candidate', icon: Users, text: 'Michael Chen completed profile', time: '5 hours ago', color: 'blue' },
+  ];
+
+  const quickActions = [
+    { id: 1, label: 'Approve Pending Jobs', icon: CheckCircle, variant: 'primary', count: 7 },
+    { id: 2, label: 'Block Recruiter', icon: XCircle, variant: 'danger', count: 3 },
+    { id: 3, label: 'View Reported Jobs', icon: AlertTriangle, variant: 'warning', count: 12 },
+    { id: 4, label: 'Send Notification', icon: Send, variant: 'secondary', count: null },
+  ];
+
+  const getIconColor = (color) => {
+    const colors = {
+      blue: 'text-blue-600 bg-blue-50',
+      green: 'text-green-600 bg-green-50',
+      yellow: 'text-yellow-600 bg-yellow-50',
+      gray: 'text-gray-600 bg-gray-50',
+    };
+    return colors[color] || colors.gray;
+  };
+
+  const getButtonStyles = (variant) => {
+    const styles = {
+      primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+      danger: 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200',
+      warning: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200',
+      secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300',
+    };
+    return styles[variant] || styles.secondary;
+  };
+
   return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900">Dashboard Overview</h1>
+          <p className="text-sm text-gray-500 mt-1">Monitor your job portal performance and activities</p>
+        </div>
 
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+          {metrics.map((metric) => {
+            const Icon = metric.icon;
+            return (
+              <div
+                key={metric.id}
+                onMouseEnter={() => setActiveMetric(metric.id)}
+                onMouseLeave={() => setActiveMetric(null)}
+                className={`bg-white rounded-lg p-5 shadow-sm border border-gray-200 transition-all duration-200 cursor-pointer ${
+                  activeMetric === metric.id ? 'shadow-md border-blue-300 transform -translate-y-0.5' : ''
+                }`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Icon className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                    {metric.change}
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 mb-1">{metric.value}</div>
+                <div className="text-sm text-gray-500">{metric.label}</div>
+              </div>
+            );
+          })}
+        </div>
 
-           <>
-             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Admin Dashboard</h2>
-             <p className="text-gray-600">
-               Welcome to the admin panel. Select an option from the sidebar.
-             </p>
+        {/* Middle Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Activity Feed */}
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+              <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                View All
+              </button>
+            </div>
+            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+              {activities.map((activity, index) => {
+                const Icon = activity.icon;
+                return (
+                  <div
+                    key={activity.id}
+                    className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0 last:pb-0"
+                  >
+                    <div className={`p-2 rounded-lg ${getIconColor(activity.color)} flex-shrink-0`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900">{activity.text}</p>
+                      <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-             {/* Example Dashboard Cards */}
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-               <div className="p-6 bg-blue-100 rounded-xl shadow hover:shadow-md transition">
-                 <h3 className="text-lg font-semibold text-blue-700">Total Companies</h3>
-                 <p className="text-3xl font-bold mt-2 text-blue-900">120</p>
-               </div>
+          {/* Quick Actions Panel */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h2>
+            <div className="space-y-3">
+              {quickActions.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <button
+                    key={action.id}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-medium text-sm transition-colors ${getButtonStyles(
+                      action.variant
+                    )}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className="w-4 h-4" />
+                      <span>{action.label}</span>
+                    </div>
+                    {action.count && (
+                      <span className="px-2 py-0.5 bg-white bg-opacity-50 rounded-full text-xs font-semibold">
+                        {action.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
 
-               <div className="p-6 bg-indigo-100 rounded-xl shadow hover:shadow-md transition">
-                 <h3 className="text-lg font-semibold text-indigo-700">Pending Approvals</h3>
-                 <p className="text-3xl font-bold mt-2 text-indigo-900">8</p>
-               </div>
+            {/* Additional Stats */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">System Status</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Server Status</span>
+                  <span className="flex items-center gap-1 text-green-600 font-medium">
+                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                    Online
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">API Response</span>
+                  <span className="text-gray-900 font-medium">24ms</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Uptime</span>
+                  <span className="text-gray-900 font-medium">99.9%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-               <div className="p-6 bg-green-100 rounded-xl shadow hover:shadow-md transition">
-                 <h3 className="text-lg font-semibold text-green-700">Active Jobs</h3>
-                 <p className="text-3xl font-bold mt-2 text-green-900">56</p>
-               </div>
-             </div>
-           </>
-
-  )
-}
-
-export default Dashboard
+export default Dashboard;
