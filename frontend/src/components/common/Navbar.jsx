@@ -40,7 +40,7 @@ export function Navbar({ role }) {
             className="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg px-2 py-1"
             aria-label="Talento Home"
           >
-            <img src="/src/assets/react.svg" alt="Talento" className="h-8 w-8" />
+            <img src="/t.png" alt="Talento" className="h-12 w-12" />
             <span className="text-xl font-semibold text-gray-900 tracking-tight hidden sm:inline">
               Talento
             </span>
