@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Briefcase, DollarSign, FileText, TrendingUp, Bell, CheckCircle, XCircle, AlertTriangle, Send } from 'lucide-react';
+import { Users, Briefcase, DollarSign, FileText, TrendingUp, Bell, CheckCircle, XCircle, AlertTriangle, Send, RefreshCw } from 'lucide-react';
 import api from "../../apis/api"
 
 const Dashboard = () => {
   const [activeMetric, setActiveMetric] = useState(null);
   const [metricsData, setMetricsData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+
 
   useEffect(() => {
     fetchDashboardData();
@@ -17,16 +21,21 @@ const Dashboard = () => {
   }, []);
 
 
-  const fetchDashboardData = async () => {
-    try {
-      const res = await api.get("/v1/admin/dashboard/overview");
-      setMetricsData(res.data.metrics);
-    } catch (error) {
-      console.error("Failed to load dashboard metrics", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchDashboardData = async (isManual = false) => {
+  try {
+    if (isManual) setRefreshing(true);
+
+    const res = await api.get("/v1/admin/dashboard/overview");
+    setMetricsData(res.data.metrics);
+    setLastUpdated(new Date());
+  } catch (error) {
+    console.error("Failed to load dashboard metrics", error);
+  } finally {
+    if (isManual) setRefreshing(false);
+    setLoading(false);
+  }
+};
+
 
 
 
@@ -110,10 +119,28 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900">Dashboard Overview</h1>
-          <p className="text-sm text-gray-500 mt-1">Monitor your job portal performance and activities</p>
-        </div>
+<div className="mb-8 flex items-center justify-between">
+  <div>
+    <h1 className="text-2xl font-semibold text-gray-900">
+      Dashboard Overview
+    </h1>
+    <p className="text-xs text-gray-400 mt-1">
+      Last updated: {lastUpdated?.toLocaleTimeString() || "—"}
+    </p>
+  </div>
+
+  <button
+    onClick={() => fetchDashboardData(true)}
+    disabled={refreshing}
+    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50"
+  >
+    <RefreshCw
+      className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+    />
+    Refresh
+  </button>
+</div>
+
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
