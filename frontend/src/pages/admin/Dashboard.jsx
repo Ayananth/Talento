@@ -1,16 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Briefcase, DollarSign, FileText, TrendingUp, Bell, CheckCircle, XCircle, AlertTriangle, Send } from 'lucide-react';
+import api from "../../apis/api"
 
 const Dashboard = () => {
   const [activeMetric, setActiveMetric] = useState(null);
+  const [metricsData, setMetricsData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const metrics = [
-    { id: 1, label: 'Total Candidates', value: '12,847', icon: Users, change: '+12%', trend: 'up' },
-    { id: 2, label: 'Total Recruiters', value: '3,421', icon: Briefcase, change: '+8%', trend: 'up' },
-    { id: 3, label: 'Active Jobs', value: '1,879', icon: FileText, change: '+24%', trend: 'up' },
-    { id: 4, label: 'Revenue', value: '$284,392', icon: DollarSign, change: '+18%', trend: 'up' },
-    { id: 5, label: 'Applications Today', value: '542', icon: TrendingUp, change: '+5%', trend: 'up' },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const res = await api.get("/v1/admin/dashboard/overview");
+        setMetricsData(res.data.metrics);
+      } catch (error) {
+        console.error("Failed to load dashboard metrics", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+
+
+  const metrics = metricsData
+    ? [
+        {
+          id: 1,
+          label: 'Yearly Revenue',
+          value: metricsData.revenue_year.toLocaleString(),
+          icon: DollarSign,
+        },
+        {
+          id: 2,
+          label: 'Monthly Revenue',
+          value: metricsData.revenue__month.toLocaleString(),
+          icon: DollarSign,
+        },
+        {
+          id: 3,
+          label: 'Jobseekers',
+          value: metricsData.total_jobseekers,
+          icon: Users,
+        },
+        {
+          id: 4,
+          label: 'Recruiters',
+          value: metricsData.total_recruiters,
+          icon: Users,
+        },
+        {
+          id: 5,
+          label: 'Active Jobs',
+          value: metricsData.active_jobs,
+          icon: Briefcase,
+        },
+      ]
+    : [];
+
 
   const activities = [
     { id: 1, type: 'job', icon: Briefcase, text: 'New job posted by TechCorp Solutions', time: '5 mins ago', color: 'blue' },
@@ -61,31 +109,42 @@ const Dashboard = () => {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-          {metrics.map((metric) => {
-            const Icon = metric.icon;
-            return (
+          {loading ? (
+            [...Array(5)].map((_, i) => (
               <div
-                key={metric.id}
-                onMouseEnter={() => setActiveMetric(metric.id)}
-                onMouseLeave={() => setActiveMetric(null)}
-                className={`bg-white rounded-lg p-5 shadow-sm border border-gray-200 transition-all duration-200 cursor-pointer ${
-                  activeMetric === metric.id ? 'shadow-md border-blue-300 transform -translate-y-0.5' : ''
-                }`}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <Icon className="w-5 h-5 text-blue-600" />
+                key={i}
+                className="bg-white rounded-lg p-5 shadow-sm border border-gray-200 animate-pulse h-28"
+              />
+            ))
+          ) : (
+            metrics.map((metric) => {
+              const Icon = metric.icon;
+              return (
+                <div
+                  key={metric.id}
+                  onMouseEnter={() => setActiveMetric(metric.id)}
+                  onMouseLeave={() => setActiveMetric(null)}
+                  className={`bg-white rounded-lg p-5 shadow-sm border border-gray-200 transition-all duration-200 cursor-pointer ${
+                    activeMetric === metric.id
+                      ? 'shadow-md border-blue-300 transform -translate-y-0.5'
+                      : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="p-2 bg-blue-50 rounded-lg">
+                      <Icon className="w-5 h-5 text-blue-600" />
+                    </div>
                   </div>
-                  <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">
-                    {metric.change}
-                  </span>
+                  <div className="text-2xl font-bold text-gray-900 mb-1">
+                    {metric.value}
+                  </div>
+                  <div className="text-sm text-gray-500">{metric.label}</div>
                 </div>
-                <div className="text-2xl font-bold text-gray-900 mb-1">{metric.value}</div>
-                <div className="text-sm text-gray-500">{metric.label}</div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
+
 
         {/* Middle Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
