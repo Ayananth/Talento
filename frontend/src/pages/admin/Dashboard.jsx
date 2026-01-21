@@ -8,19 +8,27 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const res = await api.get("/v1/admin/dashboard/overview");
-        setMetricsData(res.data.metrics);
-      } catch (error) {
-        console.error("Failed to load dashboard metrics", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
+
+    const intervalId = setInterval(() => {
+      fetchDashboardData();
+    }, 30_000);
+    return () => clearInterval(intervalId);
   }, []);
+
+
+  const fetchDashboardData = async () => {
+    try {
+      const res = await api.get("/v1/admin/dashboard/overview");
+      setMetricsData(res.data.metrics);
+    } catch (error) {
+      console.error("Failed to load dashboard metrics", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
 
 
