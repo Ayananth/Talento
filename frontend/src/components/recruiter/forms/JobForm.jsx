@@ -12,9 +12,6 @@ export default function JobForm({
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    console.log("errors: ", errors)
-  }, [errors])
 
   const [form, setForm] = useState({
     title: "",

@@ -139,7 +139,6 @@ class MyApplicationsView(ListAPIView):
             .select_related(
                 "job",
                 "job__recruiter",
-                "job__recruiter__recruiter_profile",
             )
         )
 
@@ -170,12 +169,11 @@ class JobApplicationsForRecruiterView(ListAPIView):
 
         return (
             JobApplication.objects.filter(
-                job__recruiter=self.request.user
+                job__recruiter=self.request.user.recruiter_profile
             )
             .select_related(
                 "job",
                 "job__recruiter",
-                "job__recruiter__recruiter_profile",
                 "applicant",
                 "applicant__user",
             )
@@ -190,7 +188,7 @@ class RecruiterApplicationStatsView(APIView):
         )
 
         base_qs = JobApplication.objects.filter(
-            job__recruiter=request.user,
+            job__recruiter=request.user.recruiter_profile,
             job__is_active=True,
         ).filter(
             Q(job__expires_at__isnull=True) |
@@ -221,12 +219,11 @@ class ApplicationtDetailView(APIView):
             application = JobApplication.objects.select_related(
                 "job",
                 "job__recruiter",
-                "job__recruiter__recruiter_profile",
                 "applicant",
                 "applicant__user",
             ).get(
                 id=application_id,
-                job__recruiter=request.user
+                job__recruiter=request.user.recruiter_profile
             )
         except JobApplication.DoesNotExist:
             logger.warning(
@@ -255,7 +252,7 @@ class UpdateApplicationStatusView(APIView):
         try:
             application = JobApplication.objects.get(
                 id=application_id,
-                job__recruiter=request.user
+                job__recruiter=request.user.recruiter_profile
             )
         except JobApplication.DoesNotExist:
             logger.warning(
