@@ -19,7 +19,7 @@ from .serializers import (
     AdminJobDetailSerializer,
     AdminJobListSerializer,
 )
-from .services import get_admin_stats_overview
+from .services import get_admin_stats_overview, get_top_candidates, get_top_recruiters
 
 
 logger = logging.getLogger(__name__)
@@ -192,6 +192,8 @@ class AdminDashboardView(APIView):
             "metrics": {
                 **get_admin_stats_overview(),
             },
+            "jobseekers": get_top_candidates(),
+            "recruiters": get_top_recruiters()
             # "notifications": get_admin_notifications(),
             # "quick_actions": get_quick_actions_data()
         })
