@@ -10,6 +10,12 @@ urlpatterns = [
     # path("users/<int:pk>/", views.AdminUserDetailView.as_view(), name="admin-user-detail"),
 
 path(
+    "dashboard/overview",
+    views.AdminDashboardView.as_view(),
+    name="admin-dashboard-overview",
+),
+
+path(
     "users/<int:pk>/block/",
     views.AdminToggleBlockUserView.as_view(),
     name="admin-toggle-user-block",

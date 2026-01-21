@@ -19,6 +19,8 @@ from .serializers import (
     AdminJobDetailSerializer,
     AdminJobListSerializer,
 )
+from .services import get_admin_stats_overview
+
 
 logger = logging.getLogger(__name__)
 
@@ -177,3 +179,19 @@ class AdminRecruiterJobPostingView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+
+class AdminDashboardView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        print(get_admin_stats_overview())
+        logger.info(f"{get_admin_stats_overview()}")
+        return Response({
+            "metrics": {
+                **get_admin_stats_overview(),
+            },
+            # "notifications": get_admin_notifications(),
+            # "quick_actions": get_quick_actions_data()
+        })
