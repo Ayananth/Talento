@@ -183,7 +183,6 @@ class PublicSavedJobsListView(ListAPIView):
         ).select_related(
             "job",
             "job__recruiter",
-            "job__recruiter__recruiter_profile"
         )
 
 

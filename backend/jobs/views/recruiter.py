@@ -63,7 +63,7 @@ class RecruiterJobCreateView(CreateAPIView):
             )
 
         serializer.save(
-            recruiter=self.request.user,
+            recruiter=self.request.user.recruiter_profile,
             status=Job.Status.PUBLISHED,
             published_at=timezone.now(),
             expires_at=timezone.now() + timedelta(days=90),
@@ -82,7 +82,7 @@ class RecruiterJobUpdateView(UpdateAPIView):
     queryset = Job.objects.all()
 
     def get_queryset(self):
-        return self.queryset.filter(recruiter=self.request.user)
+        return self.queryset.filter(recruiter=self.request.user.recruiter_profile)
 
     def perform_update(self, serializer):
         job = self.get_object()
@@ -91,7 +91,7 @@ class RecruiterJobUpdateView(UpdateAPIView):
             "Recruiter job update requested",
             extra={
                 "job_id": job.id,
-                "recruiter_id": self.request.user.id,
+                "recruiter_id": self.request.user.recruiter_profile.id,
             },
         )
 
@@ -122,7 +122,7 @@ class RecruiterJobDetailView(RetrieveAPIView):
             "Recruiter job detail requested",
             extra={"recruiter_id": self.request.user.id},
         )
-        return Job.objects.filter(recruiter=self.request.user)
+        return Job.objects.filter(recruiter=self.request.user.recruiter_profile)
 
 
 class RecruiterJobDeleteView(APIView):
@@ -140,7 +140,7 @@ class RecruiterJobDeleteView(APIView):
         job = get_object_or_404(
             Job,
             pk=pk,
-            recruiter=request.user,
+            recruiter=request.user.recruiter_profile,
         )
 
         if not job.is_active or job.status == Job.Status.CLOSED:
@@ -185,11 +185,11 @@ class RecruiterJobListView(ListAPIView):
     def get_queryset(self):
         logger.info(
             "Recruiter job list requested",
-            extra={"recruiter_id": self.request.user.id},
+            extra={"recruiter_id": self.request.user.recruiter_profile.id},
         )
 
         return (
             Job.objects
-            .filter(recruiter=self.request.user)
+            .filter(recruiter=self.request.user.recruiter_profile)
             .annotate(applications_count=Count("applications"))
         )
