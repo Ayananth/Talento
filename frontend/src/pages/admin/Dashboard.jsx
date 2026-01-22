@@ -46,7 +46,22 @@ const fetchDashboardData = async (isManual = false) => {
   }
 };
 
+  const quickActions = [
+    { id: 1, label: 'Approve New Recruiters', icon: CheckCircle, variant: 'danger', count: 7 },
+    { id: 2, label: 'Approve Profile Edit Requests', icon: XCircle, variant: 'warning', count: 3 },
+    { id: 3, label: 'View Transactions', icon: AlertTriangle, variant: 'primary', count: 12 },
+    { id: 4, label: 'Block Users', icon: Send, variant: 'secondary', count: null },
+  ];
 
+    const getButtonStyles = (variant) => {
+    const styles = {
+      primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+      danger: 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200',
+      warning: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200',
+      secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300',
+    };
+    return styles[variant] || styles.secondary;
+  };
 
 
 
@@ -274,6 +289,39 @@ const fetchDashboardData = async (isManual = false) => {
 
           {/* Right Column - Top Recruiters and Candidates */}
           <div className="space-y-6">
+
+          {/* Quick Actions Panel */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h2>
+            <div className="space-y-3">
+              {quickActions.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <button
+                    key={action.id}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-medium text-sm transition-colors ${getButtonStyles(
+                      action.variant
+                    )}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className="w-4 h-4" />
+                      <span>{action.label}</span>
+                    </div>
+                    {action.count && (
+                      <span className="px-2 py-0.5 bg-white bg-opacity-50 rounded-full text-xs font-semibold">
+                        {action.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+
+
+
+
             {/* Top Recruiters */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-5">
