@@ -5,6 +5,9 @@ from django.contrib.auth import get_user_model
 import logging
 logger = logging.getLogger(__name__)
 
+from django.db.models.functions import TruncMonth
+
+
 
 
 from jobs.models.job import Job
@@ -133,3 +136,56 @@ def get_top_recruiters(limit=5):
         })
 
     return results
+
+
+
+
+
+def get_monthly_revenue_split(year=None):
+    if year is None:
+        year = now().year
+
+    qs = (
+        UserSubscription.objects
+        .filter(
+            status="active",
+            created_at__year=year
+        )
+        .annotate(month=TruncMonth("created_at"))
+        .values("month", "plan__plan_type")
+        .annotate(revenue=Sum("plan__price"))
+        .order_by("month")
+    )
+
+    # Initialize all months
+    months = {
+        1: {"jobseeker": 0, "recruiter": 0},
+        2: {"jobseeker": 0, "recruiter": 0},
+        3: {"jobseeker": 0, "recruiter": 0},
+        4: {"jobseeker": 0, "recruiter": 0},
+        5: {"jobseeker": 0, "recruiter": 0},
+        6: {"jobseeker": 0, "recruiter": 0},
+        7: {"jobseeker": 0, "recruiter": 0},
+        8: {"jobseeker": 0, "recruiter": 0},
+        9: {"jobseeker": 0, "recruiter": 0},
+        10: {"jobseeker": 0, "recruiter": 0},
+        11: {"jobseeker": 0, "recruiter": 0},
+        12: {"jobseeker": 0, "recruiter": 0},
+    }
+
+    for row in qs:
+        month_num = row["month"].month
+        plan_type = row["plan__plan_type"]
+        months[month_num][plan_type] = row["revenue"] or 0
+
+    month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    return [
+        {
+            "month": month_names[i - 1],
+            "jobseeker": months[i]["jobseeker"],
+            "recruiter": months[i]["recruiter"],
+        }
+        for i in range(1, 13)
+    ]

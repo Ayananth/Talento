@@ -19,7 +19,7 @@ from .serializers import (
     AdminJobDetailSerializer,
     AdminJobListSerializer,
 )
-from .services import get_admin_stats_overview, get_top_candidates, get_top_recruiters
+from .services import get_admin_stats_overview, get_top_candidates, get_top_recruiters, get_monthly_revenue_split
 
 
 logger = logging.getLogger(__name__)
@@ -189,13 +189,14 @@ class AdminDashboardView(APIView):
         print(get_admin_stats_overview())
         logger.info(get_top_candidates())
         logger.info(get_top_recruiters())
-        logger.info(f"{get_admin_stats_overview()}")
+        logger.info(f"{get_monthly_revenue_split()}")
         return Response({
             "metrics": {
                 **get_admin_stats_overview(),
             },
             "jobseekers": get_top_candidates(),
-            "recruiters": get_top_recruiters()
+            "recruiters": get_top_recruiters(),
+            "revenue": get_monthly_revenue_split()
             # "notifications": get_admin_notifications(),
             # "quick_actions": get_quick_actions_data()
         })
