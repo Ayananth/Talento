@@ -1,9 +1,10 @@
-# admin_dashboard/services/stats.py
-
 from django.utils.timezone import now
 from django.db.models import Count, Sum, Q
 from django.conf import settings
 from django.contrib.auth import get_user_model
+import logging
+logger = logging.getLogger(__name__)
+
 
 
 from jobs.models.job import Job
@@ -104,13 +105,31 @@ def get_top_candidates(limit=5):
     return results
 
 def get_top_recruiters(limit=5):
-    return (
-        Job.objects
+    logger.info(Job.objects.all())
+    qs = (
+        Job.objects.all()
         .values(
             "recruiter_id",
-        )
+            "recruiter__company_name",
+            "recruiter__logo",
+            "recruiter__location",
+        )       
         .annotate(
             job_count=Count("id")
         )
         .order_by("-job_count")[:limit]
     )
+
+    results = []
+    for row in qs:
+        logo = row["recruiter__logo"]
+
+        results.append({
+            "recruiter_id": row["recruiter_id"],
+            "company_name": row["recruiter__company_name"],
+            "location": row["recruiter__location"],
+            "logo": logo.url if logo else None,
+            "job_count": row["job_count"],
+        })
+
+    return results

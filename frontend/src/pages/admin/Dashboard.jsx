@@ -88,11 +88,20 @@ const fetchDashboardData = async (isManual = false) => {
     { id: 8, type: 'candidate', icon: Users, text: 'Michael Chen completed profile', time: '5 hours ago', color: 'blue' },
   ];
 
-  const quickActions = [
-    { id: 1, label: 'Approve Pending Jobs', icon: CheckCircle, variant: 'primary', count: 7 },
-    { id: 2, label: 'Block Recruiter', icon: XCircle, variant: 'danger', count: 3 },
-    { id: 3, label: 'View Reported Jobs', icon: AlertTriangle, variant: 'warning', count: 12 },
-    { id: 4, label: 'Send Notification', icon: Send, variant: 'secondary', count: null },
+  const topRecruiters = [
+    { id: 1, company: 'TechCorp Solutions', logo: 'TC', jobs: 24, color: 'bg-blue-500' },
+    { id: 2, company: 'InnovateCo', logo: 'IC', jobs: 18, color: 'bg-purple-500' },
+    { id: 3, company: 'Digital Dynamics', logo: 'DD', jobs: 15, color: 'bg-green-500' },
+    { id: 4, company: 'Future Systems', logo: 'FS', jobs: 12, color: 'bg-orange-500' },
+    { id: 5, company: 'Acme Corporation', logo: 'AC', jobs: 10, color: 'bg-red-500' },
+  ];
+
+  const topCandidates = [
+    { id: 1, name: 'Sarah Johnson', avatar: 'SJ', headline: 'Senior Full Stack Developer', color: 'bg-blue-500' },
+    { id: 2, name: 'Michael Chen', avatar: 'MC', headline: 'UI/UX Design Lead', color: 'bg-purple-500' },
+    { id: 3, name: 'Emily Rodriguez', avatar: 'ER', headline: 'Data Science Manager', color: 'bg-green-500' },
+    { id: 4, name: 'James Wilson', avatar: 'JW', headline: 'DevOps Engineer', color: 'bg-orange-500' },
+    { id: 5, name: 'Lisa Anderson', avatar: 'LA', headline: 'Product Manager', color: 'bg-pink-500' },
   ];
 
   const getIconColor = (color) => {
@@ -105,15 +114,7 @@ const fetchDashboardData = async (isManual = false) => {
     return colors[color] || colors.gray;
   };
 
-  const getButtonStyles = (variant) => {
-    const styles = {
-      primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-      danger: 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200',
-      warning: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200',
-      secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300',
-    };
-    return styles[variant] || styles.secondary;
-  };
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -139,52 +140,40 @@ const fetchDashboardData = async (isManual = false) => {
     />
     Refresh
   </button>
-</div>
-
+        </div>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-          {loading ? (
-            [...Array(5)].map((_, i) => (
+          {metrics.map((metric) => {
+            const Icon = metric.icon;
+            return (
               <div
-                key={i}
-                className="bg-white rounded-lg p-5 shadow-sm border border-gray-200 animate-pulse h-28"
-              />
-            ))
-          ) : (
-            metrics.map((metric) => {
-              const Icon = metric.icon;
-              return (
-                <div
-                  key={metric.id}
-                  onMouseEnter={() => setActiveMetric(metric.id)}
-                  onMouseLeave={() => setActiveMetric(null)}
-                  className={`bg-white rounded-lg p-5 shadow-sm border border-gray-200 transition-all duration-200 cursor-pointer ${
-                    activeMetric === metric.id
-                      ? 'shadow-md border-blue-300 transform -translate-y-0.5'
-                      : ''
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <Icon className="w-5 h-5 text-blue-600" />
-                    </div>
+                key={metric.id}
+                onMouseEnter={() => setActiveMetric(metric.id)}
+                onMouseLeave={() => setActiveMetric(null)}
+                className={`bg-white rounded-lg p-5 shadow-sm border border-gray-200 transition-all duration-200 cursor-pointer ${
+                  activeMetric === metric.id ? 'shadow-md border-blue-300 transform -translate-y-0.5' : ''
+                }`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Icon className="w-5 h-5 text-blue-600" />
                   </div>
-                  <div className="text-2xl font-bold text-gray-900 mb-1">
-                    {metric.value}
-                  </div>
-                  <div className="text-sm text-gray-500">{metric.label}</div>
+                  <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                    {metric.change}
+                  </span>
                 </div>
-              );
-            })
-          )}
+                <div className="text-2xl font-bold text-gray-900 mb-1">{metric.value}</div>
+                <div className="text-sm text-gray-500">{metric.label}</div>
+              </div>
+            );
+          })}
         </div>
 
-
         {/* Middle Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
           {/* Recent Activity Feed */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
@@ -212,52 +201,63 @@ const fetchDashboardData = async (isManual = false) => {
             </div>
           </div>
 
-          {/* Quick Actions Panel */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h2>
-            <div className="space-y-3">
-              {quickActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <button
-                    key={action.id}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-medium text-sm transition-colors ${getButtonStyles(
-                      action.variant
-                    )}`}
+          {/* Right Column - Top Recruiters and Candidates */}
+          <div className="space-y-6">
+            {/* Top Recruiters */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-semibold text-gray-900">Top Recruiters</h2>
+                <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  View All
+                </button>
+              </div>
+              <div className="space-y-4">
+                {topRecruiters.map((recruiter, index) => (
+                  <div
+                    key={recruiter.id}
+                    className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" />
-                      <span>{action.label}</span>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 ${recruiter.color} rounded-lg flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
+                        {recruiter.logo}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{recruiter.company}</p>
+                        <p className="text-xs text-gray-500">{recruiter.jobs} jobs posted</p>
+                      </div>
                     </div>
-                    {action.count && (
-                      <span className="px-2 py-0.5 bg-white bg-opacity-50 rounded-full text-xs font-semibold">
-                        {action.count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+                    <div className="text-xl font-bold text-gray-400">#{index + 1}</div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Additional Stats */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">System Status</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Server Status</span>
-                  <span className="flex items-center gap-1 text-green-600 font-medium">
-                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                    Online
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">API Response</span>
-                  <span className="text-gray-900 font-medium">24ms</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Uptime</span>
-                  <span className="text-gray-900 font-medium">99.9%</span>
-                </div>
+            {/* Top Candidates */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-semibold text-gray-900">Top Candidates</h2>
+                <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  View All
+                </button>
+              </div>
+              <div className="space-y-4">
+                {topCandidates.map((candidate, index) => (
+                  <div
+                    key={candidate.id}
+                    className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 ${candidate.color} rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
+                        {candidate.avatar}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{candidate.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{candidate.headline}</p>
+                      </div>
+                    </div>
+                    <div className="text-xl font-bold text-gray-400">#{index + 1}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

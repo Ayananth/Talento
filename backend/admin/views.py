@@ -187,6 +187,8 @@ class AdminDashboardView(APIView):
 
     def get(self, request):
         print(get_admin_stats_overview())
+        logger.info(get_top_candidates())
+        logger.info(get_top_recruiters())
         logger.info(f"{get_admin_stats_overview()}")
         return Response({
             "metrics": {
