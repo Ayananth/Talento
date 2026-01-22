@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Briefcase, DollarSign, FileText, TrendingUp, Bell, CheckCircle, XCircle, AlertTriangle, Send, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from "../../apis/api"
+import { useAdmin } from '../../context/AdminContext';
 
 const Dashboard = () => {
   const [activeMetric, setActiveMetric] = useState(null);
@@ -15,10 +16,13 @@ const Dashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
 
+  const { pendingNew, Contextloading } = useAdmin();
+
 
 
   useEffect(() => {
     fetchDashboardData();
+
 
     const intervalId = setInterval(() => {
       fetchDashboardData();
@@ -47,8 +51,8 @@ const fetchDashboardData = async (isManual = false) => {
 };
 
   const quickActions = [
-    { id: 1, label: 'Approve New Recruiters', icon: CheckCircle, variant: 'danger', count: 7 },
-    { id: 2, label: 'Approve Profile Edit Requests', icon: XCircle, variant: 'warning', count: 3 },
+    { id: 1, label: 'Approve New Recruiters', icon: CheckCircle, variant: 'danger', count: pendingNew?.recruiter_first_submissions },
+    { id: 2, label: 'Approve Profile Edit Requests', icon: XCircle, variant: 'warning', count: pendingNew?.recruiter_edit_requests },
     { id: 3, label: 'View Transactions', icon: AlertTriangle, variant: 'primary', count: 12 },
     { id: 4, label: 'Block Users', icon: Send, variant: 'secondary', count: null },
   ];

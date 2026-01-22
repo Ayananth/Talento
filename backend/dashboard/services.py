@@ -13,6 +13,7 @@ from django.db.models.functions import TruncMonth
 from jobs.models.job import Job
 from applications.models import JobApplication
 from subscriptions.models import UserSubscription
+from recruiter.models import RecruiterProfile
 
 User = get_user_model()
 
@@ -240,4 +241,21 @@ def get_revenue_summary(year=None):
         "total_revenue": current_total,
         "growth_rate": growth_rate,
         "year": year,
+    }
+
+def get_recruiter_pending_counts():
+    base_qs = RecruiterProfile.objects.filter(status="pending")
+
+    first_submissions = base_qs.filter(
+        Q(company_name__isnull=True) | Q(company_name=""),
+    ).count()
+
+    edit_requests = base_qs.exclude(
+        Q(company_name__isnull=True) | Q(company_name=""),
+    ).count()
+
+    return {
+        "recruiter_first_submissions": first_submissions,
+        "recruiter_edit_requests": edit_requests,
+        "total_pending_recruiters": first_submissions + edit_requests,
     }

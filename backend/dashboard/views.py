@@ -19,7 +19,7 @@ from .serializers import (
     AdminJobDetailSerializer,
     AdminJobListSerializer,
 )
-from .services import get_admin_stats_overview, get_top_candidates, get_top_recruiters, get_monthly_revenue_split, get_revenue_summary
+from .services import get_admin_stats_overview, get_top_candidates, get_top_recruiters, get_monthly_revenue_split, get_revenue_summary, get_recruiter_pending_counts
 from django.utils.timezone import now
 
 
@@ -207,7 +207,16 @@ class AdminDashboardView(APIView):
                 "year":year ,
                 "currency": "INR"
             },
-            "revenue_summary": get_revenue_summary()
+            "revenue_summary": get_revenue_summary(),
             # "notifications": get_admin_notifications(),
             # "quick_actions": get_quick_actions_data()
+        })
+    
+
+class AdminPendingCountsAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        return Response({
+            "pending": get_recruiter_pending_counts()
         })

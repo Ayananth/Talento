@@ -37,6 +37,11 @@ path(
     views.AdminRecruiterJobPostingView.as_view(),
     name="admin-job-toggle",
 ),
+    path(
+        "pending-counts/",
+        views.AdminPendingCountsAPIView.as_view(),
+        name="admin-pending-counts"
+    ),
 
 
 
