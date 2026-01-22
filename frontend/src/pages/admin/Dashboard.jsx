@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Briefcase, DollarSign, FileText, TrendingUp, Bell, CheckCircle, XCircle, AlertTriangle, Send, RefreshCw } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from "../../apis/api"
 
 const Dashboard = () => {
@@ -81,15 +82,19 @@ const fetchDashboardData = async (isManual = false) => {
     : [];
 
 
-  const activities = [
-    { id: 1, type: 'job', icon: Briefcase, text: 'New job posted by TechCorp Solutions', time: '5 mins ago', color: 'blue' },
-    { id: 2, type: 'candidate', icon: Users, text: 'Sarah Johnson applied for Senior Developer', time: '12 mins ago', color: 'green' },
-    { id: 3, type: 'alert', icon: AlertTriangle, text: 'Job listing flagged for review', time: '23 mins ago', color: 'yellow' },
-    { id: 4, type: 'recruiter', icon: CheckCircle, text: 'New recruiter verified: InnovateCo', time: '1 hour ago', color: 'green' },
-    { id: 5, type: 'application', icon: FileText, text: '45 new applications received', time: '2 hours ago', color: 'blue' },
-    { id: 6, type: 'payment', icon: DollarSign, text: 'Payment received from Acme Corp', time: '3 hours ago', color: 'green' },
-    { id: 7, type: 'job', icon: Briefcase, text: 'Job posting expired: Marketing Manager', time: '4 hours ago', color: 'gray' },
-    { id: 8, type: 'candidate', icon: Users, text: 'Michael Chen completed profile', time: '5 hours ago', color: 'blue' },
+  const revenueData = [
+    { month: 'Jan', jobseeker: 7200, recruiter: 11300 },
+    { month: 'Feb', jobseeker: 8900, recruiter: 13400 },
+    { month: 'Mar', jobseeker: 10300, recruiter: 15500 },
+    { month: 'Apr', jobseeker: 11600, recruiter: 17300 },
+    { month: 'May', jobseeker: 9700, recruiter: 14500 },
+    { month: 'Jun', jobseeker: 12600, recruiter: 18900 },
+    { month: 'Jul', jobseeker: 14100, recruiter: 21100 },
+    { month: 'Aug', jobseeker: 13500, recruiter: 20300 },
+    { month: 'Sep', jobseeker: 15400, recruiter: 23200 },
+    { month: 'Oct', jobseeker: 16500, recruiter: 24700 },
+    { month: 'Nov', jobseeker: 15900, recruiter: 23900 },
+    { month: 'Dec', jobseeker: 18000, recruiter: 27100 },
   ];
 
 
@@ -102,7 +107,43 @@ const fetchDashboardData = async (isManual = false) => {
     };
     return colors[color] || colors.gray;
   };
-
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const total = payload.reduce((sum, entry) => sum + entry.value, 0);
+      return (
+        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+          <p className="text-sm font-semibold text-gray-900 mb-2">{payload[0].payload.month}</p>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                <span className="text-xs text-gray-600">Recruiter</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">
+                ${payload.find(p => p.dataKey === 'recruiter')?.value.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="text-xs text-gray-600">Job Seeker</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">
+                ${payload.find(p => p.dataKey === 'jobseeker')?.value.toLocaleString()}
+              </span>
+            </div>
+            <div className="pt-2 mt-2 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-700">Total</span>
+                <span className="text-sm font-bold text-gray-900">${total.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
 
   return (
@@ -161,32 +202,81 @@ const fetchDashboardData = async (isManual = false) => {
 
         {/* Middle Section */}
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-          {/* Recent Activity Feed */}
+          {/* Revenue Chart */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
-              <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                View All
-              </button>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Revenue Overview</h2>
+                <p className="text-sm text-gray-500 mt-1">Year 2026 Performance</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Total Revenue</p>
+                <p className="text-2xl font-bold text-gray-900">$384.9K</p>
+              </div>
             </div>
-            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-              {activities.map((activity, index) => {
-                const Icon = activity.icon;
-                return (
-                  <div
-                    key={activity.id}
-                    className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0 last:pb-0"
-                  >
-                    <div className={`p-2 rounded-lg ${getIconColor(activity.color)} flex-shrink-0`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900">{activity.text}</p>
-                      <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                    </div>
-                  </div>
-                );
-              })}
+            
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-6 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                <span className="text-sm text-gray-600">Recruiter Revenue</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="text-sm text-gray-600">Job Seeker Revenue</span>
+              </div>
+            </div>
+
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={revenueData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="#9ca3af"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="#9ca3af"
+                    style={{ fontSize: '12px' }}
+                    tickFormatter={(value) => `$${value / 1000}k`}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="recruiter" 
+                    stroke="#2563eb" 
+                    strokeWidth={3}
+                    dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, strokeWidth: 2 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="jobseeker" 
+                    stroke="#22c55e" 
+                    strokeWidth={3}
+                    dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
+              <div>
+                <p className="text-xs text-gray-500">Recruiter Revenue</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">Total 2026</p>
+                <p className="text-xs text-blue-600">$231.2K (60%)</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Job Seeker Revenue</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">Total 2026</p>
+                <p className="text-xs text-green-600">$153.7K (40%)</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Growth Rate</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">Year-over-Year</p>
+                <p className="text-xs text-green-600">+24.3%</p>
+              </div>
             </div>
           </div>
 
