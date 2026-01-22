@@ -5,6 +5,8 @@ import api from "../../apis/api"
 const Dashboard = () => {
   const [activeMetric, setActiveMetric] = useState(null);
   const [metricsData, setMetricsData] = useState(null);
+  const [topRecruiters, setTopRecruiters] = useState([]);
+  const [topCandidates, setTopCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -27,6 +29,8 @@ const fetchDashboardData = async (isManual = false) => {
 
     const res = await api.get("/v1/admin/dashboard/overview");
     setMetricsData(res.data.metrics);
+    setTopRecruiters(res.data.recruiters || []);
+    setTopCandidates(res.data.jobseekers || []);
     setLastUpdated(new Date());
   } catch (error) {
     console.error("Failed to load dashboard metrics", error);
@@ -88,21 +92,6 @@ const fetchDashboardData = async (isManual = false) => {
     { id: 8, type: 'candidate', icon: Users, text: 'Michael Chen completed profile', time: '5 hours ago', color: 'blue' },
   ];
 
-  const topRecruiters = [
-    { id: 1, company: 'TechCorp Solutions', logo: 'TC', jobs: 24, color: 'bg-blue-500' },
-    { id: 2, company: 'InnovateCo', logo: 'IC', jobs: 18, color: 'bg-purple-500' },
-    { id: 3, company: 'Digital Dynamics', logo: 'DD', jobs: 15, color: 'bg-green-500' },
-    { id: 4, company: 'Future Systems', logo: 'FS', jobs: 12, color: 'bg-orange-500' },
-    { id: 5, company: 'Acme Corporation', logo: 'AC', jobs: 10, color: 'bg-red-500' },
-  ];
-
-  const topCandidates = [
-    { id: 1, name: 'Sarah Johnson', avatar: 'SJ', headline: 'Senior Full Stack Developer', color: 'bg-blue-500' },
-    { id: 2, name: 'Michael Chen', avatar: 'MC', headline: 'UI/UX Design Lead', color: 'bg-purple-500' },
-    { id: 3, name: 'Emily Rodriguez', avatar: 'ER', headline: 'Data Science Manager', color: 'bg-green-500' },
-    { id: 4, name: 'James Wilson', avatar: 'JW', headline: 'DevOps Engineer', color: 'bg-orange-500' },
-    { id: 5, name: 'Lisa Anderson', avatar: 'LA', headline: 'Product Manager', color: 'bg-pink-500' },
-  ];
 
   const getIconColor = (color) => {
     const colors = {
@@ -211,26 +200,47 @@ const fetchDashboardData = async (isManual = false) => {
                   View All
                 </button>
               </div>
+
               <div className="space-y-4">
-                {topRecruiters.map((recruiter, index) => (
-                  <div
-                    key={recruiter.id}
-                    className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 ${recruiter.color} rounded-lg flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
-                        {recruiter.logo}
+                {topRecruiters.length === 0 ? (
+                  <p className="text-sm text-gray-500">No recruiter data available</p>
+                ) : (
+                  topRecruiters.map((recruiter, index) => (
+                    <div
+                      key={recruiter.recruiter_id}
+                      className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* Logo */}
+                        {recruiter.logo ? (
+                          <img
+                            src={recruiter.logo}
+                            alt={recruiter.company_name}
+                            className="w-10 h-10 rounded-lg object-cover border"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center text-gray-600 font-semibold text-sm">
+                            {recruiter.company_name?.[0] || "?"}
+                          </div>
+                        )}
+
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {recruiter.company_name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {recruiter.job_count} jobs · {recruiter.location}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{recruiter.company}</p>
-                        <p className="text-xs text-gray-500">{recruiter.jobs} jobs posted</p>
-                      </div>
+
+                      <div className="text-xl font-bold text-gray-400">#{index + 1}</div>
                     </div>
-                    <div className="text-xl font-bold text-gray-400">#{index + 1}</div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
+
 
             {/* Top Candidates */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -240,26 +250,47 @@ const fetchDashboardData = async (isManual = false) => {
                   View All
                 </button>
               </div>
+
               <div className="space-y-4">
-                {topCandidates.map((candidate, index) => (
-                  <div
-                    key={candidate.id}
-                    className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 ${candidate.color} rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
-                        {candidate.avatar}
+                {topCandidates.length === 0 ? (
+                  <p className="text-sm text-gray-500">No candidate data available</p>
+                ) : (
+                  topCandidates.map((candidate, index) => (
+                    <div
+                      key={candidate.applicant_id}
+                      className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* Avatar */}
+                        {candidate.profile_image ? (
+                          <img
+                            src={candidate.profile_image}
+                            alt={candidate.fullname}
+                            className="w-10 h-10 rounded-full object-cover border"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-semibold text-sm">
+                            {candidate.fullname?.[0] || "?"}
+                          </div>
+                        )}
+
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {candidate.fullname}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {candidate.headline}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{candidate.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{candidate.headline}</p>
-                      </div>
+
+                      <div className="text-xl font-bold text-gray-400">#{index + 1}</div>
                     </div>
-                    <div className="text-xl font-bold text-gray-400">#{index + 1}</div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
+
           </div>
         </div>
       </div>
