@@ -8,6 +8,9 @@ const Dashboard = () => {
   const [metricsData, setMetricsData] = useState(null);
   const [topRecruiters, setTopRecruiters] = useState([]);
   const [topCandidates, setTopCandidates] = useState([]);
+  const [revenueData, setRevenueData] = useState([]);
+  const [revenueSummary, setRevenueSummary] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -32,6 +35,8 @@ const fetchDashboardData = async (isManual = false) => {
     setMetricsData(res.data.metrics);
     setTopRecruiters(res.data.recruiters || []);
     setTopCandidates(res.data.jobseekers || []);
+    setRevenueData(res.data.revenue || []);
+    setRevenueSummary(res.data.revenue_summary);
     setLastUpdated(new Date());
   } catch (error) {
     console.error("Failed to load dashboard metrics", error);
@@ -82,20 +87,7 @@ const fetchDashboardData = async (isManual = false) => {
     : [];
 
 
-  const revenueData = [
-    { month: 'Jan', jobseeker: 7200, recruiter: 11300 },
-    { month: 'Feb', jobseeker: 8900, recruiter: 13400 },
-    { month: 'Mar', jobseeker: 10300, recruiter: 15500 },
-    { month: 'Apr', jobseeker: 11600, recruiter: 17300 },
-    { month: 'May', jobseeker: 9700, recruiter: 14500 },
-    { month: 'Jun', jobseeker: 12600, recruiter: 18900 },
-    { month: 'Jul', jobseeker: 14100, recruiter: 21100 },
-    { month: 'Aug', jobseeker: 13500, recruiter: 20300 },
-    { month: 'Sep', jobseeker: 15400, recruiter: 23200 },
-    { month: 'Oct', jobseeker: 16500, recruiter: 24700 },
-    { month: 'Nov', jobseeker: 15900, recruiter: 23900 },
-    { month: 'Dec', jobseeker: 18000, recruiter: 27100 },
-  ];
+
 
 
   const getIconColor = (color) => {
@@ -207,11 +199,11 @@ const fetchDashboardData = async (isManual = false) => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Revenue Overview</h2>
-                <p className="text-sm text-gray-500 mt-1">Year 2026 Performance</p>
+                <p className="text-sm text-gray-500 mt-1">Year {revenueSummary?.year} Performance</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-500">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">$384.9K</p>
+                <p className="text-sm text-gray-500">Revenue</p>
+                <p className="text-2xl font-bold text-gray-900">₹{metricsData?.revenue_year}</p>
               </div>
             </div>
             
@@ -239,7 +231,7 @@ const fetchDashboardData = async (isManual = false) => {
                   <YAxis 
                     stroke="#9ca3af"
                     style={{ fontSize: '12px' }}
-                    tickFormatter={(value) => `$${value / 1000}k`}
+                    tickFormatter={(value) => `₹${value / 1000}k`}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Line 
@@ -264,18 +256,18 @@ const fetchDashboardData = async (isManual = false) => {
             <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
               <div>
                 <p className="text-xs text-gray-500">Recruiter Revenue</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">Total 2026</p>
-                <p className="text-xs text-blue-600">$231.2K (60%)</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">Total {revenueSummary?.year}</p>
+                <p className="text-xs text-blue-600">₹{revenueSummary?.recruiter_revenue.toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Job Seeker Revenue</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">Total 2026</p>
-                <p className="text-xs text-green-600">$153.7K (40%)</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">Total {revenueSummary?.year}</p>
+                <p className="text-xs text-green-600">₹{revenueSummary?.jobseeker_revenue.toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Growth Rate</p>
                 <p className="text-sm font-semibold text-gray-900 mt-1">Year-over-Year</p>
-                <p className="text-xs text-green-600">+24.3%</p>
+                <p className="text-xs">{revenueSummary?.growth_rate || "No previous data"}</p>
               </div>
             </div>
           </div>

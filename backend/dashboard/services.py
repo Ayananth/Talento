@@ -138,6 +138,11 @@ def get_top_recruiters(limit=5):
     return results
 
 
+def calculate_growth_rate(current, previous):
+    if previous == 0:
+        return None
+
+    return round(((current - previous) / previous) * 100, 2)
 
 
 
@@ -189,3 +194,50 @@ def get_monthly_revenue_split(year=None):
         }
         for i in range(1, 13)
     ]
+
+
+
+def get_yearly_revenue_split(year=None):
+    if year is None:
+        year = now().year
+
+    qs = (
+        UserSubscription.objects
+        .filter(
+            status="active",
+            created_at__year=year
+        )
+        .values("plan__plan_type")
+        .annotate(revenue=Sum("plan__price"))
+    )
+
+    revenue = {
+        "jobseeker": 0,
+        "recruiter": 0,
+    }
+
+    for row in qs:
+        revenue[row["plan__plan_type"]] = row["revenue"] or 0
+
+    return revenue
+
+
+def get_revenue_summary(year=None):
+    if year is None:
+        year = now().year
+
+    current_year = get_yearly_revenue_split(year)
+    previous_year = get_yearly_revenue_split(year - 1)
+
+    current_total = current_year["jobseeker"] + current_year["recruiter"]
+    previous_total = previous_year["jobseeker"] + previous_year["recruiter"]
+
+    growth_rate = calculate_growth_rate(current_total, previous_total)
+
+    return {
+        "jobseeker_revenue": current_year["jobseeker"],
+        "recruiter_revenue": current_year["recruiter"],
+        "total_revenue": current_total,
+        "growth_rate": growth_rate,
+        "year": year,
+    }
