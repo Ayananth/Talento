@@ -1,15 +1,16 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAdmin } from "../../context/AdminContext";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
+    const { pendingNew, Contextloading } = useAdmin();
+  
 
   const menuItems = [
-    { name: "Dashboard", path: "/admin" },
-    { name: "Approvals", path: "/admin/recruiter/approvals" },
-    // { name: "Recruiters", path: "/admin/recruiters" },
-    // { name: "Companies", path: "/admin/companies" },
+    { name: "Dashboard", path: "/admin",  },
+    { name: "Approvals", path: "/admin/recruiter/approvals",count: pendingNew?.total_pending_recruiters ?? 0, },
     { name: "Job Listings", path: "/admin/jobs" },
     { name: "Users", path: "/admin/users" },
   ];
@@ -37,7 +38,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                   }
                 `}
               >
-                {item.name}
+            <div className="flex items-center justify-between w-full">
+              <span>{item.name}</span>
+
+              {!Contextloading && item.count > 0 && (
+                <span className="ml-2 min-w-[20px] text-center px-2 py-0.5 text-xs font-semibold bg-red-600 text-white rounded-full">
+                  {item.count}
+                </span>
+              )}
+            </div>
+
               </button>
             </li>
           );

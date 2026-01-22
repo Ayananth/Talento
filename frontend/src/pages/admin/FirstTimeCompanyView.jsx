@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { getCloudinaryUrl } from "../../utils/common/getCloudinaryUrl";
 import api from "@/apis/api";
 import { useNavigate } from "react-router-dom";
+import { useAdmin } from "../../context/AdminContext";
 import ConfirmModal from "@/components/common/ConfirmModal";
 
 export default function FirstTimeCompanyView({ data }) {
   const [rejectReason, setRejectReason] = useState("");
   const [approving, setApproving] = useState(false);
   const [rejecting, setRejecting] = useState(false);
+    const { pending, fetchPendingCounts } = useAdmin();
 
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -36,6 +38,7 @@ export default function FirstTimeCompanyView({ data }) {
     try {
       setApproving(true);
       await api.patch(`/v1/recruiter/profile/${id}/approve/`);
+      await fetchPendingCounts();
 
       navigate("/admin/recruiter/approvals", {
         state: {
@@ -69,6 +72,7 @@ export default function FirstTimeCompanyView({ data }) {
       await api.patch(`/v1/recruiter/profile/${id}/reject/`, {
         reason: rejectReason,
       });
+      await fetchPendingCounts();
 
       navigate("/admin/recruiter/approvals", {
         state: {

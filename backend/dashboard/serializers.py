@@ -5,8 +5,8 @@ from django.utils import timezone
 
 
 class AdminJobListSerializer(serializers.ModelSerializer):
-    email = serializers.CharField(source='recruiter.email')
-    company = serializers.CharField(source='recruiter.recruiter_profile.company_name')
+    email = serializers.CharField(source='recruiter.user.email')
+    company = serializers.CharField(source='recruiter.company_name')
 
     class Meta:
         model = Job
@@ -23,8 +23,8 @@ class AdminJobListSerializer(serializers.ModelSerializer):
 
 class AdminJobDetailSerializer(serializers.ModelSerializer):
     skills = serializers.SerializerMethodField()
-    email = serializers.CharField(source="recruiter.email")
-    company = serializers.CharField(source="recruiter.recruiter_profile.company_name")
+    email = serializers.CharField(source="recruiter.user.email")
+    company = serializers.CharField(source="recruiter.company_name")
     location = serializers.SerializerMethodField()
 
     class Meta:

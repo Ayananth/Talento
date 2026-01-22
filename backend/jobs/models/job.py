@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.contrib.postgres.indexes import GistIndex
+from recruiter.models import RecruiterProfile
 
 
 User = settings.AUTH_USER_MODEL
@@ -34,7 +35,7 @@ class Job(models.Model):
 
     #Ownership
     recruiter = models.ForeignKey(
-        User,
+        RecruiterProfile,
         on_delete=models.CASCADE,
         related_name="jobs"
     )

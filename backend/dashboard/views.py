@@ -19,6 +19,9 @@ from .serializers import (
     AdminJobDetailSerializer,
     AdminJobListSerializer,
 )
+from .services import get_admin_stats_overview, get_top_candidates, get_top_recruiters, get_monthly_revenue_split, get_revenue_summary, get_recruiter_pending_counts
+from django.utils.timezone import now
+
 
 logger = logging.getLogger(__name__)
 
@@ -177,3 +180,43 @@ class AdminRecruiterJobPostingView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+
+class AdminDashboardView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        print(get_admin_stats_overview())
+        logger.info(get_top_candidates())
+        logger.info(get_top_recruiters())
+        logger.info(f"{get_monthly_revenue_split()}")
+
+        
+        # today = now().date()
+        year = now().year
+
+        return Response({
+            "metrics": {
+                **get_admin_stats_overview(),
+            },
+            "jobseekers": get_top_candidates(),
+            "recruiters": get_top_recruiters(),
+            "revenue": get_monthly_revenue_split(),
+            "meta": {
+                "year":year ,
+                "currency": "INR"
+            },
+            "revenue_summary": get_revenue_summary(),
+            # "notifications": get_admin_notifications(),
+            # "quick_actions": get_quick_actions_data()
+        })
+    
+
+class AdminPendingCountsAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        return Response({
+            "pending": get_recruiter_pending_counts()
+        })

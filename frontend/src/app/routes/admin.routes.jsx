@@ -15,6 +15,7 @@ import AdminUsersPage from "../../pages/admin/users/AdminUsersPage";
 import AdminUserDetailPage from "../../pages/admin/users/AdminUserDetailPage";
 import AdminJobsPage from "../../pages/admin/jobs/AdminJobsPage";
 import AdminJobDetailPage from "../../pages/admin/jobs/AdminJobDetailPage";
+import { AdminProvider } from "../../context/AdminContext";
 
 const adminRoutes = [
   {
@@ -22,7 +23,9 @@ const adminRoutes = [
     element: (
 
       <RequireAuth>
+        <AdminProvider>
         <AdminLayout />
+        </AdminProvider>
     //  </RequireAuth>
 
     ),

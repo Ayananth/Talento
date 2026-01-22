@@ -71,9 +71,9 @@ class ConversationListSerializer(serializers.ModelSerializer):
         if obj.jobseeker == user:
             return {
                 "id": obj.recruiter.id,
-                "name": obj.recruiter.recruiter_profile.company_name or obj.recruiter.full_name,    
+                "name": obj.recruiter.company_name or obj.recruiter.full_name,    
                 "job": obj.job.title,
-                "img": obj.recruiter.recruiter_profile.logo.url if obj.recruiter.recruiter_profile.logo else None,
+                "img": obj.recruiter.logo.url if obj.recruiter.logo else None,
             }
         else:
             return {
