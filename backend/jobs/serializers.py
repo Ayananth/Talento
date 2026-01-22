@@ -264,7 +264,7 @@ class JobCloseSerializer(serializers.ModelSerializer):
 
 class PublicJobListSerializer(serializers.ModelSerializer):
     logo = serializers.SerializerMethodField()
-    company_name = serializers.CharField(source = 'recruiter.recruiter_profile.company_name')
+    company_name = serializers.CharField(source = 'recruiter.company_name')
     has_applied = serializers.BooleanField(read_only=True)
     class Meta:
         model = Job
@@ -288,19 +288,19 @@ class PublicJobListSerializer(serializers.ModelSerializer):
         ]
 
     def get_logo(self, obj):
-        recruiter_profile = getattr(obj.recruiter, "recruiter_profile", None)
-        if recruiter_profile and recruiter_profile.logo:
-            return recruiter_profile.logo.url
-        return None
+        # recruiter_profile = getattr(obj.recruiter, "recruiter_profile", None)
+        # if recruiter_profile and recruiter_profile.logo:
+        return obj.recruiter.logo.url
+        # return None
 
 
 class PublicJobDetailSerializer(serializers.ModelSerializer):
     skills = serializers.SerializerMethodField()
     logo = serializers.SerializerMethodField()
-    company_name = serializers.CharField(source = 'recruiter.recruiter_profile.company_name')
-    company_about = serializers.CharField(source = 'recruiter.recruiter_profile.about_company')
-    company_size = serializers.CharField(source = 'recruiter.recruiter_profile.company_size')
-    company_website = serializers.URLField(source = 'recruiter.recruiter_profile.website')
+    company_name = serializers.CharField(source = 'recruiter.company_name')
+    company_about = serializers.CharField(source = 'recruiter.about_company')
+    company_size = serializers.CharField(source = 'recruiter.company_size')
+    company_website = serializers.URLField(source = 'recruiter.website')
     has_applied = serializers.BooleanField(read_only=True)
 
 

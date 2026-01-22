@@ -208,7 +208,7 @@ class JobApplicationListSerializer(serializers.ModelSerializer):
 
     def get_company_name(self, obj):
         recruiter = obj.job.recruiter
-        return getattr(recruiter.recruiter_profile, "company_name", None)
+        return getattr(recruiter, "company_name", None)
 
     def get_salary(self, obj):
         job = obj.job
