@@ -103,7 +103,7 @@ export function Navbar({ role }) {
                     </button>
 
                     <button
-                      onClick={() => handleNavigation("/shortlisted")}
+                      onClick={() => handleNavigation("/profile/saved-jobs")}
                       className="p-2 rounded-lg hover:bg-gray-100"
                     >
                       <Bookmark size={20} />
@@ -189,7 +189,7 @@ export function Navbar({ role }) {
               <button onClick={() => handleNavigation("/messages")}>
                 Messages
               </button>
-              <button onClick={() => handleNavigation("/shortlisted")}>
+              <button onClick={() => handleNavigation("/profile/saved-jobs")}>
                 Saved Jobs
               </button>
             </>
