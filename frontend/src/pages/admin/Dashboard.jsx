@@ -3,6 +3,7 @@ import { Users, Briefcase, DollarSign, FileText, TrendingUp, Bell, CheckCircle, 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from "../../apis/api"
 import { useAdmin } from '../../context/AdminContext';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [activeMetric, setActiveMetric] = useState(null);
@@ -17,6 +18,7 @@ const Dashboard = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const { pendingNew, Contextloading } = useAdmin();
+  const navigate = useNavigate();
 
 
 
@@ -51,10 +53,10 @@ const fetchDashboardData = async (isManual = false) => {
 };
 
   const quickActions = [
-    { id: 1, label: 'Approve New Recruiters', icon: CheckCircle, variant: 'danger', count: pendingNew?.recruiter_first_submissions },
-    { id: 2, label: 'Approve Profile Edit Requests', icon: XCircle, variant: 'warning', count: pendingNew?.recruiter_edit_requests },
-    { id: 3, label: 'View Transactions', icon: AlertTriangle, variant: 'primary', count: 12 },
-    { id: 4, label: 'Block Users', icon: Send, variant: 'secondary', count: null },
+    { id: 1, label: 'Approve New Recruiters', icon: CheckCircle, variant: 'danger', count: pendingNew?.recruiter_first_submissions, path: 'recruiter/approvals' },
+    { id: 2, label: 'Approve Profile Edit Requests', icon: XCircle, variant: 'warning', count: pendingNew?.recruiter_edit_requests, path: 'recruiter/approvals' },
+    { id: 3, label: 'View Transactions', icon: AlertTriangle, variant: 'primary', count: 12, path:'transactions' },
+    { id: 4, label: 'Block Users', icon: Send, variant: 'secondary', count: null, path: 'users' },
   ];
 
     const getButtonStyles = (variant) => {
@@ -303,6 +305,7 @@ const fetchDashboardData = async (isManual = false) => {
                 return (
                   <button
                     key={action.id}
+                    onClick={()=> navigate(action.path)}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-medium text-sm transition-colors ${getButtonStyles(
                       action.variant
                     )}`}
