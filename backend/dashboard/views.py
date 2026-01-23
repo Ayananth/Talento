@@ -7,6 +7,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 
 from authentication.models import UserModel
 from core.permissions import IsAdmin
@@ -18,12 +19,83 @@ from .filters import AdminJobFilter
 from .serializers import (
     AdminJobDetailSerializer,
     AdminJobListSerializer,
+    TransactionListSerializer
 )
 from .services import get_admin_stats_overview, get_top_candidates, get_top_recruiters, get_monthly_revenue_split, get_revenue_summary, get_recruiter_pending_counts
 from django.utils.timezone import now
 
 
 logger = logging.getLogger(__name__)
+
+from subscriptions.models import UserSubscription
+from .filters import TransactionFilter
+from django.db.models import Sum, Count
+
+
+class TransactionListAPIView(ListAPIView):
+    serializer_class = TransactionListSerializer
+    permission_classes = [IsAdmin]
+
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+    ]
+    filterset_class = TransactionFilter
+
+    ordering_fields = [
+        "created_at",
+        "plan__price",
+    ]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        return (
+            UserSubscription.objects
+            .select_related("user", "plan")
+            .exclude(status="pending")
+        )
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # ----------- STATS -----------
+        total_transactions = queryset.count()
+
+        revenue_jobseeker = (
+            queryset.filter(plan__plan_type="jobseeker")
+            .aggregate(total=Sum("plan__price"))["total"] or 0
+        )
+
+        revenue_recruiter = (
+            queryset.filter(plan__plan_type="recruiter")
+            .aggregate(total=Sum("plan__price"))["total"] or 0
+        )
+
+        total_revenue = revenue_jobseeker + revenue_recruiter
+
+        active_subscriptions = (
+            UserSubscription.objects
+            .filter(
+                status="active",
+                end_date__gt=now()
+            )
+            .count()
+        )
+
+        response = super().list(request, *args, **kwargs)
+
+        response.data = {
+            "stats": {
+                "total_transactions": total_transactions,
+                "total_revenue": total_revenue,
+                "revenue_jobseeker": revenue_jobseeker,
+                "revenue_recruiter": revenue_recruiter,
+                "active_subscriptions": active_subscriptions,
+            },
+            "results": response.data,
+        }
+
+        return response
 
 
 class AdminToggleBlockUserView(APIView):
