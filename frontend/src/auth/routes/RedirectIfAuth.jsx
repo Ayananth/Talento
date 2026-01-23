@@ -7,7 +7,7 @@ export default function RedirectIfAuth({ children }) {
 
   if (isAuthenticated) {
     if (user.role === "jobseeker") return <Navigate to="/" replace />;
-    if (user.role === "recruiter") return <Navigate to="/recruiter/home" replace />;
+    if (user.role === "recruiter") return <Navigate to="/recruiter/" replace />;
     if (user.role === "admin") return <Navigate to="/admin" replace />;
   }
 
