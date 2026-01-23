@@ -1,268 +1,252 @@
 import React, { useEffect, useState } from "react";
-import {
-  Search,
-  Download,
-  CheckCircle,
-  XCircle,
-  Clock,
-} from "lucide-react";
-import { getTransactions } from "../../../apis/admin/getTransactions";
+import Pagination from "@/components/common/Pagination";
+import ResponsiveTable from "@/components/admin/ResponsiveTable";
+import { PAGE_SIZE } from "@/constants/constants";
 
-const SubscriptionTransactions = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [planFilter, setPlanFilter] = useState("all");
+import {getTransactions} from "../../../apis/admin/getTransactions"
 
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(false);
+export default function SubscriptionTransactionsPage() {
+  const [data, setData] = useState([]);
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(0);
+  const [ordering, setOrdering] = useState("");
 
-  const fetchData = async () => {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [planFilter, setPlanFilter] = useState("");
+
+  const totalPages = Math.ceil(count / PAGE_SIZE);
+
+  /* ---------------- Fetch ---------------- */
+
+  const fetchData = async (pageNum) => {
     try {
-      setLoading(true);
-      const response = await getTransactions();
-      setTransactions(response.results || []);
+      const response = await getTransactions({
+        page: pageNum,
+        ordering,
+        search,
+        status: statusFilter,
+        plan_type: planFilter,
+      });
+
+      const mapped = response.results.map((item) => ({
+        id: item.id,
+        transaction_id: item.transaction_id,
+        user_name: item.user_name,
+        user_email: item.user_email,
+        user_type: item.user_type,
+        plan_name: item.plan_name,
+        duration: `${item.duration_months} Month(s)`,
+        amount: `₹${item.amount}`,
+        status: item.status.toUpperCase(),
+        created_at: new Date(item.created_at).toLocaleDateString("en-IN"),
+      }));
+
+      setData(mapped); 
+      setCount(response.count);
     } catch (err) {
-      console.error("Failed to fetch transactions", err);
-    } finally {
-      setLoading(false);
+      console.error(err);
     }
   };
+
+
+  /* ---------------- Effects ---------------- */
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(page);
+  }, [page, ordering, search, statusFilter, planFilter]);
 
-  /* ---------------- Helpers ---------------- */
+  /* ---------------- Sorting ---------------- */
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "active":
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case "pending":
-        return <Clock className="w-5 h-5 text-yellow-500" />;
-      case "failed":
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return null;
+  const handleSort = (orderingKey) => {
+    if (!orderingKey) return;
+
+    if (ordering === orderingKey) {
+      setOrdering(`-${orderingKey}`);
+    } else if (ordering === `-${orderingKey}`) {
+      setOrdering("");
+    } else {
+      setOrdering(orderingKey);
     }
+
+    setPage(1);
   };
 
-  const getStatusBadge = (status) => {
-    const styles = {
-      active: "bg-green-100 text-green-800",
-      pending: "bg-yellow-100 text-yellow-800",
-      failed: "bg-red-100 text-red-800",
-    };
-    return styles[status] || "bg-gray-100 text-gray-800";
-  };
+  /* ---------------- Columns ---------------- */
 
-  const getPlanBadge = (plan) => {
-    const styles = {
-      Starter: "bg-blue-100 text-blue-800",
-      Pro: "bg-purple-100 text-purple-800",
-      Elite: "bg-indigo-100 text-indigo-800",
-    };
-    return styles[plan] || "bg-gray-100 text-gray-800";
-  };
+  const columns = [
+    {
+      label: "No",
+      key: "number",
+      render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
+    },
+    {
+      label: "Transaction ID",
+      key: "transaction_id",
+    },
+    {
+      label: "User",
+      key: "user_name",
+      render: (row) => (
+        <div>
+          <div className="font-medium text-gray-900">
+            {row.user_name || "-"}
+          </div>
+          <div className="text-sm text-gray-500">
+            {row.user_email}
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: "Plan",
+      key: "plan_name",
+      sortable: true,
+      orderingKey: "plan__name",
+      render: (row) => (
+        <div>
+          <div className="font-medium">{row.plan_name}</div>
+          <div className="text-xs text-gray-500">{row.duration}</div>
+        </div>
+      ),
+    },
+    {
+      label: "Amount",
+      key: "amount",
+      sortable: true,
+      orderingKey: "plan__price",
+    },
+    {
+      label: "Status",
+      key: "status",
+      sortable: true,
+      orderingKey: "status",
+      render: (row) => {
+        const styles = {
+          ACTIVE: "bg-green-100 text-green-800 border border-green-200",
+          PENDING: "bg-yellow-100 text-yellow-800 border border-yellow-200",
+          FAILED: "bg-red-100 text-red-800 border border-red-200",
+        };
 
-  /* ---------------- Filters ---------------- */
-
-  const filteredTransactions = transactions.filter((txn) => {
-    const search = searchTerm.toLowerCase();
-
-    const matchesSearch =
-      txn.transaction_id?.toLowerCase().includes(search) ||
-      txn.user_email?.toLowerCase().includes(search);
-
-    const matchesStatus =
-      statusFilter === "all" || txn.status === statusFilter;
-
-    const matchesPlan =
-      planFilter === "all" || txn.plan_name === planFilter;
-
-    return matchesSearch && matchesStatus && matchesPlan;
-  });
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+              styles[row.status] || "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {row.status}
+          </span>
+        );
+      },
+    },
+    {
+      label: "Date",
+      key: "created_at",
+      sortable: true,
+      orderingKey: "created_at",
+    },
+    {
+      label: "User Type",
+      key: "user_type",
+      render: (row) => (
+        <span className="capitalize text-sm text-gray-600">
+          {row.user_type}
+        </span>
+      ),
+    },
+  ];
 
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Subscription Transactions
-          </h1>
-          <p className="text-gray-600">
-            Manage and track all subscription payments
-          </p>
+    <div className="p-4 md:p-6">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+        Subscription Transactions
+      </h2>
+
+      {/* FILTER TOOLBAR */}
+      <div className="mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3
+                      flex flex-col md:flex-row md:items-center gap-3">
+
+        {/* SEARCH */}
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            placeholder="Search by email or transaction ID"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="w-full h-9 pl-9 pr-3 text-sm border border-gray-300
+                       rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            🔍
+          </span>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow mb-6 p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search by email or transaction ID..."
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+        {/* STATUS */}
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
+          }}
+          className="h-9 px-3 text-sm border border-gray-300 rounded-lg bg-white"
+        >
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="expired">Expired</option>
+          <option value="pending">Pending</option>
+          <option value="failed">Failed</option>
+        </select>
 
-            <div className="flex gap-4">
-              <select
-                className="px-4 py-2 border rounded-lg"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All Status</option>
-                <option value="active">Completed</option>
-                <option value="pending">Pending</option>
-                <option value="failed">Failed</option>
-              </select>
+        {/* PLAN TYPE */}
+        <select
+          value={planFilter}
+          onChange={(e) => {
+            setPlanFilter(e.target.value);
+            setPage(1);
+          }}
+          className="h-9 px-3 text-sm border border-gray-300 rounded-lg bg-white"
+        >
+          <option value="">All Plans</option>
+          <option value="jobseeker">Jobseeker</option>
+          <option value="recruiter">Recruiter</option>
+        </select>
 
-              <select
-                className="px-4 py-2 border rounded-lg"
-                value={planFilter}
-                onChange={(e) => setPlanFilter(e.target.value)}
-              >
-                <option value="all">All Plans</option>
-                <option value="Basic">Basic</option>
-                <option value="Premium">Premium</option>
-                <option value="Enterprise">Enterprise</option>
-              </select>
-
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700">
-                <Download className="w-4 h-4" />
-                Export
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  {[
-                    "Transaction ID",
-                    "User",
-                    "Plan",
-                    "Amount",
-                    "Status",
-                    "Date",
-                    "User Type",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody className="divide-y">
-                {loading ? (
-                  <tr>
-                    <td colSpan="7" className="text-center py-10">
-                      Loading...
-                    </td>
-                  </tr>
-                ) : filteredTransactions.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="text-center py-10">
-                      No transactions found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredTransactions.map((txn) => (
-                    <tr
-                      key={txn.transaction_id}
-                      className="hover:bg-gray-50"
-                    >
-                      <td className="px-6 py-4 font-medium">
-                        {txn.transaction_id || "-"}
-                      </td>
-
-                      <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{txn.user_name}</div>
-                      <div className="text-sm text-gray-500">{txn.user_email}</div>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 text-xs font-semibold rounded-full ${getPlanBadge(
-                            txn.plan_name
-                          )}`}
-                        >
-                          {txn.plan_name}
-                        </span>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {txn.duration_months} Month(s)
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-4 font-semibold">
-                        ₹{txn.amount}
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(txn.status)}
-                          <span
-                            className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadge(
-                              txn.status
-                            )}`}
-                          >
-                            {txn.status}
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {new Date(txn.created_at).toLocaleDateString(
-                          "en-IN",
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )}
-                      </td>
-
-                      <td className="px-6 py-4 capitalize text-sm text-gray-500">
-                        {txn.user_type}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-6 text-sm text-gray-700">
-          Showing{" "}
-          <span className="font-medium">
-            {filteredTransactions.length}
-          </span>{" "}
-          of{" "}
-          <span className="font-medium">
-            {transactions.length}
-          </span>{" "}
-          transactions
-        </div>
+        {/* CLEAR */}
+        {(search || statusFilter || planFilter) && (
+          <button
+            onClick={() => {
+              setSearch("");
+              setStatusFilter("");
+              setPlanFilter("");
+              setPage(1);
+            }}
+            className="text-sm text-gray-500 hover:text-gray-700 px-2"
+          >
+            Clear
+          </button>
+        )}
       </div>
+
+      {/* TABLE */}
+      <ResponsiveTable
+        data={data}
+        columns={columns}
+        rowKey="id"
+        ordering={ordering}
+        onSort={handleSort}
+      />
+
+      {/* PAGINATION */}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
     </div>
   );
-};
-
-export default SubscriptionTransactions;
+}

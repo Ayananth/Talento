@@ -33,6 +33,7 @@ class TransactionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSubscription
         fields = [
+            "id",
             "transaction_id",
             "user_id",
             "user_name",
