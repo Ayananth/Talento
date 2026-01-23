@@ -10,7 +10,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   const menuItems = [
     { name: "Dashboard", path: "/admin",  },
-    { name: "Transactions", path: "transactions",  },
+    { name: "Transactions", path: "/admin/transactions",  },
     { name: "Approvals", path: "/admin/recruiter/approvals",count: pendingNew?.total_pending_recruiters ?? 0, },
     { name: "Job Listings", path: "/admin/jobs" },
     { name: "Users", path: "/admin/users" },
@@ -25,6 +25,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       <ul className="space-y-3">
         {menuItems.map((item) => {
+          console.log("location path",location.pathname)
+          console.log(item.path)
+
+          console.log("")
           const isActive = location.pathname === item.path;
 
           return (
