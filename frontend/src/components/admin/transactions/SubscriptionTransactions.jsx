@@ -3,10 +3,14 @@ import Pagination from "@/components/common/Pagination";
 import ResponsiveTable from "@/components/admin/ResponsiveTable";
 import { PAGE_SIZE } from "@/constants/constants";
 import { Download } from "lucide-react";
-
 import { getTransactions } from "../../../apis/admin/getTransactions";
+import api from "@/apis/api";
+
+
+
 
 export default function SubscriptionTransactionsPage() {
+
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
@@ -19,6 +23,7 @@ export default function SubscriptionTransactionsPage() {
   const [toDate, setToDate] = useState(getToday());
 
   const totalPages = Math.ceil(count / PAGE_SIZE);
+
 
   /* ---------------- Fetch ---------------- */
 
@@ -77,17 +82,41 @@ export default function SubscriptionTransactionsPage() {
 
   /* ---------------- Export ---------------- */
 
-  const handleExport = () => {
-    console.log("Export with filters:", {
-      statusFilter,
-      planFilter,
-      fromDate,
-      toDate,
-      ordering,
-    });
 
-    alert("Export triggered (connect CSV API here)");
-  };
+const handleExport = async () => {
+  try {
+    const params = {
+      ...(statusFilter && { status: statusFilter }),
+      ...(planFilter && { plan_type: planFilter }),
+      ...(fromDate && { from_date: fromDate }),
+      ...(toDate && { to_date: toDate }),
+      ...(ordering && { ordering }),
+    };
+
+    const response = await api.get(
+      "/v1/admin/transactions/export/",
+      {
+        params,
+        responseType: "blob",
+      }
+    );
+
+    const blob = new Blob([response.data], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "transactions.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Export failed", err);
+  }
+};
+
 
   /* ---------------- Columns ---------------- */
 

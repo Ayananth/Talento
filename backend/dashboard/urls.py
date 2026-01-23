@@ -48,7 +48,12 @@ path(
         views.TransactionListAPIView.as_view(),
         name="admin-transactions"
     ),
-
+    
+    path(
+        "transactions/export/",
+        views.TransactionExportCSVAPIView.as_view(),
+        name="admin-transactions-export",
+    ),
 
 
 

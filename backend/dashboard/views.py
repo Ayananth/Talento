@@ -31,6 +31,66 @@ from subscriptions.models import UserSubscription
 from .filters import TransactionFilter
 from django.db.models import Sum, Count
 
+import csv
+from django.http import HttpResponse
+
+
+class TransactionExportCSVAPIView(APIView):
+    permission_classes = [IsAdmin]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TransactionFilter
+
+    def get_queryset(self):
+        return (
+            UserSubscription.objects
+            .select_related("user", "plan")
+            .exclude(status="pending")
+        )
+
+    def get(self, request):
+        queryset = self.filterset_class(
+            request.GET,
+            queryset=self.get_queryset()
+        ).qs
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            'attachment; filename="transactions.csv"'
+        )
+
+        writer = csv.writer(response)
+
+        writer.writerow([
+            "Transaction ID",
+            "User Name",
+            "Email",
+            "User Type",
+            "Plan",
+            "Amount",
+            "Duration (Months)",
+            "Status",
+            "Created At",
+        ])
+
+        for obj in queryset:
+            if obj.plan.plan_type == "jobseeker":
+                user_name = getattr(obj.user.jobseeker_profile, "fullname", "")
+            else:
+                user_name = getattr(obj.user.recruiter_profile, "company_name", "")
+
+            writer.writerow([
+                obj.razorpay_payment_id,
+                user_name,
+                obj.user.email,
+                obj.plan.plan_type,
+                obj.plan.name,
+                obj.plan.price,
+                obj.plan.duration_months,
+                obj.status,
+                obj.created_at.strftime("%Y-%m-%d %H:%M"),
+            ])
+
+        return response
 
 class TransactionListAPIView(ListAPIView):
     serializer_class = TransactionListSerializer
