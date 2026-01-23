@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import Pagination from "@/components/common/Pagination";
 import ResponsiveTable from "@/components/admin/ResponsiveTable";
 import { PAGE_SIZE } from "@/constants/constants";
+import { Download } from "lucide-react";
 
-import {getTransactions} from "../../../apis/admin/getTransactions"
+import { getTransactions } from "../../../apis/admin/getTransactions";
 
 export default function SubscriptionTransactionsPage() {
   const [data, setData] = useState([]);
@@ -11,7 +12,6 @@ export default function SubscriptionTransactionsPage() {
   const [count, setCount] = useState(0);
   const [ordering, setOrdering] = useState("");
 
-  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [planFilter, setPlanFilter] = useState("");
 
@@ -24,7 +24,6 @@ export default function SubscriptionTransactionsPage() {
       const response = await getTransactions({
         page: pageNum,
         ordering,
-        search,
         status: statusFilter,
         plan_type: planFilter,
       });
@@ -42,19 +41,18 @@ export default function SubscriptionTransactionsPage() {
         created_at: new Date(item.created_at).toLocaleDateString("en-IN"),
       }));
 
-      setData(mapped); 
+      setData(mapped);
       setCount(response.count);
     } catch (err) {
       console.error(err);
     }
   };
 
-
   /* ---------------- Effects ---------------- */
 
   useEffect(() => {
     fetchData(page);
-  }, [page, ordering, search, statusFilter, planFilter]);
+  }, [page, ordering, statusFilter, planFilter]);
 
   /* ---------------- Sorting ---------------- */
 
@@ -70,6 +68,19 @@ export default function SubscriptionTransactionsPage() {
     }
 
     setPage(1);
+  };
+
+  /* ---------------- Export ---------------- */
+
+  const handleExport = () => {
+    // Later you can call a CSV export API with same filters
+    console.log("Export with filters:", {
+      statusFilter,
+      planFilter,
+      ordering,
+    });
+
+    alert("Export triggered (hook CSV API here)");
   };
 
   /* ---------------- Columns ---------------- */
@@ -124,6 +135,7 @@ export default function SubscriptionTransactionsPage() {
       render: (row) => {
         const styles = {
           ACTIVE: "bg-green-100 text-green-800 border border-green-200",
+          EXPIRED: "bg-gray-100 text-gray-700 border border-gray-200",
           PENDING: "bg-yellow-100 text-yellow-800 border border-yellow-200",
           FAILED: "bg-red-100 text-red-800 border border-red-200",
         };
@@ -164,27 +176,9 @@ export default function SubscriptionTransactionsPage() {
         Subscription Transactions
       </h2>
 
-      {/* FILTER TOOLBAR */}
+      {/* FILTER + EXPORT TOOLBAR */}
       <div className="mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3
-                      flex flex-col md:flex-row md:items-center gap-3">
-
-        {/* SEARCH */}
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            placeholder="Search by email or transaction ID"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="w-full h-9 pl-9 pr-3 text-sm border border-gray-300
-                       rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-            🔍
-          </span>
-        </div>
+                      flex flex-col md:flex-row md:items-center md:justify-end gap-3">
 
         {/* STATUS */}
         <select
@@ -202,7 +196,7 @@ export default function SubscriptionTransactionsPage() {
           <option value="failed">Failed</option>
         </select>
 
-        {/* PLAN TYPE */}
+        {/* USER TYPE */}
         <select
           value={planFilter}
           onChange={(e) => {
@@ -211,16 +205,25 @@ export default function SubscriptionTransactionsPage() {
           }}
           className="h-9 px-3 text-sm border border-gray-300 rounded-lg bg-white"
         >
-          <option value="">User type</option>
+          <option value="">User Type</option>
           <option value="jobseeker">Jobseeker</option>
           <option value="recruiter">Recruiter</option>
         </select>
 
+        {/* EXPORT */}
+        <button
+          onClick={handleExport}
+          className="h-9 px-4 bg-blue-600 text-white text-sm
+                     rounded-lg flex items-center gap-2 hover:bg-blue-700"
+        >
+          <Download size={16} />
+          Export
+        </button>
+
         {/* CLEAR */}
-        {(search || statusFilter || planFilter) && (
+        {(statusFilter || planFilter) && (
           <button
             onClick={() => {
-              setSearch("");
               setStatusFilter("");
               setPlanFilter("");
               setPage(1);

@@ -45,6 +45,7 @@ class TransactionListAPIView(ListAPIView):
     ordering_fields = [
         "created_at",
         "plan__price",
+        "status"
     ]
     ordering = ["-created_at"]
 
