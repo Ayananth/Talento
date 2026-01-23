@@ -22,19 +22,17 @@ const adminRoutes = [
   {
     path: "/admin",
     element: (
-
       <RequireAuth>
         <AdminProvider>
-        <AdminLayout />
+          <AdminLayout />
         </AdminProvider>
-    //  </RequireAuth>
-
+      </RequireAuth>
     ),
     children: [
       {
         element: <RoleRoute allowedRoles={["admin"]} />,
         children: [
-          { index:true , element: <Dashboard /> },
+          { index: true, element: <Dashboard /> },
           { path: "recruiters", element: <RecruiterListPage /> },
           { path: "recruiter/changes", element: <AdminReviewCompanyPage /> },
           { path: "recruiter/approvals", element: <PendingApprovalsPage /> },
@@ -42,30 +40,33 @@ const adminRoutes = [
 
           { path: "transactions", element: <AdminTransactionsListPage /> },
 
-
-
           { path: "users", element: <AdminUsersPage /> },
 
           {
-            path: "users/:id",element: <AdminUserDetailPage />,
+            path: "users/:id",
+            element: <AdminUserDetailPage />,
           },
           {
-            path: "jobs/",element: <AdminJobsPage />,
+            path: "jobs/",
+            element: <AdminJobsPage />,
           },
           {
             path: "/admin/jobs/:id",
             element: <AdminJobDetailPage />,
-          }
-
-        ]
-      }
-    ]
+          },
+        ],
+      },
+    ],
   },
 
-    { path: "/admin/login", element: <AdminLoginPage role="admin" /> },
-
+  {
+    path: "/admin/login",
+    element: (
+      <RedirectIfAuth>
+        <AdminLoginPage role="admin" />
+      </RedirectIfAuth>
+    ),
+  },
 ];
-
-
 
 export default adminRoutes;

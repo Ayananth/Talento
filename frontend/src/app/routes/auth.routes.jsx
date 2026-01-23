@@ -6,6 +6,7 @@ import ForgotPasswordPage from '@/pages/common/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/common/ResetPasswordPage'
 import EmailSuccessPage from '@/pages/common/EmailSuccessPage'
 import EmailFailedPage from '@/pages/common/EmailFailedPage'
+import RedirectIfAuth from '../../auth/routes/RedirectIfAuth';
 
 const authRoutes = [
   {
@@ -15,11 +16,20 @@ const authRoutes = [
       children: [
         {
           path:"login",
-          element: <LoginPage role="jobseeker" />
+          element:  (
+            <RedirectIfAuth>
+             <LoginPage role="jobseeker" />
+            </RedirectIfAuth>
+          )
         },
         {
           path:"recruiter/login",
-          element: <LoginPage role="recruiter" />
+          element: (
+            <RedirectIfAuth>
+              <LoginPage role="recruiter" />
+            </RedirectIfAuth>
+          
+          )
         },
         {
           path:"signup",
