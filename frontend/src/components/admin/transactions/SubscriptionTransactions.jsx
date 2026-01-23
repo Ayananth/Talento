@@ -211,7 +211,7 @@ export default function SubscriptionTransactionsPage() {
           }}
           className="h-9 px-3 text-sm border border-gray-300 rounded-lg bg-white"
         >
-          <option value="">All Plans</option>
+          <option value="">User type</option>
           <option value="jobseeker">Jobseeker</option>
           <option value="recruiter">Recruiter</option>
         </select>
