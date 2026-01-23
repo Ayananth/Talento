@@ -124,12 +124,12 @@ export function Navbar({ role }) {
                 )}
 
                 {/* Notifications */}
-                {!isAdmin && (
+                {/* {!isAdmin && (
                   <button className="relative p-2 rounded-lg hover:bg-gray-100">
                     <Bell size={20} />
                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
                   </button>
-                )}
+                )} */}
 
                 {/* Profile */}
                 <div className="relative ml-2">
