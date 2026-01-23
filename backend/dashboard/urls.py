@@ -43,6 +43,12 @@ path(
         name="admin-pending-counts"
     ),
 
+    path(
+        "transactions/",
+        views.TransactionListAPIView.as_view(),
+        name="admin-transactions"
+    ),
+
 
 
 

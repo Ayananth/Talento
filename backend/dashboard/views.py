@@ -55,48 +55,6 @@ class TransactionListAPIView(ListAPIView):
             .exclude(status="pending")
         )
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        # ----------- STATS -----------
-        total_transactions = queryset.count()
-
-        revenue_jobseeker = (
-            queryset.filter(plan__plan_type="jobseeker")
-            .aggregate(total=Sum("plan__price"))["total"] or 0
-        )
-
-        revenue_recruiter = (
-            queryset.filter(plan__plan_type="recruiter")
-            .aggregate(total=Sum("plan__price"))["total"] or 0
-        )
-
-        total_revenue = revenue_jobseeker + revenue_recruiter
-
-        active_subscriptions = (
-            UserSubscription.objects
-            .filter(
-                status="active",
-                end_date__gt=now()
-            )
-            .count()
-        )
-
-        response = super().list(request, *args, **kwargs)
-
-        response.data = {
-            "stats": {
-                "total_transactions": total_transactions,
-                "total_revenue": total_revenue,
-                "revenue_jobseeker": revenue_jobseeker,
-                "revenue_recruiter": revenue_recruiter,
-                "active_subscriptions": active_subscriptions,
-            },
-            "results": response.data,
-        }
-
-        return response
-
 
 class AdminToggleBlockUserView(APIView):
     """

@@ -114,7 +114,7 @@ class VerifySubscriptionPaymentAPIView(APIView):
             "Verify subscription payment requested",
             extra={"user_id": request.user.id},
         )
-
+        logger.info(f"{request.data=}")
         serializer = VerifyPaymentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data

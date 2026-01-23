@@ -15,6 +15,7 @@ import AdminUsersPage from "../../pages/admin/users/AdminUsersPage";
 import AdminUserDetailPage from "../../pages/admin/users/AdminUserDetailPage";
 import AdminJobsPage from "../../pages/admin/jobs/AdminJobsPage";
 import AdminJobDetailPage from "../../pages/admin/jobs/AdminJobDetailPage";
+import AdminTransactionsListPage from "../../pages/admin/transactions/AdminTransactionsListPage";
 import { AdminProvider } from "../../context/AdminContext";
 
 const adminRoutes = [
@@ -38,6 +39,9 @@ const adminRoutes = [
           { path: "recruiter/changes", element: <AdminReviewCompanyPage /> },
           { path: "recruiter/approvals", element: <PendingApprovalsPage /> },
           { path: "recruiter/approvals/:id", element: <AdminApprovePage /> },
+
+          { path: "transactions", element: <AdminTransactionsListPage /> },
+
 
 
           { path: "users", element: <AdminUsersPage /> },
