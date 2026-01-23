@@ -26,7 +26,7 @@ def get_admin_stats_overview():
     yearly_revenue = (
         UserSubscription.objects
         .filter(
-            status="active",  # or "paid"
+            status__in=["active", "expired"] ,
             created_at__year=today.year
         )
         .aggregate(
@@ -37,7 +37,7 @@ def get_admin_stats_overview():
     monthly_revenue = (
         UserSubscription.objects
         .filter(
-            status="active",
+            status__in=["active", "expired"],
             created_at__year=today.year,
             created_at__month=today.month
         )
@@ -154,7 +154,7 @@ def get_monthly_revenue_split(year=None):
     qs = (
         UserSubscription.objects
         .filter(
-            status="active",
+            status__in=["active", "expired"],
             created_at__year=year
         )
         .annotate(month=TruncMonth("created_at"))
@@ -205,7 +205,7 @@ def get_yearly_revenue_split(year=None):
     qs = (
         UserSubscription.objects
         .filter(
-            status="active",
+            status__in=["active", "expired"],
             created_at__year=year
         )
         .values("plan__plan_type")

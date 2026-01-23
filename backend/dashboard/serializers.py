@@ -2,6 +2,60 @@ from rest_framework import serializers
 from jobs.models.job import Job
 from jobs.models.skill import JobSkill
 from django.utils import timezone
+from subscriptions.models import UserSubscription
+
+
+class TransactionListSerializer(serializers.ModelSerializer):
+    transaction_id = serializers.CharField(
+        source="razorpay_payment_id"
+    )
+    user_id = serializers.IntegerField(
+        source="user.id"
+    )
+    user_name = serializers.SerializerMethodField()
+    
+    user_email = serializers.EmailField(
+        source="user.email"
+    )
+    user_type = serializers.CharField(
+        source="plan.plan_type"
+    )
+    plan_name = serializers.CharField(
+        source="plan.name"
+    )
+    duration_months = serializers.IntegerField(
+        source="plan.duration_months"
+    )
+    amount = serializers.IntegerField(
+        source="plan.price"
+    )
+
+    class Meta:
+        model = UserSubscription
+        fields = [
+            "id",
+            "transaction_id",
+            "user_id",
+            "user_name",
+            "user_email",
+            "user_type",
+            "plan_name",
+            "amount",
+            "duration_months",
+            "status",
+            "created_at",
+        ]
+
+    def get_user_name(self, obj):
+        try:
+            if obj.plan.plan_type == "jobseeker":
+                return obj.user.jobseeker_profile.fullname
+            elif obj.plan.plan_type == "recruiter":
+                return obj.user.recruiter_profile.company_name
+        except AttributeError:
+            pass
+
+        return ""
 
 
 class AdminJobListSerializer(serializers.ModelSerializer):
