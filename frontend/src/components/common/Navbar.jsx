@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { CircleUser, LogOut, Menu, X, MessageSquare, Bell, Bookmark, Briefcase } from 'lucide-react';
-import useAuth from "../../auth/context/useAuth";
-
+import {
+  CircleUser,
+  LogOut,
+  Menu,
+  X,
+  MessageSquare,
+  Bell,
+  Bookmark,
+  Briefcase,
+} from "lucide-react";
+import useAuth from "@/auth/context/useAuth";
 
 export function Navbar({ role }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -10,11 +18,29 @@ export function Navbar({ role }) {
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { isAuthenticated, logout } = useAuth();
 
-  const isRecruiter = pathname.includes("/recruiter/");
-  const loginUrl = isRecruiter ? "/recruiter/login" : "/login";
-  const signupUrl = isRecruiter ? "/recruiter/signup" : "/signup";
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const userRole = user?.role;
+
+  const isRecruiter = userRole === "recruiter";
+  const isJobseeker = userRole === "jobseeker";
+  const isAdmin = userRole === "admin";
+
+  useEffect(() => {
+    if (isAuthenticated && isRecruiter && pathname === "/") {
+      navigate("/recruiter", { replace: true });
+    }
+  }, [isAuthenticated, isRecruiter, pathname, navigate]);
+
+  const loginUrl =
+    role === "recruiter"
+      ? "/recruiter/login"
+      : role === "admin"
+      ? "/admin/login"
+      : "/login";
+
+  const signupUrl = role === "recruiter" ? "/recruiter/signup" : "/signup";
 
   const handleLogout = () => {
     logout();
@@ -29,36 +55,35 @@ export function Navbar({ role }) {
 
   return (
     <nav
-  className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200 shadow-sm"
-  style={{ height: "72px" }}
->
+      className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200 shadow-sm"
+      style={{ height: "72px" }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-4">
-          {/* Logo Section */}
+          {/* Logo */}
           <button
             onClick={() => handleNavigation("/")}
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg px-2 py-1"
-            aria-label="Talento Home"
+            className="flex items-center gap-3 hover:opacity-80 transition rounded-lg"
           >
             <img src="/t.png" alt="Talento" className="h-12 w-12" />
-            <span className="text-xl font-semibold text-gray-900 tracking-tight hidden sm:inline">
+            <span className="text-xl font-semibold hidden sm:inline">
               Talento
             </span>
           </button>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-3">
             {!isAuthenticated && role !== "admin" && (
               <>
                 <button
                   onClick={() => handleNavigation(loginUrl)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  className="px-4 py-2 border rounded-lg"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => handleNavigation(signupUrl)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg"
                 >
                   Sign Up
                 </button>
@@ -67,74 +92,74 @@ export function Navbar({ role }) {
 
             {isAuthenticated && (
               <div className="flex items-center gap-2">
-                {/* Messages Icon */}
-                <button
-                  onClick={() => handleNavigation("/messages")}
-                  className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                  aria-label="Messages"
-                  title="Messages"
-                >
-                  <MessageSquare size={20} />
-                </button>
+                {/* Jobseeker-only */}
+                {isJobseeker && (
+                  <>
+                    <button
+                      onClick={() => handleNavigation("/messages")}
+                      className="p-2 rounded-lg hover:bg-gray-100"
+                    >
+                      <MessageSquare size={20} />
+                    </button>
 
-                {/* Notifications Icon */}
-                <button
-                  className="relative p-2 text-gray-700 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                  aria-label="Notifications"
-                  title="Notifications"
-                >
-                  <Bell size={20} />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-
-                {/* Saved Jobs Icon (Jobseeker only) */}
-                {!isRecruiter && (
-                  <button
-                    onClick={() => handleNavigation("/shortlisted")}
-                    className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                    aria-label="Saved Jobs"
-                    title="Saved Jobs"
-                  >
-                    <Bookmark size={20} />
-                  </button>
+                    <button
+                      onClick={() => handleNavigation("/shortlisted")}
+                      className="p-2 rounded-lg hover:bg-gray-100"
+                    >
+                      <Bookmark size={20} />
+                    </button>
+                  </>
                 )}
 
-                {/* Posted Jobs Icon (Recruiter only) */}
+                {/* Recruiter-only */}
                 {isRecruiter && (
                   <button
-                    onClick={() => handleNavigation("/recruiter/jobs")}
-                    className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                    aria-label="Posted Jobs"
-                    title="Posted Jobs"
+                    onClick={() =>
+                      handleNavigation("/recruiter/jobs")
+                    }
+                    className="p-2 rounded-lg hover:bg-gray-100"
                   >
                     <Briefcase size={20} />
                   </button>
                 )}
 
-                {/* Profile Menu */}
-                <div className="relative ml-2 border-l border-gray-200 pl-2">
+                {/* Notifications */}
+                {!isAdmin && (
+                  <button className="relative p-2 rounded-lg hover:bg-gray-100">
+                    <Bell size={20} />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                  </button>
+                )}
+
+                {/* Profile */}
+                <div className="relative ml-2">
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}
-                    className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                    aria-label="User menu"
-                    aria-expanded={profileOpen}
+                    className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center"
                   >
                     <CircleUser size={20} />
                   </button>
 
-                  {/* Profile Dropdown */}
                   {profileOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg">
                       <button
-                        onClick={() => handleNavigation("/profile")}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() =>
+                          handleNavigation(
+                            isRecruiter
+                              ? "/recruiter/dashboard"
+                              : "/profile"
+                          )
+                        }
+                        className="w-full px-4 py-2 text-left hover:bg-gray-50"
                       >
                         Dashboard
                       </button>
-                      <div className="border-t border-gray-200" />
+
+                      <div className="border-t" />
+
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex gap-2"
                       >
                         <LogOut size={16} />
                         Logout
@@ -146,101 +171,54 @@ export function Navbar({ role }) {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-            aria-label="Toggle menu"
-            aria-expanded={mobileMenuOpen}
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100"
           >
-            {mobileMenuOpen ? (
-              <X size={24} />
-            ) : (
-              <Menu size={24} />
-            )}
+            {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
-          <div className="px-4 py-3 space-y-2">
-            {!isAuthenticated && role !== "admin" && (
-              <>
-                <button
-                  onClick={() => handleNavigation(loginUrl)}
-                  className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => handleNavigation(signupUrl)}
-                  className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Sign Up
-                </button>
-              </>
-            )}
+        <div className="md:hidden bg-white border-t px-4 py-3 space-y-2">
+          {isJobseeker && (
+            <>
+              <button onClick={() => handleNavigation("/messages")}>
+                Messages
+              </button>
+              <button onClick={() => handleNavigation("/shortlisted")}>
+                Saved Jobs
+              </button>
+            </>
+          )}
 
-            {isAuthenticated && (
-              <>
-                <button
-                  onClick={() => handleNavigation("/messages")}
-                  className="w-full px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 flex items-center gap-2 transition-colors"
-                >
-                  <MessageSquare size={18} />
-                  Messages
-                </button>
+          {isRecruiter && (
+            <button
+              onClick={() => handleNavigation("/recruiter/jobs")}
+            >
+              Posted Jobs
+            </button>
+          )}
 
-                <button
-                  className="w-full px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 flex items-center gap-2 transition-colors relative"
-                >
-                  <Bell size={18} />
-                  Notifications
-                  <span className="absolute right-3 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
+          <button
+            onClick={() =>
+              handleNavigation(
+                isRecruiter ? "/recruiter/dashboard" : "/profile"
+              )
+            }
+          >
+            Dashboard
+          </button>
 
-                {!isRecruiter && (
-                  <button
-                    onClick={() => handleNavigation("/shortlisted")}
-                    className="w-full px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 flex items-center gap-2 transition-colors"
-                  >
-                    <Bookmark size={18} />
-                    Saved Jobs
-                  </button>
-                )}
-
-                {isRecruiter && (
-                  <button
-                    onClick={() => handleNavigation("/recruiter/jobs")}
-                    className="w-full px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 flex items-center gap-2 transition-colors"
-                  >
-                    <Briefcase size={18} />
-                    Posted Jobs
-                  </button>
-                )}
-
-                <div className="border-t border-gray-200 my-2" />
-
-                <button
-                  onClick={() => handleNavigation("/profile")}
-                  className="w-full px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 flex items-center gap-2 transition-colors"
-                >
-                  <CircleUser size={18} />
-                  Dashboard
-                </button>
-
-                <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-2 text-sm text-red-600 bg-red-50 rounded-lg hover:bg-red-100 flex items-center justify-center gap-2 transition-colors"
-                >
-                  <LogOut size={16} />
-                  Logout
-                </button>
-              </>
-            )}
-          </div>
+          <button
+            onClick={handleLogout}
+            className="text-red-600"
+          >
+            Logout
+          </button>
         </div>
       )}
     </nav>
