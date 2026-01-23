@@ -15,6 +15,9 @@ export default function SubscriptionTransactionsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [planFilter, setPlanFilter] = useState("");
 
+  const [fromDate, setFromDate] = useState(getStartOfYear());
+  const [toDate, setToDate] = useState(getToday());
+
   const totalPages = Math.ceil(count / PAGE_SIZE);
 
   /* ---------------- Fetch ---------------- */
@@ -26,6 +29,8 @@ export default function SubscriptionTransactionsPage() {
         ordering,
         status: statusFilter,
         plan_type: planFilter,
+        from_date: fromDate,
+        to_date: toDate,
       });
 
       const mapped = response.results.map((item) => ({
@@ -52,7 +57,7 @@ export default function SubscriptionTransactionsPage() {
 
   useEffect(() => {
     fetchData(page);
-  }, [page, ordering, statusFilter, planFilter]);
+  }, [page, ordering, statusFilter, planFilter, fromDate, toDate]);
 
   /* ---------------- Sorting ---------------- */
 
@@ -73,14 +78,15 @@ export default function SubscriptionTransactionsPage() {
   /* ---------------- Export ---------------- */
 
   const handleExport = () => {
-    // Later you can call a CSV export API with same filters
     console.log("Export with filters:", {
       statusFilter,
       planFilter,
+      fromDate,
+      toDate,
       ordering,
     });
 
-    alert("Export triggered (hook CSV API here)");
+    alert("Export triggered (connect CSV API here)");
   };
 
   /* ---------------- Columns ---------------- */
@@ -91,21 +97,14 @@ export default function SubscriptionTransactionsPage() {
       key: "number",
       render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
     },
-    {
-      label: "Transaction ID",
-      key: "transaction_id",
-    },
+    { label: "Transaction ID", key: "transaction_id" },
     {
       label: "User",
       key: "user_name",
       render: (row) => (
         <div>
-          <div className="font-medium text-gray-900">
-            {row.user_name || "-"}
-          </div>
-          <div className="text-sm text-gray-500">
-            {row.user_email}
-          </div>
+          <div className="font-medium text-gray-900">{row.user_name || "-"}</div>
+          <div className="text-sm text-gray-500">{row.user_email}</div>
         </div>
       ),
     },
@@ -161,9 +160,7 @@ export default function SubscriptionTransactionsPage() {
       label: "User Type",
       key: "user_type",
       render: (row) => (
-        <span className="capitalize text-sm text-gray-600">
-          {row.user_type}
-        </span>
+        <span className="capitalize text-sm text-gray-600">{row.user_type}</span>
       ),
     },
   ];
@@ -177,8 +174,31 @@ export default function SubscriptionTransactionsPage() {
       </h2>
 
       {/* FILTER + EXPORT TOOLBAR */}
-      <div className="mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3
-                      flex flex-col md:flex-row md:items-center md:justify-end gap-3">
+      <div
+        className="mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3
+                   flex flex-col lg:flex-row lg:items-center lg:justify-end gap-3"
+      >
+        {/* FROM DATE */}
+        <input
+          type="date"
+          value={fromDate}
+          onChange={(e) => {
+            setFromDate(e.target.value);
+            setPage(1);
+          }}
+          className="h-9 px-3 text-sm border border-gray-300 rounded-lg"
+        />
+
+        {/* TO DATE */}
+        <input
+          type="date"
+          value={toDate}
+          onChange={(e) => {
+            setToDate(e.target.value);
+            setPage(1);
+          }}
+          className="h-9 px-3 text-sm border border-gray-300 rounded-lg"
+        />
 
         {/* STATUS */}
         <select
@@ -221,11 +241,13 @@ export default function SubscriptionTransactionsPage() {
         </button>
 
         {/* CLEAR */}
-        {(statusFilter || planFilter) && (
+        {(statusFilter || planFilter || fromDate || toDate) && (
           <button
             onClick={() => {
               setStatusFilter("");
               setPlanFilter("");
+              setFromDate("");
+              setToDate("");
               setPage(1);
             }}
             className="text-sm text-gray-500 hover:text-gray-700 px-2"
@@ -253,3 +275,13 @@ export default function SubscriptionTransactionsPage() {
     </div>
   );
 }
+
+
+const getStartOfYear = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-01-01`;
+};
+
+const getToday = () => {
+  return new Date().toISOString().split("T")[0];
+};
