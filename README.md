@@ -1,22 +1,48 @@
-# Talento
+#  Talento – Job Portal Application
 
-A full-stack **job portal platform** that allows job seekers to search, filter, and apply for jobs, and recruiters to post and manage job listings.  
-Built with **Django REST Framework**, **PostgreSQL**, and **React**.
+**Talento** is a full-stack **job portal platform** that connects **job seekers** and **recruiters** through a modern, scalable web application.  
+Job seekers can search, filter, and apply for jobs, while recruiters can post jobs, manage applications, and track hiring activity.
+
+This project is built using Django REST Framework and React.
+
+---
+
+## ✨ Key Features
+
+### 👤 Job Seeker
+- User registration & authentication
+- Search and filter jobs
+- Apply for jobs
+- Track applied jobs
+- Save/bookmark jobs
+- Real-time notifications (WebSockets)
+
+### 🧑‍💼 Recruiter
+- Recruiter profile management
+- Post, edit, and delete job listings
+- View and manage job applications
+- Shortlist / reject candidates
+- Recruiter dashboard
+
+### 🛠️ Admin
+- User & recruiter management
+- Job moderation
+- Transactions & reports
 
 ---
 
 ## 🏗️ Tech Stack
 
-### Backend
+### 🔙 Backend
 - Python
 - Django
 - Django REST Framework
-- WebSocket
 - Django Channels
+- WebSockets
 - PostgreSQL
 - PostgreSQL Full-Text Search
 
-### Frontend
+### 🎨 Frontend
 - React
 - React Router
 - Axios
@@ -24,3 +50,11 @@ Built with **Django REST Framework**, **PostgreSQL**, and **React**.
 - Flowbite
 
 ---
+
+## 🧠 Architecture Overview
+
+- REST API–based backend
+- Role-based authentication (Job Seeker / Recruiter / Admin)
+- Decoupled frontend & backend
+- WebSocket-based real-time notifications
+- Scalable PostgreSQL database design
