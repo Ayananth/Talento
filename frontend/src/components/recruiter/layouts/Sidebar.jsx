@@ -11,9 +11,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Messages", path: "/recruiter/messages" },
     { name: "Jobs", path: "/recruiter/jobs" },
     { name: "Applications", path: "/recruiter/applications" },
-    { name: "Shortlisted", path: "/recruiter/shortlisted" },
-    { name: "Settings", path: "/recruiter/settings" },
-    { name: "Logout", path: "/logout" },
+    // { name: "Shortlisted", path: "/recruiter/shortlisted" },
+    // { name: "Settings", path: "/recruiter/settings" },
+    // { name: "Logout", path: "/logout" },
   ];
 
   return (
