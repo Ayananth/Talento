@@ -114,7 +114,7 @@ export default function JobDetailPage() {
               isActive={true}
               status="published"
               hasApplied={job.has_applied}
-              isSaved={false}
+              isSaved={job.is_saved}
               hasAppliedLocal={hasAppliedLocal}
               setHasAppliedLocal={setHasAppliedLocal}
             />
