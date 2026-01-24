@@ -141,7 +141,7 @@ export default function AdminJobsPage() {
 
   {/* SEARCH */}
   <div className="flex-1 relative">
-    <input
+    {/* <input
       type="text"
       placeholder="Search  by company"
       value={company}
@@ -155,7 +155,7 @@ export default function AdminJobsPage() {
 
     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
       🔍
-    </span>
+    </span> */}
   </div>
 
 
