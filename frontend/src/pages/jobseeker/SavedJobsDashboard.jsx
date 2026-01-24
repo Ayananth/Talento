@@ -24,24 +24,23 @@ const SavedJobsDashboard = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchSavedJobs = async () => {
-      try {
-        const data = await getSavedJobs({
-          page,
-          ordering,
-        });
+useEffect(() => {
+  const fetchSavedJobs = async () => {
+    try {
+      const data = await getSavedJobs({
+        page,
+        ordering,
+      });
 
-        setSavedJobs(data.results || []);
-        console.log("results: ", data)
-        setTotalPages(Math.ceil(data.count / 10));
-      } catch (error) {
-        console.error("Error fetching saved jobs:", error);
-      }
-    };
+      setSavedJobs(data.results || []);
+      setTotalPages(Math.ceil(data.count / 10));
+    } catch (error) {
+      console.error("Error fetching saved jobs:", error);
+    }
+  };
 
-    fetchSavedJobs();
-  }, [page, ordering]);
+  fetchSavedJobs();
+}, [page, ordering]);
 
   const renderSalary = (job) => {
     if (!job.salary_min && !job.salary_max) {
