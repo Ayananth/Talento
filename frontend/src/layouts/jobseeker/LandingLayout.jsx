@@ -19,17 +19,17 @@ const LandingLayout = () => {
   className="flex-1 w-full min-h-0 overflow-hidden"
   style={{ paddingTop: "72px" }}
 >
-        <AnimatePresence mode="wait">
+        {/* <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
             className="h-full min-h-0 flex flex-col"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-          >
+          > */}
             <Outlet />
-          </motion.div>
-        </AnimatePresence>
+          {/* </motion.div>
+        </AnimatePresence> */}
       </main>
 
       {!hideFooter && <Footer />}
