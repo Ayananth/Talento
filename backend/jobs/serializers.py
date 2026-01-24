@@ -288,10 +288,14 @@ class PublicJobListSerializer(serializers.ModelSerializer):
         ]
 
     def get_logo(self, obj):
-        # recruiter_profile = getattr(obj.recruiter, "recruiter_profile", None)
-        # if recruiter_profile and recruiter_profile.logo:
-        return obj.recruiter.logo.url
-        # return None
+        recruiter = getattr(obj, "recruiter", None)
+        if recruiter and recruiter.logo:
+            try:
+                return recruiter.logo.url
+            except Exception:
+                return None
+        return None
+
 
 
 class PublicJobDetailSerializer(serializers.ModelSerializer):
