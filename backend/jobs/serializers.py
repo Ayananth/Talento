@@ -302,6 +302,7 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
     company_size = serializers.CharField(source = 'recruiter.company_size')
     company_website = serializers.URLField(source = 'recruiter.website')
     has_applied = serializers.BooleanField(read_only=True)
+    is_saved = serializers.BooleanField(read_only=True)
 
 
     class Meta:
@@ -327,7 +328,8 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
             "company_size",
             "company_website",
             "has_applied",
-            "recruiter_id"
+            "recruiter_id",
+            "is_saved",
 
         ]
 
@@ -351,6 +353,21 @@ class SavedJobListSerializer(serializers.ModelSerializer):
             "created_at",
             "job",
         ]
+
+
+
+class SavedJobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedJob
+        fields = ["id", "job", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+    def validate_job(self, job):
+        if not job.is_active or job.status != "published":
+            raise serializers.ValidationError("This job cannot be saved.")
+        return job
+
+
 
 
 # =========================================

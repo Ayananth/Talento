@@ -15,7 +15,10 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.exceptions import NotFound
@@ -29,9 +32,11 @@ from jobs.pagination import RecruiterJobPagination, Pagination
 from jobs.serializers import (
     PublicJobDetailSerializer,
     PublicJobListSerializer,
-    SavedJobListSerializer
+    SavedJobListSerializer,
+    SavedJobSerializer
 )
 from core.permissions import IsJobseeker
+from django.db import IntegrityError
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +109,8 @@ class PublicJobListView(ListAPIView):
         return queryset
 
 
+
+
 class PublicJobDetailView(RetrieveAPIView):
     serializer_class = PublicJobDetailSerializer
 
@@ -117,12 +124,15 @@ class PublicJobDetailView(RetrieveAPIView):
             },
         )
 
-        queryset = Job.objects.filter(
-            status=Job.Status.PUBLISHED,
-            is_active=True,
-        ).exclude(
-            expires_at__isnull=False,
-            expires_at__lte=timezone.now(),
+        queryset = (
+            Job.objects.filter(
+                status=Job.Status.PUBLISHED,
+                is_active=True,
+            )
+            .exclude(
+                expires_at__isnull=False,
+                expires_at__lte=timezone.now(),
+            )
         )
 
         if user.is_authenticated and getattr(user, "role", None) == "jobseeker":
@@ -132,11 +142,18 @@ class PublicJobDetailView(RetrieveAPIView):
                         job=OuterRef("pk"),
                         applicant=user.jobseeker_profile,
                     )
-                )
+                ),
+                is_saved=Exists(
+                    SavedJob.objects.filter(
+                        job=OuterRef("pk"),
+                        user=user,
+                    )
+                ),
             )
         else:
             queryset = queryset.annotate(
-                has_applied=Value(False, output_field=BooleanField())
+                has_applied=Value(False, output_field=BooleanField()),
+                is_saved=Value(False, output_field=BooleanField()),
             )
 
         return queryset
@@ -157,7 +174,6 @@ class PublicJobDetailView(RetrieveAPIView):
         )
 
         return job
-
 
 
 
@@ -187,3 +203,48 @@ class PublicSavedJobsListView(ListAPIView):
 
 
 
+class SaveJobView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def post(self, request, job_id):
+        user = request.user
+
+        try:
+            job = Job.objects.get(id=job_id, is_active=True, status="published")
+        except Job.DoesNotExist:
+            return Response(
+                {"detail": "Job not found or not available."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            saved_job = SavedJob.objects.create(
+                user=user,
+                job=job
+            )
+        except IntegrityError:
+            return Response(
+                {"detail": "Job already saved."},
+                status=status.HTTP_409_CONFLICT
+            )
+
+        serializer = SavedJobSerializer(saved_job)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
+class UnsaveJobView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def delete(self, request, job_id):
+        deleted, _ = SavedJob.objects.filter(
+            user=request.user,
+            job_id=job_id
+        ).delete()
+
+        if not deleted:
+            return Response(
+                {"detail": "Saved job not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
