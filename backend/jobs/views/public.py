@@ -12,6 +12,7 @@ from django.db.models import (
     OuterRef,
     Q,
     Value,
+    Count, F
 )
 from django.db.models.functions import Coalesce
 from django.utils import timezone
@@ -33,10 +34,12 @@ from jobs.serializers import (
     PublicJobDetailSerializer,
     PublicJobListSerializer,
     SavedJobListSerializer,
-    SavedJobSerializer
+    SavedJobSerializer,
+    TopRecruiterStatsSerializer
 )
 from core.permissions import IsJobseeker
 from django.db import IntegrityError
+from recruiter.models import RecruiterProfile
 
 logger = logging.getLogger(__name__)
 
@@ -248,3 +251,28 @@ class UnsaveJobView(APIView):
             )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+
+
+class LandingPageStatsView(APIView):
+
+    def get(self, request):
+        top_recruiters = (
+            RecruiterProfile.objects
+            .annotate(job_count=Count("jobs"))
+            .values(
+                "id",
+                "company_name",
+                "location",
+                "logo",
+                "job_count",
+            )
+            .order_by("-job_count")[:5]
+        )
+
+
+
+        serializer = TopRecruiterStatsSerializer(top_recruiters, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

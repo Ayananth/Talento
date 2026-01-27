@@ -12,9 +12,28 @@ from jobs.models.job import Job, SavedJob
 from jobs.models.skill import JobSkill
 
 from datetime import timedelta
+from cloudinary.utils import cloudinary_url
 
 
 
+
+
+
+class TopRecruiterStatsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    company_name = serializers.CharField(allow_null=True)
+    location = serializers.CharField(allow_null=True)
+    job_count = serializers.IntegerField()
+    logo = serializers.SerializerMethodField()
+
+    def get_logo(self, obj):
+        logo = obj.get("logo")
+        if not logo:
+            return None
+        try:
+            return logo.url
+        except Exception:
+            return None
 
 
 
