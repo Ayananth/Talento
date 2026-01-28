@@ -1,41 +1,48 @@
 import { motion } from "framer-motion";
 import RecruiterCard from "./RecruiterCard";
+import api from "../../../apis/api"
+import { useEffect, useState } from "react";
+import company_placeholder from '../../../assets/common/image.png' 
 
-const RECRUITERS = [
+
+
+
+
+let RECRUITERS = [
   {
-    name: "LinkedIn",
+    company_name: "LinkedIn",
     logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 68,
     location: "New York, US",
     openJobs: 25,
   },
   {
-    name: "Adobe",
+    company_name: "Adobe",
     logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 42,
     location: "New York, US",
     openJobs: 17,
   },
   {
-    name: "Dailymotion",
+    company_name: "Dailymotion",
     logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 46,
     location: "New York, US",
     openJobs: 65,
   },
   {
-    name: "NewSum",
+    company_name: "NewSum",
     logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 68,
     location: "New York, US",
     openJobs: 25,
   },
   {
-    name: "PowerHome",
+    company_name: "PowerHome",
     logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
     reviews: 87,
     location: "New York, US",
-    openJobs: 34,
+    job_count: 34,
   },
 ];
 
@@ -60,6 +67,31 @@ const itemVariants = {
 };
 
 export default function TopRecruiters() {
+
+
+  const [recruiters, setRecruiters] = useState([]);
+
+  useEffect(()=>{
+
+    const fetchStats = async ()=> {
+      let res =await api.get("v1/jobs/public/stats");
+      console.log(res)
+      setRecruiters(res.data)
+    }
+
+    fetchStats();
+
+
+
+  }, [])
+
+
+
+
+
+
+
+
   return (
     <section className="py-20 bg-gradient-to-b from-white to-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -87,7 +119,7 @@ export default function TopRecruiters() {
           variants={containerVariants}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"
         >
-          {RECRUITERS.map((recruiter, index) => (
+          {recruiters.map((recruiter, index) => (
             <motion.div key={index} variants={itemVariants}>
               <RecruiterCard recruiter={recruiter} />
             </motion.div>

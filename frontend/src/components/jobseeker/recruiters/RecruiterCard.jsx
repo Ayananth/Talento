@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Briefcase, ArrowRight } from "lucide-react";
+import company_placeholder from '../../../assets/common/image.png' 
+
 
 export default function RecruiterCard({ recruiter }) {
   return (
@@ -16,13 +18,13 @@ export default function RecruiterCard({ recruiter }) {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <motion.img
             whileHover={{ scale: 1.1 }}
-            src={recruiter.logo}
-            alt={recruiter.name}
+            src={recruiter.logo || company_placeholder}
+            // alt={recruiter.company_name}
             className="w-14 h-14 rounded-xl object-cover flex-shrink-0 shadow-md"
           />
           <div className="min-w-0">
             <h3 className="font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
-              {recruiter.name}
+              {recruiter.company_name}
             </h3>
             <p className="text-xs text-slate-500 mt-1">Hiring Company</p>
           </div>
@@ -36,7 +38,7 @@ export default function RecruiterCard({ recruiter }) {
         className="flex items-center gap-2 text-sm text-slate-600 mb-3"
       >
         <MapPin size={16} className="text-blue-500 flex-shrink-0" />
-        <span className="truncate">{recruiter.location}</span>
+        <span className="truncate">{recruiter.location || "India"}</span>
       </motion.div>
 
       {/* Jobs Count */}
@@ -47,8 +49,8 @@ export default function RecruiterCard({ recruiter }) {
       >
         <Briefcase size={16} className="text-blue-600 flex-shrink-0" />
         <div>
-          <span className="font-bold text-blue-600">{recruiter.openJobs}</span>
-          <span className="text-slate-600 ml-1">Open Jobs</span>
+          <span className="font-bold text-blue-600">{recruiter.job_count}</span>
+          <span className="text-slate-600 ml-1">Jobs Posted</span>
         </div>
       </motion.div>
 
@@ -64,3 +66,5 @@ export default function RecruiterCard({ recruiter }) {
     </motion.div>
   );
 }
+
+
