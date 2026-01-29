@@ -3,7 +3,7 @@ from django.db import transaction
 import time
 import logging
 
-from jobs.models import Job
+from jobs.models.job import Job
 from embeddings.models import JobEmbedding
 from embeddings.services import generate_embedding, build_job_text
 

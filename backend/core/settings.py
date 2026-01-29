@@ -64,7 +64,7 @@ INSTALLED_APPS = [
     "notifications",
     "dashboard",
     "pgvector.django",
-    "embeddings"
+    "embeddings.apps.EmbeddingsConfig",
 ]
 
 MIDDLEWARE = [

@@ -14,25 +14,17 @@ def generate_embedding(text: str) -> list[float]:
     return response.data[0].embedding
 
 
-def build_job_text(job=None):
+def build_job_text(job):
 
+    if not job:
+        return ""
 
-    return """
-  "title": "Backend Python Developer",
-  "company": "Talento Labs",
-  "description": "Build scalable APIs using Django and PostgreSQL",
-  "skills": "Python, Django, AWS, Redis",
-  "experience_years": 3
-"""
-
-
-
-
+    skills = ", ".join(
+        job.skills.values_list("name", flat=True)
+    )
 
     return f"""
     Job Title: {job.title}
-    Company: {job.company}
-    Skills: {job.skills}
-    Experience: {job.experience_years} years
+    Skills: {skills}
     Description: {job.description}
     """
