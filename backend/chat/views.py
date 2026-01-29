@@ -114,6 +114,7 @@ class StartConversationAPIView(APIView):
         recipient_id = serializer.validated_data["recipient_id"]
         content = serializer.validated_data["content"]
         logger.info(f"{content=}")
+        logger.info("Starting conversation")
 
         try:
             job = Job.objects.select_related("recruiter").get(id=job_id)
@@ -139,10 +140,10 @@ class StartConversationAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        if user == job.recruiter:
+        if user == job.recruiter.user:
             recruiter = user
             jobseeker = recipient
-        elif recipient == job.recruiter:
+        elif recipient == job.recruiter.user:
             recruiter = recipient
             jobseeker = user
         else:
@@ -155,7 +156,7 @@ class StartConversationAPIView(APIView):
                 },
             )
             return Response(
-                {"detail": "Invalid participants for this job"},
+                {"detail": "Invalid participants for this job in start conversation"},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -235,6 +236,7 @@ class GetConversationAPIView(APIView):
 
         try:
             other_user = User.objects.get(id=other_user_id)
+            logger.info(f"{other_user=}")
         except User.DoesNotExist:
             logger.warning(
                 "User not found while fetching conversation",
@@ -247,14 +249,19 @@ class GetConversationAPIView(APIView):
 
         user = request.user
 
-        if user == job.recruiter:
+        logger.info(f"{user=}")
+        logger.info(f"{other_user=}")
+        logger.info(f"{job.recruiter=}")
+
+        if user == job.recruiter.user:
             recruiter = user
             jobseeker = other_user
-        elif other_user == job.recruiter:
+        elif other_user == job.recruiter.user:
             recruiter = other_user
             jobseeker = user
+
         else:
-            logger.warning(
+            logger.info(
                 "Invalid participants while fetching conversation",
                 extra={
                     "job_id": job_id,
@@ -264,7 +271,7 @@ class GetConversationAPIView(APIView):
             )
             return Response(
                 {"detail": "Invalid participants for this job"},
-                status=status.HTTP_403_FORBIDDEN,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         conversation = Conversation.objects.filter(

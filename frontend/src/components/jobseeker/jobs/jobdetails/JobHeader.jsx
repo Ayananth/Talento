@@ -74,7 +74,11 @@ async function handleMessageRecruiter() {
   // const res = await api.get("v1/chat/conversation/", {
   //   params: { job_id: job.id, other_user_id: job.recruiter_id },
   // });
+
+  console.log("fetching conversatioN", job)
   const res = await fetchConversation(job.id, job.recruiter_id);
+  console.log("done fetching conversatioN")
+
 
   const conversation = res.data.conversation;
   console.log(conversation)
