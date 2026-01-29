@@ -21,8 +21,7 @@ def generate_job_embedding_task(self, job_id):
     attempt = self.request.retries + 1
 
     logger.info(
-        "Embedding task started",
-        extra={"job_id": job_id, "attempt": attempt},
+        f"Embedding task started | job_id={job_id} attempt={attempt}"
     )
 
     try:
@@ -41,18 +40,12 @@ def generate_job_embedding_task(self, job_id):
         duration = round(time.time() - start_time, 2)
 
         logger.info(
-            "Embedding task completed",
-            extra={
-                "job_id": job_id,
-                "attempt": attempt,
-                "duration_sec": duration,
-            },
+            f"Embedding task completed | job_id={job_id} attempt={attempt} duration_sec={duration}"
         )
 
     except Job.DoesNotExist:
         logger.warning(
-            "Embedding skipped — job deleted",
-            extra={"job_id": job_id},
+            f"Embedding skipped — job deleted | job_id={job_id}"
         )
         return
 
@@ -60,12 +53,6 @@ def generate_job_embedding_task(self, job_id):
         duration = round(time.time() - start_time, 2)
 
         logger.error(
-            "Embedding task failed",
-            extra={
-                "job_id": job_id,
-                "attempt": attempt,
-                "duration_sec": duration,
-                "error": str(e),
-            },
+            f"Embedding task failed | job_id={job_id} attempt={attempt} duration_sec={duration} error={e}"
         )
         raise
