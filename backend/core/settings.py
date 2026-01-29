@@ -62,7 +62,9 @@ INSTALLED_APPS = [
     "subscriptions",
     "django_celery_beat",
     "notifications",
-    "dashboard"
+    "dashboard",
+    "pgvector.django",
+    "embeddings"
 ]
 
 MIDDLEWARE = [
