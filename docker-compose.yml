@@ -64,7 +64,7 @@ services:
       - "6379:6379"
 
   postgres:
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     container_name: postgres_db
     restart: always
     environment:
@@ -73,6 +73,7 @@ services:
       POSTGRES_PASSWORD: talento_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U talento_user -d talento_db"]
       interval: 5s
