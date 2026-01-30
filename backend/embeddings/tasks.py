@@ -2,6 +2,7 @@ from celery import shared_task
 from django.db import transaction
 import time
 import logging
+import os
 
 from jobs.models.job import Job
 from profiles.models import JobSeekerResume
@@ -88,26 +89,22 @@ def generate_resume_embedding_task(self, resume_id):
 
     resume = JobSeekerResume.objects.get(id=resume_id)
 
-    # 1. Download PDF locally if needed
-    file_path = resume.file.path  
+    temp_path = download_resume_to_temp(resume)
 
-    # 2. Extract text
-    raw_text = extract_text_from_pdf(file_path)
+    try:
+        raw_text = extract_text_from_pdf(temp_path)
 
-    # 3. Parse structured data
-    parsed = parse_resume_with_ai(raw_text)
+        parsed = parse_resume_with_ai(raw_text)
+        resume.parsed_data = parsed
+        resume.save(update_fields=["parsed_data"])
 
-    resume.parsed_data = parsed
-    resume.save(update_fields=["parsed_data"])
+        text = build_candidate_text(parsed)
+        vector = generate_embedding(text)
 
-    # 4. Build embedding text
-    text = build_candidate_text(parsed)
+        ResumeEmbedding.objects.update_or_create(
+            resume=resume,
+            defaults={"embedding": vector},
+        )
 
-    # 5. Generate vector
-    vector = generate_embedding(text)
-
-    # 6. Upsert
-    ResumeEmbedding.objects.update_or_create(
-        resume=resume,
-        defaults={"embedding": vector},
-    )
+    finally:
+        os.remove(temp_path)
