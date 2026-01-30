@@ -538,7 +538,7 @@ class JobSeekerResumeView(APIView):
 
         profile = JobSeekerProfile.objects.get(user=request.user)
         resumes = JobSeekerResume.objects.filter(profile=profile)
-        serializer = JobSeekerResumeSerializer(resumes, many=True)
+        serializer = JobSeekerResumeSerializer(resumes, many=True, context={"profile": profile})
         return Response(serializer.data)
 
     def post(self, request):
@@ -548,7 +548,7 @@ class JobSeekerResumeView(APIView):
         )
 
         profile = JobSeekerProfile.objects.get(user=request.user)
-        serializer = JobSeekerResumeSerializer(data=request.data)
+        serializer = JobSeekerResumeSerializer(data=request.data, context={"profile": profile})
 
         if serializer.is_valid():
             serializer.save(profile=profile)
@@ -569,8 +569,8 @@ class JobSeekerResumeView(APIView):
             resume = JobSeekerResume.objects.get(id=pk)
         except JobSeekerResume.DoesNotExist:
             return Response({"error": "Resume not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = JobSeekerResumeSerializer(resume, data=request.data, partial=True)
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        serializer = JobSeekerResumeSerializer(resume, data=request.data, partial=True, context={"profile": profile})
 
         if serializer.is_valid():
             serializer.save()
