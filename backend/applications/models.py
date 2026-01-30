@@ -70,6 +70,13 @@ class JobApplication(models.Model):
     applied_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    match_score = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="AI similarity score between resume and job (0-100)"
+    )
+
+
     class Meta:
         unique_together = ("job", "applicant")
         ordering = ["-applied_at"]
