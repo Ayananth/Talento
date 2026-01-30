@@ -158,6 +158,7 @@ class JobApplicationsForRecruiterView(ListAPIView):
         "applied_at",
         "updated_at",
         "status",
+        "match_score"
     ]
     ordering = ["-applied_at"]
 

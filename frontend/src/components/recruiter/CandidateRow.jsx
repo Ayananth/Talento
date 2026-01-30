@@ -26,7 +26,7 @@ export const CandidateRow = ({ candidate }) => {
     </td>
     <td className="px-6 py-4">{candidate.job_title}</td>
     <td className="px-6 py-4">{candidate.location}</td>
-    <td className="px-6 py-4">{candidate.experience_years} yrs</td>
+    <td className="px-6 py-4">{candidate.match_score}</td>
     <td className="px-6 py-4">
       {new Date(candidate.applied_at).toLocaleDateString()}
     </td>
