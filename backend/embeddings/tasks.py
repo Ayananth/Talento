@@ -41,7 +41,7 @@ def generate_job_embedding_task(self, job_id):
         with transaction.atomic():
             JobEmbedding.objects.update_or_create(
                 job=job,
-                defaults={"embedding": vector},
+                defaults={"embedding": vector, "source_text": text},
             )
 
         duration = round(time.time() - start_time, 2)
@@ -122,7 +122,7 @@ def generate_resume_embedding_task(self, resume_id):
             with transaction.atomic():
                 ResumeEmbedding.objects.update_or_create(
                     resume=resume,
-                    defaults={"embedding": vector},
+                    defaults={"embedding": vector, "source_text": text},
                 )
 
             duration = round(time.time() - start_time, 2)
