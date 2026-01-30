@@ -206,19 +206,33 @@ MATCH_THRESHOLD = 0.55
 MAX_RESULTS = 50   
 
 
+from django.conf import settings
 from django.core.mail import send_mail
 
+
 def send_job_match_email(email, job, similarity):
+
+    job_url = f"{settings.FRONTEND_URL}/jobs/{job.id}"
+
+    subject = f"New job matching your profile: {job.title}"
+
+    message = (
+        f"Hi,\n\n"
+        f"We found a job that matches your profile ({round(similarity*100,1)}% match).\n\n"
+        f"Job: {job.title}\n"
+        f"View here: {job_url}\n\n"
+        f"Best of luck!\n"
+        f"Talento Team"
+    )
+
     send_mail(
-        subject=f"New job matching your profile: {job.title}",
-        message=(
-            f"We found a job matching your profile ({round(similarity*100,1)}% match)\n\n"
-            f"{job.title}\n{job.description[:300]}..."
-        ),
-        from_email="tsayananth93@gmail.com",
+        subject=subject,
+        message=message,
+        from_email="noreply@talento.ai",
         recipient_list=[email],
         fail_silently=False,
     )
+
 
 
 @shared_task(
@@ -254,6 +268,8 @@ def notify_matching_candidates_task(self, job_id):
     for emb in matches:
         similarity = 1 - emb.distance
 
+        logger.info(f"{similarity=}")
+
         if similarity < MATCH_THRESHOLD:
             break
 
@@ -262,7 +278,7 @@ def notify_matching_candidates_task(self, job_id):
 
         logger.info(f"{user.email, similarity}")
 
-        # send_job_match_email(user.email, job, similarity)
+        send_job_match_email(user.email, job, similarity)
 
         notified += 1
 
