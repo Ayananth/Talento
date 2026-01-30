@@ -197,3 +197,75 @@ def compute_job_match_task(self, application_id):
     logger.info(
         f"Match computed | application_id={application_id} | score={app.match_score}"
     )
+
+
+
+
+
+MATCH_THRESHOLD = 0.55
+MAX_RESULTS = 50   
+
+
+from django.core.mail import send_mail
+
+def send_job_match_email(email, job, similarity):
+    send_mail(
+        subject=f"New job matching your profile: {job.title}",
+        message=(
+            f"We found a job matching your profile ({round(similarity*100,1)}% match)\n\n"
+            f"{job.title}\n{job.description[:300]}..."
+        ),
+        from_email="tsayananth93@gmail.com",
+        recipient_list=[email],
+        fail_silently=False,
+    )
+
+
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=60,
+    retry_kwargs={"max_retries": 5},
+)
+def notify_matching_candidates_task(self, job_id):
+    logger.info("Checking the matching candiates")
+
+    job = Job.objects.get(id=job_id)
+
+    try:
+        job_vector = JobEmbedding.objects.get(job=job).embedding
+    except JobEmbedding.DoesNotExist:
+        logger.warning(f"Job embedding missing | job_id={job_id}")
+        raise Exception("Job embedding not ready")
+
+    matches = (
+        ResumeEmbedding.objects
+        .filter(resume__is_default=True)
+        .annotate(
+            distance=CosineDistance("embedding", job_vector)
+        )
+        .order_by("distance")[:MAX_RESULTS]
+    )
+
+    logger.info(f"{matches=}")
+
+    notified = 0
+
+    for emb in matches:
+        similarity = 1 - emb.distance
+
+        if similarity < MATCH_THRESHOLD:
+            break
+
+        profile = emb.resume.profile
+        user = profile.user
+
+        logger.info(f"{user.email, similarity}")
+
+        # send_job_match_email(user.email, job, similarity)
+
+        notified += 1
+
+    logger.info(
+        f"Job notifications sent | job_id={job_id} | count={notified}"
+    )
