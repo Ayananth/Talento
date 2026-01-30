@@ -13,5 +13,5 @@ def trigger_embedding(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=JobSeekerResume)
 def trigger_resume_embedding(sender, instance, created, **kwargs):
-    if created or instance.file:
+    if created:
         generate_resume_embedding_task.delay(instance.id)
