@@ -24,6 +24,7 @@ channels-redis>=4.3
 razorpay>=2
 pgvector
 openai
+pymupdf
 
 
 

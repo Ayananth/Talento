@@ -12,20 +12,8 @@ from embeddings.resume_parser import extract_text_from_pdf, parse_resume_with_ai
 
 logger = logging.getLogger(__name__)
 
-import tempfile
 import requests
 
-def download_resume_to_temp(resume):
-    url = resume.file.url 
-    
-    response = requests.get(url, timeout=30)
-    response.raise_for_status()
-
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-    tmp.write(response.content)
-    tmp.close()
-
-    return tmp.name
 
 
 
@@ -79,6 +67,24 @@ def generate_job_embedding_task(self, job_id):
 
 
 
+def download_resume_to_temp(resume):
+    url = resume.file.url
+
+    logger.info(f"Downloading resume from {url}")
+
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()
+
+    import tempfile
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    tmp.write(response.content)
+    tmp.close()
+
+    logger.info(f"Resume downloaded to {tmp.name}")
+
+    return tmp.name
+
+
 @shared_task(
     bind=True,
     autoretry_for=(Exception,),
@@ -86,25 +92,61 @@ def generate_job_embedding_task(self, job_id):
     retry_kwargs={"max_retries": 3},
 )
 def generate_resume_embedding_task(self, resume_id):
+    start_time = time.time()
+    attempt = self.request.retries + 1
 
-    resume = JobSeekerResume.objects.get(id=resume_id)
-
-    temp_path = download_resume_to_temp(resume)
+    logger.info(
+        f"[START] Resume embedding | resume_id={resume_id} | attempt={attempt}"
+    )
 
     try:
-        raw_text = extract_text_from_pdf(temp_path)
+        resume = JobSeekerResume.objects.get(id=resume_id)
 
-        parsed = parse_resume_with_ai(raw_text)
-        resume.parsed_data = parsed
-        resume.save(update_fields=["parsed_data"])
+        temp_path = download_resume_to_temp(resume)
 
-        text = build_candidate_text(parsed)
-        vector = generate_embedding(text)
+        try:
+            logger.info(f"Extracting text | resume_id={resume_id}")
+            raw_text = extract_text_from_pdf(temp_path)
 
-        ResumeEmbedding.objects.update_or_create(
-            resume=resume,
-            defaults={"embedding": vector},
+            logger.info(f"Parsing resume with AI | resume_id={resume_id}")
+            parsed = parse_resume_with_ai(raw_text)
+
+            resume.parsed_data = parsed
+            resume.save(update_fields=["parsed_data"])
+
+            text = build_candidate_text(parsed)
+
+            logger.info(f"Generating embedding | resume_id={resume_id}")
+            vector = generate_embedding(text)
+
+            with transaction.atomic():
+                ResumeEmbedding.objects.update_or_create(
+                    resume=resume,
+                    defaults={"embedding": vector},
+                )
+
+            duration = round(time.time() - start_time, 2)
+
+            logger.info(
+                f"[SUCCESS] Resume embedding completed | resume_id={resume_id} | "
+                f"attempt={attempt} | duration={duration}s"
+            )
+
+        finally:
+            os.remove(temp_path)
+            logger.info(f"Temp file cleaned | {temp_path}")
+
+    except JobSeekerResume.DoesNotExist:
+        logger.warning(
+            f"[SKIP] Resume deleted before processing | resume_id={resume_id}"
         )
+        return
 
-    finally:
-        os.remove(temp_path)
+    except Exception as e:
+        duration = round(time.time() - start_time, 2)
+
+        logger.error(
+            f"[FAILED] Resume embedding | resume_id={resume_id} | "
+            f"attempt={attempt} | duration={duration}s | error={str(e)}"
+        )
+        raise
