@@ -12,12 +12,17 @@ export default function ResumeUploadCard() {
   // ------------------------------------
   // Fetch resumes on load
   // ------------------------------------
-  useEffect(() => {
+  const fetchResumes = () => {
     api
       .get("/v1/profile/me/resumes/")
       .then((res) => setResumes(res.data || []))
       .catch(() => setResumes([]));
+  };
+
+  useEffect(() => {
+    fetchResumes();
   }, []);
+
 
   // Auto hide alerts
   useEffect(() => {
@@ -86,12 +91,13 @@ export default function ResumeUploadCard() {
   const handleDelete = async (id) => {
     try {
       await api.delete(`/v1/profile/me/resumes/${id}/`);
-      setResumes((prev) => prev.filter((item) => item.id !== id));
+      fetchResumes();
       setSuccess("Resume deleted!");
     } catch {
       setError("Failed to delete resume.");
     }
   };
+
 
   const downloadResume = (url, title) => {
     const link = document.createElement("a");
@@ -102,6 +108,25 @@ export default function ResumeUploadCard() {
     link.click();
     link.remove();
   };
+
+const handleSetDefault = async (id) => {
+  try {
+    await api.post(`/v1/profile/me/resumes/${id}/set-default/`);
+
+    // Update UI: only one default
+    setResumes((prev) =>
+      prev.map((r) => ({
+        ...r,
+        is_default: r.id === id,
+      }))
+    );
+
+    setSuccess("Default resume updated!");
+  } catch (err) {
+    console.log(err);
+    setError("Failed to set default resume.");
+  }
+};
 
 
   return (
@@ -137,8 +162,19 @@ export default function ResumeUploadCard() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Edit2 className="w-4 h-4 text-gray-600 cursor-pointer" />
-            <Check className="w-4 h-4 text-blue-600" />
+            {!file.is_default && (
+              <Check
+                className="w-4 h-4 text-blue-600 cursor-pointer hover:scale-110 transition"
+                title="Set as default"
+                onClick={() => handleSetDefault(file.id)}
+              />
+            )}
+            {file.is_default && (
+              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                Default
+              </span>
+            )}
+
             <Download className="w-5 h-5 text-gray-600 cursor-pointer" />
             <Trash2
               className="w-5 h-5 text-red-500 cursor-pointer"
