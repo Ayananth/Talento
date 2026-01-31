@@ -42,6 +42,9 @@ export default function ApplicantDetailsPage() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showInterviewModal, setShowInterviewModal] = useState(false);
   const [recruiterNotes, setRecruiterNotes] = useState('');
+  const [insight, setInsight] = useState(null);
+  const [insightLoading, setInsightLoading] = useState(true);
+
 
 
 
@@ -121,6 +124,26 @@ useEffect(() => {
     fetchApplicant();
   }
 }, [applicantId]);
+
+
+useEffect(() => {
+  if (!applicantId) return;
+
+  const fetchInsight = async () => {
+    try {
+      setInsightLoading(true);
+      const res = await api.get(`/v1/applications/${applicantId}/insight/`);
+      setInsight(res.data);
+    } catch (err) {
+      console.error("Failed to load insights", err);
+    } finally {
+      setInsightLoading(false);
+    }
+  };
+
+  fetchInsight();
+}, [applicantId]);
+
 
 
 // useEffect(() => {
@@ -224,13 +247,27 @@ const handleStatusChange = async (newStatus) => {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">{applicant.name}</h1>
-<span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLORS[status]}`}>
-  {status}
-</span>
 
+
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {applicant.name}
+                </h1>
+
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLORS[status]}`}>
+                  {status}
+                </span>
+
+                {applicant.match_score !== null && applicant.match_score !== undefined && (
+                  <span className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                    {applicant.match_score}% Match
+                  </span>
+                )}
               </div>
+
+
+
+
               <div className="flex items-center gap-4 text-gray-600">
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4" />
@@ -467,27 +504,57 @@ const handleStatusChange = async (newStatus) => {
           {/* Right Column - 1/3 width */}
           <div className="space-y-6">
             {/* Application Details */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Details</h2>
-              <div className="space-y-3 text-sm">
-                <div>
-                  <p className="text-gray-500">Application ID</p>
-                  <p className="font-medium text-gray-900">{applicant.id}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Job ID</p>
-                  <p className="font-medium text-gray-900">{applicant.job_id}</p>
-                </div>
-                {/* <div>
-                  <p className="text-gray-500">Applied Via</p>
-                  <p className="font-medium text-gray-900">{applicant.appliedVia}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Last Updated</p>
-                  <p className="font-medium text-gray-900">{applicant.lastUpdated}</p>
-                </div> */}
-              </div>
-            </div>
+{/* AI Match Insights */}
+<div className="bg-white rounded-lg shadow-sm p-6">
+  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+    🧠 AI Match Insights
+  </h2>
+
+  {insightLoading && (
+    <p className="text-sm text-gray-500">Analyzing candidate fit...</p>
+  )}
+
+  {!insightLoading && insight && (
+    <div className="space-y-4">
+
+      {/* Strengths */}
+      <div>
+        <p className="font-medium text-green-700 mb-1">Strengths</p>
+        <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+          {insight.strengths.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Gaps */}
+      <div>
+        <p className="font-medium text-red-700 mb-1">Gaps</p>
+        <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+          {insight.gaps.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Summary */}
+      <div>
+        <p className="font-medium text-blue-700 mb-1">Hiring Summary</p>
+        <p className="text-sm text-gray-700 leading-relaxed">
+          {insight.summary}
+        </p>
+      </div>
+
+    </div>
+  )}
+
+  {!insightLoading && !insight && (
+    <p className="text-sm text-gray-500">
+      No insights available for this applicant yet.
+    </p>
+  )}
+</div>
+
 
             {/* Status Timeline */}
             {/* <div className="bg-white rounded-lg shadow-sm p-6">

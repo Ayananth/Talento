@@ -13,7 +13,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from applications.models import JobApplication
+from applications.models import JobApplication, ApplicationInsight
 from core.permissions import IsJobseeker, IsRecruiter
 from profiles.models import JobSeekerResume
 
@@ -31,6 +31,64 @@ from .serializers import (
 logger = logging.getLogger(__name__)
 
 
+from embeddings.services import generate_application_insight
+
+
+class ApplicationInsightAPIView(APIView):
+
+    def get(self, request, application_id):
+
+        try:
+            application = JobApplication.objects.select_related(
+                "job", "applicant"
+            ).get(id=application_id)
+        except JobApplication.DoesNotExist:
+            return Response(
+                {"error": "Application not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if hasattr(application, "insight"):
+            insight = application.insight
+            return Response({
+                "strengths": insight.strengths,
+                "gaps": insight.gaps,
+                "summary": insight.summary,
+            })
+
+        resume = application.applied_resume
+
+        if not resume:
+            return Response({"error": "No resume linked to application"}, status=400)
+
+        embedding = resume.embedding
+
+        if not embedding or not embedding.source_text:
+            return Response({"error": "Resume not processed yet"}, status=400)
+
+        parsed_data = resume.parsed_data  
+
+        result = generate_application_insight(
+            application.job,
+            parsed_data
+        )
+
+        logger.info(f"{result=}")
+
+        insight = ApplicationInsight.objects.create(
+            application=application,
+            strengths=result["strengths"],
+            gaps=result["gaps"],
+            summary=result["summary"],
+        )
+
+        return Response({
+            "strengths": insight.strengths,
+            "gaps": insight.gaps,
+            "summary": insight.summary,
+        })
+
+
 class ApplyJobView(APIView):
     permission_classes = [IsJobseeker]
     parser_classes = [MultiPartParser, FormParser]
@@ -41,50 +99,64 @@ class ApplyJobView(APIView):
             extra={"jobseeker_id": request.user.id},
         )
 
+        profile = request.user.jobseeker_profile
+
         resume_file = request.FILES.get("resume")
         resume_id = request.data.get("resume_id")
 
+        applied_resume = None
         uploaded_asset = None
 
         try:
+            #  User selected existing resume
             if resume_id:
-                resume = JobSeekerResume.objects.get(
+                applied_resume = JobSeekerResume.objects.get(
                     id=resume_id,
-                    profile=request.user.jobseeker_profile
+                    profile=profile
                 )
 
+                # Optional snapshot copy (your existing behavior)
                 uploaded_asset = uploader.upload(
-                    resume.file.url,
+                    applied_resume.file.url,
                     resource_type="image",
                     folder="talento-dev/resumes/applications"
                 )
 
+            # User uploaded new resume
             elif resume_file:
+                # Create resume entry first (this triggers parsing + embedding via Celery)
+                applied_resume = JobSeekerResume.objects.create(
+                    profile=profile,
+                    title=resume_file.name,
+                    file=resume_file,
+                )
+
                 uploaded_asset = uploader.upload(
                     resume_file,
                     resource_type="image",
                     folder="talento-dev/resumes/applications"
                 )
+
             else:
-                logger.warning(
-                    "Resume missing in job application",
-                    extra={"jobseeker_id": request.user.id},
-                )
                 return Response(
                     {"resume": ["Resume is required."]},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-        except Exception:
-            logger.exception(
-                "Resume upload failed",
-                extra={"jobseeker_id": request.user.id},
-            )
+        except JobSeekerResume.DoesNotExist:
             return Response(
-                {"detail": "Failed to upload resume"},
+                {"resume": ["Invalid resume selected"]},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except Exception:
+            logger.exception("Resume handling failed")
+            return Response(
+                {"detail": "Failed to process resume"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+        # Create application
         serializer = ApplyJobSerializer(
             data=request.data,
             context={"request": request}
@@ -92,15 +164,16 @@ class ApplyJobView(APIView):
         serializer.is_valid(raise_exception=True)
 
         application = serializer.save(
-            applicant=request.user.jobseeker_profile,
-            resume=uploaded_asset["public_id"]
+            applicant=profile,
+            applied_resume=applied_resume,
+            resume=uploaded_asset["public_id"] if uploaded_asset else None,
         )
 
         logger.info(
             "Job application created",
             extra={
                 "application_id": application.id,
-                "jobseeker_id": request.user.id,
+                "resume_id": applied_resume.id,
             },
         )
 

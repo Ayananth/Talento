@@ -1,5 +1,9 @@
 from openai import OpenAI
 import os
+import json
+import logging
+logger = logging.getLogger(__name__)
+
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -28,3 +32,66 @@ def build_job_text(job):
     Skills: {skills}
     Description: {job.description}
     """
+
+
+import json
+import re
+
+
+def clean_json_output(text: str) -> str:
+    """
+    Removes ```json ... ``` or ``` ... ``` wrappers if present
+    """
+    text = text.strip()
+
+    # Remove ```json and ``` wrappers
+    if text.startswith("```"):
+        text = re.sub(r"^```json\s*", "", text)
+        text = re.sub(r"^```\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+
+    return text.strip()
+
+
+def generate_application_insight(job, resume_data):
+
+    prompt = f"""
+You are an AI hiring assistant.
+
+Compare this job and candidate.
+
+JOB:
+Title: {job.title}
+Skills: {[s.name for s in job.skills.all()]}
+Experience Level: {job.experience_level}
+Description: {job.description}
+
+CANDIDATE:
+Role: {resume_data["role"]}
+Skills: {resume_data["skills"]}
+Experience Level: {resume_data["experience_level"]}
+Summary: {resume_data["experience_summary"]}
+
+Return ONLY valid JSON:
+{{
+  "strengths": ["list strong matches"],
+  "gaps": ["missing or weak areas"],
+  "summary": "2–3 sentence hiring assessment"
+}}
+"""
+
+    response = client.responses.create(
+        model="gpt-4.1-mini",
+        input=prompt
+    )
+
+    raw = response.output_text.strip()
+    logger.info(f"AI raw insight output: {raw}")
+
+    cleaned = clean_json_output(raw)
+
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        logger.error(f"Failed to parse insight JSON:\n{cleaned}")
+        raise ValueError("Invalid JSON returned by AI")

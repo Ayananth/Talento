@@ -377,6 +377,8 @@ class RecruiterApplicationDetailSerializer(serializers.ModelSerializer):
             # extras
             "skills",
             "recruiter_notes",
+
+            "match_score"
         ]
 
     def get_resume_url(self, obj):
