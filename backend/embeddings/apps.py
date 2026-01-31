@@ -1,8 +1,9 @@
 from django.apps import AppConfig
 
 
-class ApplicationsConfig(AppConfig):
+class EmbeddingsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'applications'
+    name = 'embeddings'
+
     def ready(self):
-        import applications.signals
+        import embeddings.signals

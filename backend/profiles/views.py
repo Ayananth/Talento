@@ -538,7 +538,7 @@ class JobSeekerResumeView(APIView):
 
         profile = JobSeekerProfile.objects.get(user=request.user)
         resumes = JobSeekerResume.objects.filter(profile=profile)
-        serializer = JobSeekerResumeSerializer(resumes, many=True)
+        serializer = JobSeekerResumeSerializer(resumes, many=True, context={"profile": profile})
         return Response(serializer.data)
 
     def post(self, request):
@@ -548,7 +548,7 @@ class JobSeekerResumeView(APIView):
         )
 
         profile = JobSeekerProfile.objects.get(user=request.user)
-        serializer = JobSeekerResumeSerializer(data=request.data)
+        serializer = JobSeekerResumeSerializer(data=request.data, context={"profile": profile})
 
         if serializer.is_valid():
             serializer.save(profile=profile)
@@ -569,8 +569,8 @@ class JobSeekerResumeView(APIView):
             resume = JobSeekerResume.objects.get(id=pk)
         except JobSeekerResume.DoesNotExist:
             return Response({"error": "Resume not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = JobSeekerResumeSerializer(resume, data=request.data, partial=True)
+        profile = JobSeekerProfile.objects.get(user=request.user)
+        serializer = JobSeekerResumeSerializer(resume, data=request.data, partial=True, context={"profile": profile})
 
         if serializer.is_valid():
             serializer.save()
@@ -585,13 +585,78 @@ class JobSeekerResumeView(APIView):
         )
 
         if not pk:
-            return Response({"error": "Resume ID required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Resume ID required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        profile = JobSeekerProfile.objects.get(user=request.user)
 
         try:
-            resume = JobSeekerResume.objects.get(id=pk)
+            resume = JobSeekerResume.objects.get(
+                id=pk,
+                profile=profile
+            )
         except JobSeekerResume.DoesNotExist:
-            return Response({"error": "Resume not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Resume not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        was_default = resume.is_default
 
         resume.delete()
+
+        if was_default:
+            next_resume = (
+                JobSeekerResume.objects
+                .filter(profile=profile)
+                .order_by("-uploaded_at")
+                .first()
+            )
+
+            if next_resume:
+                next_resume.is_default = True
+                next_resume.save(update_fields=["is_default"])
+
+                logger.info(
+                    f"New default resume set | resume_id={next_resume.id}"
+                )
+
         return Response({"message": "Resume deleted"})
 
+
+
+class SetDefaultResumeAPIView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def post(self, request, resume_id):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+
+        try:
+            resume = JobSeekerResume.objects.get(
+                id=resume_id,
+                profile=profile
+            )
+        except JobSeekerResume.DoesNotExist:
+            return Response(
+                {"error": "Resume not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        JobSeekerResume.objects.filter(
+            profile=profile,
+            is_default=True
+        ).exclude(id=resume.id).update(is_default=False)
+
+        resume.is_default = True
+        resume.save(update_fields=["is_default"])
+
+        logger.info(
+            f"Default resume set | resume_id={resume.id} user_id={request.user.id}"
+        )
+
+        return Response(
+            {"message": "Default resume updated successfully"},
+            status=status.HTTP_200_OK
+        )

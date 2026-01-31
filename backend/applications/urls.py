@@ -6,7 +6,8 @@ from .views import (
     RecruiterApplicationStatsView,
     UpdateApplicationStatusView,
     # WithdrawApplicationView,
-    ApplicationtDetailView
+    ApplicationtDetailView,
+    ApplicationInsightAPIView
 )
 
 
@@ -22,6 +23,10 @@ urlpatterns = [
     path("recruiter/applications/<int:application_id>/", ApplicationtDetailView.as_view(), name="recruiter-application-detail"),
     path("recruiter/stats/", RecruiterApplicationStatsView.as_view(), name="recruiter-application-stats"),
     path("update-status/<int:application_id>/", UpdateApplicationStatusView.as_view(), name="update-application-status"),
+    path(
+        "<int:application_id>/insight/",
+        ApplicationInsightAPIView.as_view(),
+    ),
     # path("withdraw/<int:application_id>/", WithdrawApplicationView.as_view(), name="withdraw-application"),           
 
 
