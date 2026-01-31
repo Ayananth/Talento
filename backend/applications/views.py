@@ -75,12 +75,15 @@ class ApplicationInsightAPIView(APIView):
 
         logger.info(f"{result=}")
 
-        insight = ApplicationInsight.objects.create(
+        insight, _ = ApplicationInsight.objects.update_or_create(
             application=application,
-            strengths=result["strengths"],
-            gaps=result["gaps"],
-            summary=result["summary"],
+            defaults={
+                "strengths": result.get("strengths", ""),
+                "gaps": result.get("gaps", ""),
+                "summary": result.get("summary", ""),
+            }
         )
+
 
         return Response({
             "strengths": insight.strengths,
