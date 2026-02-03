@@ -1,6 +1,9 @@
+import logging
 from rest_framework import serializers
 from .models import Conversation, Message, ChatAttachment  
 from .constants import ALLOWED_MIME_TYPES, MAX_FILE_SIZE
+
+logger = logging.getLogger(__name__)
 
 
 class ChatAttachmentSerializer(serializers.ModelSerializer):
@@ -59,6 +62,9 @@ class ConversationListSerializer(serializers.ModelSerializer):
     def get_unread_count(self, obj):
         request = self.context["request"]
         user = request.user
+        logger.info(f"{obj.messages.filter(is_read=False)=}")
+        logger.info(f"{obj.messages.filter(is_read=False).values()=}")
+
 
         return obj.messages.filter(
             is_read=False

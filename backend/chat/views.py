@@ -1,6 +1,5 @@
 import logging
 
-
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -10,14 +9,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-
-# 4. Project-level apps
 from authentication.models import UserModel as User
 from jobs.models.job import Job
 from recruiter.models import RecruiterProfile
 
-
-# 5. Current app (chat)
 from .models import Conversation, Message
 from .serializers import (
     ConversationListSerializer,
@@ -27,10 +22,7 @@ from .serializers import (
 )
 from .services import upload_chat_file_to_cloudinary
 
-
 logger = logging.getLogger(__name__)
-
-
 
 class ConversationListAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -53,6 +45,8 @@ class ConversationListAPIView(APIView):
             many=True,
             context={"request": request},
         )
+
+        logger.info(f"{serializer=}")
 
         return Response(serializer.data)
 

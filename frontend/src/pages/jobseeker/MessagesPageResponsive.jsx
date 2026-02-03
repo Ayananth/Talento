@@ -190,7 +190,7 @@ const handleSendMessage = async (payload) => {
           timestamp: c.last_message_time
             ? new Date(c.last_message_time).toLocaleString()
             : "",
-          unread_count: 0,
+          unread_count: c.unread_count,
           isBlocked: false,
           companyName: null,
           companyLogo: c.other_user?.img ?? null,
