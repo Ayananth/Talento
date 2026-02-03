@@ -95,7 +95,12 @@ const ChatList = ({ chats = [], selectedChat, onSelectChat }) => {
                       <span className="text-xs text-slate-500 ml-2 flex-shrink-0">
                         {/* {chat.timestamp || chat.time || ""} */}
                       </span>
+                    <div className="bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                      {chat.unread_count}
                     </div>
+
+                    </div>
+
 
                     {chat.companyName && (
                       <p className="text-xs text-slate-500 mb-2">

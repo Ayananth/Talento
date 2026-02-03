@@ -14,7 +14,7 @@ from jobs.models.job import Job
 
 from .services import upload_chat_file_to_cloudinary
 
-
+from recruiter.models import RecruiterProfile
 from .models import Conversation, Message
 from .serializers import (
     ConversationListSerializer,
@@ -82,7 +82,7 @@ class ConversationMessagesAPIView(APIView):
             )
             return Response(
                 {"detail": "Forbidden"},
-                status=status.HTTP_403_FORBIDDEN,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         messages = (
@@ -101,10 +101,7 @@ class StartConversationAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        logger.info(
-            "Start conversation requested",
-            extra={"user_id": request.user.id},
-        )
+        logger.info(f"Start conversation requested { request.user.id=}")
 
         serializer = StartConversationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -129,7 +126,10 @@ class StartConversationAPIView(APIView):
             )
 
         try:
-            recipient = User.objects.get(id=recipient_id)
+            if user.role=="jobseeker":
+                recipient = RecruiterProfile.objects.get(id=recipient_id).user
+            else:
+                recipient = User.objects.get(id=recipient_id)
         except User.DoesNotExist:
             logger.warning(
                 "Recipient not found while starting conversation",
@@ -139,6 +139,10 @@ class StartConversationAPIView(APIView):
                 {"detail": "Recipient not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
+    
+        logger.info(f"{user=}")
+        logger.info(f"{job=}")
+        logger.info(f"{recipient=}")
 
         if user == job.recruiter.user:
             recruiter = user
@@ -157,7 +161,7 @@ class StartConversationAPIView(APIView):
             )
             return Response(
                 {"detail": "Invalid participants for this job in start conversation"},
-                status=status.HTTP_403_FORBIDDEN,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         with transaction.atomic():
@@ -203,20 +207,11 @@ class GetConversationAPIView(APIView):
         job_id = request.query_params.get("job_id")
         other_user_id = request.query_params.get("other_user_id")
 
-        logger.info(
-            "Get conversation requested",
-            extra={
-                "job_id": job_id,
-                "other_user_id": other_user_id,
-                "user_id": request.user.id,
-            },
-        )
+        logger.info(f"Get conversation requested {job_id=}{other_user_id=}{request.user.id=}")
 
         if not job_id or not other_user_id:
-            logger.warning(
-                "Missing parameters in get conversation request",
-                extra={"user_id": request.user.id},
-            )
+
+            logger.warning(f"Missing parameters in get conversation request {request.user.id}")
             return Response(
                 {"detail": "job_id and other_user_id are required"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -235,7 +230,11 @@ class GetConversationAPIView(APIView):
             )
 
         try:
-            other_user = User.objects.get(id=other_user_id)
+            user = request.user
+            if user.role=="jobseeker":
+                other_user = RecruiterProfile.objects.get(id=other_user_id).user
+            else:
+                other_user = User.objects.get(id=other_user_id)
             logger.info(f"{other_user=}")
         except User.DoesNotExist:
             logger.warning(
