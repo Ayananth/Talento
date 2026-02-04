@@ -95,9 +95,7 @@ export function Navbar({ role }) {
               </>
             )}
 
-{totalUnread > 0 && (
-  <span className="badge">{totalUnread}</span>
-)}
+
 
             {isAuthenticated && (
               <div className="flex items-center gap-2">
@@ -106,9 +104,15 @@ export function Navbar({ role }) {
                   <>
                     <button
                       onClick={() => handleNavigation("/messages")}
-                      className="p-2 rounded-lg hover:bg-gray-100"
+                      className="relative p-2 rounded-lg hover:bg-gray-100"
                     >
                       <MessageSquare size={20} />
+
+                      {totalUnread > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-semibold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                          {totalUnread}
+                        </span>
+                      )}
                     </button>
 
                     <button
@@ -119,6 +123,7 @@ export function Navbar({ role }) {
                     </button>
                   </>
                 )}
+
 
                 {/* Recruiter-only */}
                 {isRecruiter && (
