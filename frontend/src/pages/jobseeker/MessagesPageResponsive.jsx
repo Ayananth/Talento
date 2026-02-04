@@ -13,7 +13,7 @@ import { fetchConversationMessages } from "../../apis/common/fetchConversationMe
  import { startConversation } from "../../apis/common/startConversation";
  import { useLocation } from "react-router-dom";
  import useUnreadSocket from "../../hooks/useUnreadSocket";
-
+import { useUnread } from "@/context/UnreadContext";
 
 
 const MessagesPageResponsive = () => {
@@ -33,6 +33,9 @@ const MessagesPageResponsive = () => {
 
 
   const { user } = useAuth();
+
+  const { setTotalUnread } = useUnread();
+
   // console.log("User in MessagesPageResponsive:", user);
   const currentUserId = Number(user?.user_id);
 
@@ -88,6 +91,8 @@ useUnreadSocket({
           : chat
       )
     );
+
+  setTotalUnread(prev => prev + 1);
   },
 });
 
@@ -222,6 +227,12 @@ const handleSendMessage = async (payload) => {
 
         if (isMounted) {
           setConversations(normalized);
+          const initialTotal = normalized.reduce(
+            (sum, c) => sum + (c.unread_count ?? 0),
+            0
+          );
+
+          setTotalUnread(initialTotal);
         }
       } catch (error) {
         console.error("Failed to load conversations", error);
@@ -248,6 +259,14 @@ const handleSelectChat = async (chat) => {
   setShowChatList(false);
   setMessages([]);
   setMessagesLoading(true);
+  setTotalUnread(prev => prev - (chat.unread_count ?? 0));
+  setConversations(prev =>
+    prev.map(c =>
+      c.id === chat.id
+        ? { ...c, unread_count: 0 }
+        : c
+    )
+  );
 
   try {
     const data = await fetchConversationMessages(chat.id);

@@ -11,10 +11,15 @@ import {
   Briefcase,
 } from "lucide-react";
 import useAuth from "@/auth/context/useAuth";
+import { useUnread } from "@/context/UnreadContext";
+
 
 export function Navbar({ role }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
+
+  const { totalUnread } = useUnread();
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -89,6 +94,10 @@ export function Navbar({ role }) {
                 </button>
               </>
             )}
+
+{totalUnread > 0 && (
+  <span className="badge">{totalUnread}</span>
+)}
 
             {isAuthenticated && (
               <div className="flex items-center gap-2">

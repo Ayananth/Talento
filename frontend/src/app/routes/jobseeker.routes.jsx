@@ -14,6 +14,7 @@ import JobseekerPremium from "../../pages/jobseeker/JobseekerPremium";
 import SavedJobsDashboard from "../../pages/jobseeker/SavedJobsDashboard";
 
 
+
 const jobseekerRoutes = [
   {
     element: <RequireAuth />,
