@@ -12,6 +12,8 @@ import { fetchConversationMessages } from "../../apis/common/fetchConversationMe
  import useChatSocket from "../../hooks/useChatSocket";
  import { startConversation } from "../../apis/common/startConversation";
  import { useLocation } from "react-router-dom";
+ import useUnreadSocket from "../../hooks/useUnreadSocket";
+
 
 
 const MessagesPageResponsive = () => {
@@ -67,6 +69,28 @@ conversationId: activeConversationId,
   onMessage: handleWsMessage,
   onReadAck: handleReadAck,
 });
+
+useUnreadSocket({
+  token: accessToken,
+  onUnread: (event) => {
+    const convoId = Number(event.conversation_id);
+
+    // If open chat → ignore (already seen)
+    if (convoId === activeConversationId) return;
+
+    setConversations((prev) =>
+      prev.map((chat) =>
+        chat.id === convoId
+          ? {
+              ...chat,
+              unread_count: (chat.unread_count ?? 0) + 1,
+            }
+          : chat
+      )
+    );
+  },
+});
+
 
 
 
