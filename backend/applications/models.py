@@ -90,6 +90,10 @@ class JobApplication(models.Model):
 
     def __str__(self):
         return f"{self.applicant.user.email} → {self.job.title}"
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._previous_status = self.status
 
 
 
