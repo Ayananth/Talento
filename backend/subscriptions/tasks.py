@@ -1,11 +1,19 @@
+import logging
 from celery import shared_task
 from django.utils import timezone
+from django.db import transaction
 
 from subscriptions.models import UserSubscription
 from notifications.services import bulk_create_notifications
 
+logger = logging.getLogger(__name__)
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 60})
+
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_kwargs={"max_retries": 3, "countdown": 60},
+)
 def expire_subscriptions(self):
     now = timezone.now()
 
@@ -17,11 +25,18 @@ def expire_subscriptions(self):
     )
 
     if not subscriptions:
+        logger.info("No subscriptions to expire")
         return "No subscriptions expired"
 
-    UserSubscription.objects.filter(
-        id__in=[s.id for s in subscriptions]
-    ).update(status="expired")
+    subscription_ids = [s.id for s in subscriptions]
+
+    with transaction.atomic():
+        updated = UserSubscription.objects.filter(
+            id__in=subscription_ids,
+            status="active"
+        ).update(status="expired")
+
+    logger.info("Expired %s subscriptions", updated)
 
     notification_data = [
         {
@@ -29,12 +44,19 @@ def expire_subscriptions(self):
             "user_role": sub.user.role,
             "title": "Subscription Expired",
             "message": "Your subscription has expired. Renew to continue premium access.",
-            "type": "SubscriptionExpired",
-            "related_id": sub.id
+            "type": "subscription_expired",
+            "related_id": sub.id,
         }
         for sub in subscriptions
     ]
 
-    bulk_create_notifications(notification_data)
+    try:
+        bulk_create_notifications(notification_data)
+    except Exception:
+        logger.exception(
+            "Failed to create subscription expiry notifications. "
+            "subscription_ids=%s",
+            subscription_ids
+        )
 
-    return f"Expired {len(subscriptions)} subscriptions"
+    return f"Expired {updated} subscriptions"
