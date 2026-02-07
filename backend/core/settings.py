@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     "recruiter",
     "django_filters",
     # "admin",
-    "jobs",
+    "jobs.apps.JobsConfig",
     "applications",
     "chat",
     "channels",
