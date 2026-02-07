@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'corsheaders',
     "cloudinary",
     "cloudinary_storage",
-    "recruiter",
+    "recruiter.apps.RecruiterConfig",
     "django_filters",
     # "admin",
     "jobs.apps.JobsConfig",
