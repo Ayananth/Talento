@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     "applications",
     "chat",
     "channels",
-    "subscriptions",
+    "subscriptions.apps.SubscriptionsConfig",
     "django_celery_beat",
     "notifications.apps.NotificationsConfig",
     "dashboard",
