@@ -23,10 +23,16 @@ def bulk_create_notifications(data_list: list[dict], batch_size=1000):
     ]
     """
 
+    if not data_list:
+        return []
+
     notifications = []
 
     for data in data_list:
         validate_fields(data)
         notifications.append(Notification(**data))
 
-    return Notification.objects.bulk_create(notifications, batch_size=batch_size)
+    return Notification.objects.bulk_create(
+        notifications,
+        batch_size=batch_size,
+    )
