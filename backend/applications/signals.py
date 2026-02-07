@@ -24,8 +24,8 @@ def notify_new_application_signal(sender, instance, created, **kwargs):
         logger.info("New job application created", extra={"id": instance.id})
 
         create_notification(
-            user=instance.applicant.user,
-            user_role="jobseeker",
+            user=instance.job.recruiter.user,
+            user_role="recruiter",
             title="New Job Application",
             message=f"{instance.applicant.fullname} applied for {instance.job.title}",
             type="JobApplication",
