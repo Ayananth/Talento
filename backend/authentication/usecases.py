@@ -9,8 +9,8 @@ def notify_admins_new_user(user):
             "user": admin,
             "user_role": "admin",
             "title": "New User Registered",
-            "message": f"New user registered: {user.email or user.username}",
-            "type": "user_created",
+            "message": f"New user registered: {user.username or user.email} as {user.role}",
+            "type": "UserRegistraion",
             "related_id": user.id,
         }
         for admin in admins
