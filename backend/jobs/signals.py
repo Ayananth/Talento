@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from django.db import transaction
 
 from jobs.models.job import Job
-from notifications.usecases import notify_admins_new_job
+from .usecases import notify_admins_new_job
 
 logger = logging.getLogger(__name__)
 
