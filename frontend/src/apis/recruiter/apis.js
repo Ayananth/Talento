@@ -153,6 +153,17 @@ export const markAllRecruiterNotificationsRead = async () => {
   return res.data;
 };
 
+export const getRecruiterUnreadNotificationsCount = async () => {
+  const res = await api.get("/v1/notifications/", {
+    params: {
+      page: 1,
+      is_read: false,
+    },
+  });
+
+  return res.data?.count ?? 0;
+};
+
 
 export const getApplicantDetails = async (applicationId) => {
   const res = await api.get(

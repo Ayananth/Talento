@@ -4,10 +4,12 @@ import { Bell, Filter } from "lucide-react";
 import Pagination from "@/components/common/Pagination";
 import {
   getRecruiterNotifications,
+  getRecruiterUnreadNotificationsCount,
   markAllRecruiterNotificationsRead,
   updateRecruiterNotificationReadStatus,
 } from "@/apis/recruiter/apis";
 import { PAGE_SIZE } from "@/constants/constants";
+import { useUnread } from "@/context/UnreadContext";
 
 const TYPE_OPTIONS = [
   { value: "", label: "All Types" },
@@ -31,6 +33,7 @@ const TYPE_LABELS = {
 };
 
 const RecruiterNotificaionsListPage = () => {
+  const { setUnreadNotificationsCount } = useUnread();
   const [notifications, setNotifications] = useState([]);
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -58,22 +61,26 @@ const RecruiterNotificaionsListPage = () => {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getRecruiterNotifications({
-        page,
-        ordering,
-        search,
-        type: typeFilter,
-        isRead: isReadFilter,
-      });
+      const [data, unreadCount] = await Promise.all([
+        getRecruiterNotifications({
+          page,
+          ordering,
+          search,
+          type: typeFilter,
+          isRead: isReadFilter,
+        }),
+        getRecruiterUnreadNotificationsCount(),
+      ]);
 
       setNotifications(data.results || []);
       setCount(data.count || 0);
+      setUnreadNotificationsCount(unreadCount);
     } catch (error) {
       console.error("Failed to load notifications", error);
     } finally {
       setLoading(false);
     }
-  }, [page, ordering, search, typeFilter, isReadFilter]);
+  }, [page, ordering, search, typeFilter, isReadFilter, setUnreadNotificationsCount]);
 
   useEffect(() => {
     fetchNotifications();
