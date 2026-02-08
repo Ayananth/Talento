@@ -117,6 +117,26 @@ export const getRecruiterApplicationStats = async () => {
   return res.data;
 }
 
+export const getRecruiterNotifications = async ({
+  page = 1,
+  ordering = "-created_at",
+  search = "",
+  type = "",
+  isRead = "",
+} = {}) => {
+  const res = await api.get("/v1/notifications/", {
+    params: {
+      page,
+      ...(ordering && { ordering }),
+      ...(search && { search }),
+      ...(type && { type }),
+      ...(isRead !== "" && { is_read: isRead }),
+    },
+  });
+
+  return res.data;
+};
+
 
 export const getApplicantDetails = async (applicationId) => {
   const res = await api.get(
