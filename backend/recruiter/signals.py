@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from django.db import transaction
 
 from recruiter.models import RecruiterProfile
-from recruiter.usecases import notify_admins_recruiter_pending_review, notify_admins_recruiter_edit_pending_review
+from recruiter.usecases import notify_admins_recruiter_pending_review, notify_admins_recruiter_edit_pending_review, notify_recruiter_approved, notify_recruiter_rejected
 
 logger = logging.getLogger(__name__)
 
@@ -65,3 +65,39 @@ def notify_recruiter_edit_pending_review_signal(sender, instance, **kwargs):
     transaction.on_commit(
         lambda: notify_admins_recruiter_edit_pending_review(instance)
     )
+
+
+
+@receiver(
+    pre_save,
+    sender=RecruiterProfile,
+    dispatch_uid="notify_recruiter_on_status_change"
+)
+def notify_recruiter_on_status_change(sender, instance, **kwargs):
+    if not instance.pk:
+        return
+
+    try:
+        previous = RecruiterProfile.objects.get(pk=instance.pk)
+    except RecruiterProfile.DoesNotExist:
+        return
+
+    if previous.status == instance.status:
+        return
+
+    logger.info(
+        "Recruiter status changed: recruiter_profile_id=%s, %s → %s",
+        instance.id,
+        previous.status,
+        instance.status,
+    )
+
+    if instance.status == "approved":
+        transaction.on_commit(
+            lambda: notify_recruiter_approved(instance)
+        )
+
+    elif instance.status == "rejected":
+        transaction.on_commit(
+            lambda: notify_recruiter_rejected(instance)
+        )

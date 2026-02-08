@@ -75,3 +75,60 @@ def notify_admins_recruiter_edit_pending_review(recruiter_profile):
             "recruiter_profile_id=%s",
             recruiter_profile.id
         )
+
+
+def notify_recruiter_approved(profile):
+    user = profile.user
+    company_name = profile.company_name or "Your company"
+
+    data_list = [
+        {
+            "user": user,
+            "user_role": "recruiter",
+            "title": "Recruiter Profile Approved 🎉",
+            "message": (
+                f"Congratulations! {company_name} has been approved. "
+                f"You can now post jobs and access recruiter features."
+            ),
+            "type": "RecruiterApproved",
+            "related_id": profile.id,
+        }
+    ]
+
+    try:
+        bulk_create_notifications(data_list)
+    except Exception:
+        logger.exception(
+            "Failed to notify recruiter about approval. "
+            "recruiter_profile_id=%s",
+            profile.id
+        )
+
+
+def notify_recruiter_rejected(profile):
+    user = profile.user
+    company_name = profile.company_name or "Your company"
+    rejection_reason = profile.rejection_reason or "No reason provided."
+
+    data_list = [
+        {
+            "user": user,
+            "user_role": "recruiter",
+            "title": "Recruiter Profile Rejected",
+            "message": (
+                f"Unfortunately, {company_name} was rejected. "
+                f"Reason: {rejection_reason}"
+            ),
+            "type": "RecruiterRejected",
+            "related_id": profile.id,
+        }
+    ]
+
+    try:
+        bulk_create_notifications(data_list)
+    except Exception:
+        logger.exception(
+            "Failed to notify recruiter about rejection. "
+            "recruiter_profile_id=%s",
+            profile.id
+        )
