@@ -159,3 +159,41 @@ export const getSavedJobs = async ({
   });
   return res.data;
 };
+
+export const getJobseekerNotifications = async ({
+  page = 1,
+  ordering = "-created_at",
+  isRead = "",
+} = {}) => {
+  const res = await api.get("/v1/notifications/", {
+    params: {
+      page,
+      ...(ordering && { ordering }),
+      ...(isRead !== "" && { is_read: isRead }),
+    },
+  });
+
+  return res.data;
+};
+
+export const updateJobseekerNotificationReadStatus = async (
+  notificationId,
+  isRead
+) => {
+  const res = await api.patch(
+    `/v1/notifications/${notificationId}/read-status/`,
+    { is_read: isRead }
+  );
+  return res.data;
+};
+
+export const getJobseekerUnreadNotificationsCount = async () => {
+  const res = await api.get("/v1/notifications/", {
+    params: {
+      page: 1,
+      is_read: false,
+    },
+  });
+
+  return res.data?.count ?? 0;
+};
