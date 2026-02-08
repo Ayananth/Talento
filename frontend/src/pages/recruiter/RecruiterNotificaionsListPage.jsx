@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bell, Filter } from "lucide-react";
 
 import Pagination from "@/components/common/Pagination";
@@ -33,7 +33,7 @@ const TYPE_LABELS = {
 };
 
 const RecruiterNotificaionsListPage = () => {
-  const { setUnreadNotificationsCount } = useUnread();
+  const { unreadNotificationsCount, setUnreadNotificationsCount } = useUnread();
   const [notifications, setNotifications] = useState([]);
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -46,6 +46,7 @@ const RecruiterNotificaionsListPage = () => {
   const [typeFilter, setTypeFilter] = useState("");
   const [isReadFilter, setIsReadFilter] = useState("");
   const [ordering, setOrdering] = useState("-created_at");
+  const previousUnreadCountRef = useRef(0);
 
   const totalPages = Math.ceil(count / Number(PAGE_SIZE || 10));
 
@@ -85,6 +86,22 @@ const RecruiterNotificaionsListPage = () => {
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+
+    return () => clearInterval(intervalId);
+  }, [fetchNotifications]);
+
+  useEffect(() => {
+    const previous = previousUnreadCountRef.current;
+    if (unreadNotificationsCount > previous) {
+      fetchNotifications();
+    }
+    previousUnreadCountRef.current = unreadNotificationsCount;
+  }, [unreadNotificationsCount, fetchNotifications]);
 
   const hasActiveFilters = useMemo(
     () => Boolean(search || typeFilter || isReadFilter),
