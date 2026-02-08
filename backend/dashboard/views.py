@@ -117,6 +117,48 @@ class TransactionListAPIView(ListAPIView):
         )
 
 
+class TransactionRevenueSummaryAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get_queryset(self):
+        return (
+            UserSubscription.objects
+            .select_related("plan")
+            .exclude(status="pending")
+        )
+
+    def get(self, request):
+        filterset = TransactionFilter(
+            request.GET,
+            queryset=self.get_queryset(),
+        )
+
+        if not filterset.is_valid():
+            return Response(
+                filterset.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        qs = filterset.qs.exclude(status="failed")
+
+        jobseeker_revenue = (
+            qs.filter(plan__plan_type="jobseeker")
+            .aggregate(total=Sum("plan__price"))["total"] or 0
+        )
+        recruiter_revenue = (
+            qs.filter(plan__plan_type="recruiter")
+            .aggregate(total=Sum("plan__price"))["total"] or 0
+        )
+
+        return Response(
+            {
+                "jobseeker_revenue": jobseeker_revenue,
+                "recruiter_revenue": recruiter_revenue,
+                "total_revenue": jobseeker_revenue + recruiter_revenue,
+            }
+        )
+
+
 class AdminToggleBlockUserView(APIView):
     """
     PATCH /api/admin/users/<id>/block/

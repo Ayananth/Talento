@@ -48,6 +48,12 @@ path(
         views.TransactionListAPIView.as_view(),
         name="admin-transactions"
     ),
+
+    path(
+        "transactions/revenue-summary/",
+        views.TransactionRevenueSummaryAPIView.as_view(),
+        name="admin-transactions-revenue-summary"
+    ),
     
     path(
         "transactions/export/",
