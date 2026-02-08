@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Bell, Filter } from "lucide-react";
+import { Bell } from "lucide-react";
 
 import Pagination from "@/components/common/Pagination";
 import {
@@ -8,29 +8,22 @@ import {
   markAllRecruiterNotificationsRead,
   updateRecruiterNotificationReadStatus,
 } from "@/apis/recruiter/apis";
-import { PAGE_SIZE } from "@/constants/constants";
 import { useUnread } from "@/context/UnreadContext";
+import { PAGE_SIZE } from "@/constants/constants";
 
-const TYPE_OPTIONS = [
+const READ_FILTERS = [
+  { value: "", label: "All" },
+  { value: "false", label: "Unread" },
+  { value: "true", label: "Read" },
+];
+
+const TYPE_FILTERS = [
   { value: "", label: "All Types" },
   { value: "JobApplication", label: "Job Application" },
   { value: "StatusChange", label: "Status Change" },
   { value: "NewMessage", label: "New Message" },
   { value: "Other", label: "Other" },
 ];
-
-const READ_OPTIONS = [
-  { value: "", label: "All" },
-  { value: "false", label: "Unread" },
-  { value: "true", label: "Read" },
-];
-
-const TYPE_LABELS = {
-  JobApplication: "Job Application",
-  StatusChange: "Status Change",
-  NewMessage: "New Message",
-  Other: "Other",
-};
 
 const RecruiterNotificaionsListPage = () => {
   const { unreadNotificationsCount, setUnreadNotificationsCount } = useUnread();
@@ -41,23 +34,12 @@ const RecruiterNotificaionsListPage = () => {
   const [markingAll, setMarkingAll] = useState(false);
   const [updatingId, setUpdatingId] = useState(null);
 
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
   const [isReadFilter, setIsReadFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
   const [ordering, setOrdering] = useState("-created_at");
   const previousUnreadCountRef = useRef(0);
 
   const totalPages = Math.ceil(count / Number(PAGE_SIZE || 10));
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setPage(1);
-      setSearch(searchInput.trim());
-    }, 350);
-
-    return () => clearTimeout(timeout);
-  }, [searchInput]);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -66,9 +48,8 @@ const RecruiterNotificaionsListPage = () => {
         getRecruiterNotifications({
           page,
           ordering,
-          search,
-          type: typeFilter,
           isRead: isReadFilter,
+          type: typeFilter,
         }),
         getRecruiterUnreadNotificationsCount(),
       ]);
@@ -81,7 +62,7 @@ const RecruiterNotificaionsListPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, ordering, search, typeFilter, isReadFilter, setUnreadNotificationsCount]);
+  }, [page, ordering, isReadFilter, typeFilter, setUnreadNotificationsCount]);
 
   useEffect(() => {
     fetchNotifications();
@@ -104,9 +85,12 @@ const RecruiterNotificaionsListPage = () => {
   }, [unreadNotificationsCount, fetchNotifications]);
 
   const hasActiveFilters = useMemo(
-    () => Boolean(search || typeFilter || isReadFilter),
-    [search, typeFilter, isReadFilter]
+    () => Boolean(isReadFilter || typeFilter || ordering !== "-created_at"),
+    [isReadFilter, typeFilter, ordering]
   );
+
+  const formatDateTime = (value) => new Date(value).toLocaleString();
+
   const handleToggleReadStatus = async (notificationId, isRead) => {
     try {
       setUpdatingId(notificationId);
@@ -132,90 +116,84 @@ const RecruiterNotificaionsListPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Notifications</h1>
-          <p className="text-gray-600">Track updates related to your account and jobs</p>
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-50 p-4 md:p-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Notifications</h1>
+          <p className="text-sm md:text-base text-gray-600">
+            Stay updated with activity from your recruiter account.
+          </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm mb-6 p-4">
-          <div className="flex flex-col md:flex-row md:items-center gap-3">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search title or message..."
-                className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none"
-              />
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-5 mb-5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="inline-flex w-full md:w-auto bg-gray-100 rounded-xl p-1">
+              {READ_FILTERS.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    setIsReadFilter(option.value);
+                    setPage(1);
+                  }}
+                  className={`flex-1 md:flex-none px-4 py-2 text-sm rounded-lg transition ${
+                    isReadFilter === option.value
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
 
-            <select
-              value={typeFilter}
-              onChange={(e) => {
-                setTypeFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-10 px-3 border border-gray-300 rounded-lg bg-white"
-            >
-              {TYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={isReadFilter}
-              onChange={(e) => {
-                setIsReadFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-10 px-3 border border-gray-300 rounded-lg bg-white"
-            >
-              {READ_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={ordering}
-              onChange={(e) => {
-                setOrdering(e.target.value);
-                setPage(1);
-              }}
-              className="h-10 px-3 border border-gray-300 rounded-lg bg-white"
-            >
-              <option value="-created_at">Newest First</option>
-              <option value="created_at">Oldest First</option>
-            </select>
-
-            {hasActiveFilters && (
-              <button
-                onClick={() => {
-                  setSearchInput("");
-                  setSearch("");
-                  setTypeFilter("");
-                  setIsReadFilter("");
-                  setOrdering("-created_at");
+            <div className="flex flex-col md:flex-row md:items-center gap-2">
+              <select
+                value={typeFilter}
+                onChange={(e) => {
+                  setTypeFilter(e.target.value);
                   setPage(1);
                 }}
-                className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg"
+                className="h-10 px-3 text-sm border border-gray-300 rounded-lg bg-white"
               >
-                Clear
-              </button>
-            )}
+                {TYPE_FILTERS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={ordering}
+                onChange={(e) => {
+                  setOrdering(e.target.value);
+                  setPage(1);
+                }}
+                className="h-10 px-3 text-sm border border-gray-300 rounded-lg bg-white"
+              >
+                <option value="-created_at">Newest First</option>
+                <option value="created_at">Oldest First</option>
+              </select>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={() => {
+                    setIsReadFilter("");
+                    setTypeFilter("");
+                    setOrdering("-created_at");
+                    setPage(1);
+                  }}
+                  className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-3">
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              <Filter className="w-4 h-4" />
-              <span>{count} notification(s) found</span>
-            </div>
-
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-4 pt-4 border-t">
+            <p className="text-sm text-gray-500">
+              {count} notification{count === 1 ? "" : "s"}
+            </p>
             <button
               onClick={handleMarkAllAsRead}
               disabled={markingAll}
@@ -228,60 +206,58 @@ const RecruiterNotificaionsListPage = () => {
               {markingAll ? "Marking..." : "Mark all as read"}
             </button>
           </div>
-
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="hidden md:grid grid-cols-12 bg-gray-50 border-b px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <div className="col-span-5">Notification</div>
-            <div className="col-span-2">Type</div>
-            <div className="col-span-1">Status</div>
-            <div className="col-span-2">Date</div>
-            <div className="col-span-2">Action</div>
-          </div>
+        <div className="space-y-3">
+          {notifications.map((notification) => (
+            <article
+              key={notification.id}
+              className={`bg-white rounded-2xl border shadow-sm p-4 md:p-5 transition ${
+                notification.is_read
+                  ? "border-gray-200"
+                  : "border-blue-200 bg-gradient-to-r from-blue-50/60 to-white"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="mt-1">
+                  <span
+                    className={`block w-2.5 h-2.5 rounded-full ${
+                      notification.is_read ? "bg-gray-300" : "bg-blue-600"
+                    }`}
+                  />
+                </div>
 
-          <div className="divide-y">
-            {notifications.map((notification) => (
-              <React.Fragment key={notification.id}>
-                <div className="hidden md:grid grid-cols-12 px-6 py-4 items-start gap-3">
-                  <div className="col-span-5">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {notification.title || TYPE_LABELS[notification.type] || "Notification"}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {notification.message || "No message"}
-                    </p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                    <h2 className="text-sm md:text-base font-semibold text-gray-900">
+                      {notification.title || "Notification"}
+                    </h2>
+                    <time className="text-xs text-gray-500 shrink-0">
+                      {formatDateTime(notification.created_at)}
+                    </time>
                   </div>
 
-                  <div className="col-span-2">
-                    <span className="inline-flex px-2 py-1 rounded-full text-xs bg-blue-50 text-blue-700 border border-blue-100">
-                      {TYPE_LABELS[notification.type] || notification.type}
-                    </span>
-                  </div>
+                  <p className="text-sm text-gray-700 mt-2 leading-relaxed">
+                    {notification.message || "No message"}
+                  </p>
 
-                  <div className="col-span-1">
+                  <div className="flex items-center justify-between mt-4">
                     <span
-                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
                         notification.is_read
-                          ? "bg-green-100 text-green-700"
-                          : "bg-amber-100 text-amber-700"
+                          ? "bg-gray-100 text-gray-600"
+                          : "bg-blue-100 text-blue-700"
                       }`}
                     >
                       {notification.is_read ? "Read" : "Unread"}
                     </span>
-                  </div>
 
-                  <div className="col-span-2 text-sm text-gray-500">
-                    {new Date(notification.created_at).toLocaleString()}
-                  </div>
-
-                  <div className="col-span-2">
                     <button
                       onClick={() =>
                         handleToggleReadStatus(notification.id, !notification.is_read)
                       }
                       disabled={updatingId === notification.id}
-                      className={`text-xs px-3 py-1 rounded-md border ${
+                      className={`text-xs px-3 py-1.5 rounded-md border ${
                         updatingId === notification.id
                           ? "text-gray-400 border-gray-200 cursor-not-allowed"
                           : "text-gray-700 border-gray-300 hover:bg-gray-50"
@@ -295,60 +271,15 @@ const RecruiterNotificaionsListPage = () => {
                     </button>
                   </div>
                 </div>
-
-                <div className="md:hidden px-4 py-4 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {notification.title || TYPE_LABELS[notification.type] || "Notification"}
-                    </p>
-                    <span
-                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                        notification.is_read
-                          ? "bg-green-100 text-green-700"
-                          : "bg-amber-100 text-amber-700"
-                      }`}
-                    >
-                      {notification.is_read ? "Read" : "Unread"}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    {notification.message || "No message"}
-                  </p>
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span className="inline-flex px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                      {TYPE_LABELS[notification.type] || notification.type}
-                    </span>
-                    <span className="text-gray-500">
-                      {new Date(notification.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() =>
-                      handleToggleReadStatus(notification.id, !notification.is_read)
-                    }
-                    disabled={updatingId === notification.id}
-                    className={`text-xs px-3 py-1 rounded-md border ${
-                      updatingId === notification.id
-                        ? "text-gray-400 border-gray-200 cursor-not-allowed"
-                        : "text-gray-700 border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    {updatingId === notification.id
-                      ? "Saving..."
-                      : notification.is_read
-                      ? "Mark unread"
-                      : "Mark read"}
-                  </button>
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
+              </div>
+            </article>
+          ))}
 
           {!loading && notifications.length === 0 && (
-            <div className="text-center py-12">
+            <div className="bg-white rounded-2xl border border-dashed text-center py-16">
               <Bell className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No notifications found</h3>
-              <p className="mt-1 text-sm text-gray-500">Try changing filters or check back later.</p>
+              <h3 className="mt-3 text-base font-medium text-gray-900">No notifications found</h3>
+              <p className="mt-1 text-sm text-gray-500">You are all caught up.</p>
             </div>
           )}
         </div>
