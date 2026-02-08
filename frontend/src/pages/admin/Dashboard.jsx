@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [topCandidates, setTopCandidates] = useState([]);
   const [revenueData, setRevenueData] = useState([]);
   const [revenueSummary, setRevenueSummary] = useState(null);
+  const [recentNotifications, setRecentNotifications] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -37,12 +38,22 @@ const fetchDashboardData = async (isManual = false) => {
   try {
     if (isManual) setRefreshing(true);
 
-    const res = await api.get("/v1/admin/dashboard/overview");
-    setMetricsData(res.data.metrics);
-    setTopRecruiters(res.data.recruiters || []);
-    setTopCandidates(res.data.jobseekers || []);
-    setRevenueData(res.data.revenue || []);
-    setRevenueSummary(res.data.revenue_summary);
+    const [overviewRes, notificationsRes] = await Promise.all([
+      api.get("/v1/admin/dashboard/overview"),
+      api.get("/v1/notifications/", {
+        params: {
+          page: 1,
+          ordering: "-created_at",
+        },
+      }),
+    ]);
+
+    setMetricsData(overviewRes.data.metrics);
+    setTopRecruiters(overviewRes.data.recruiters || []);
+    setTopCandidates(overviewRes.data.jobseekers || []);
+    setRevenueData(overviewRes.data.revenue || []);
+    setRevenueSummary(overviewRes.data.revenue_summary);
+    setRecentNotifications(notificationsRes.data?.results || []);
     setLastUpdated(new Date());
   } catch (error) {
     console.error("Failed to load dashboard metrics", error);
@@ -67,6 +78,11 @@ const fetchDashboardData = async (isManual = false) => {
       secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300',
     };
     return styles[variant] || styles.secondary;
+  };
+
+  const formatDateTime = (value) => {
+    if (!value) return "—";
+    return new Date(value).toLocaleString();
   };
 
 
@@ -215,80 +231,124 @@ const fetchDashboardData = async (isManual = false) => {
 
         {/* Middle Section */}
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-          {/* Revenue Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">Revenue Overview</h2>
-                <p className="text-sm text-gray-500 mt-1">Year {revenueSummary?.year} Performance</p>
+          <div className="space-y-6">
+            {/* Revenue Chart */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Revenue Overview</h2>
+                  <p className="text-sm text-gray-500 mt-1">Year {revenueSummary?.year} Performance</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Revenue</p>
+                  <p className="text-2xl font-bold text-gray-900">₹{metricsData?.revenue_year}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">₹{metricsData?.revenue_year}</p>
+
+              {/* Legend */}
+              <div className="flex items-center justify-center gap-6 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                  <span className="text-sm text-gray-600">Recruiter Revenue</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-sm text-gray-600">Job Seeker Revenue</span>
+                </div>
               </div>
-            </div>
-            
-            {/* Legend */}
-            <div className="flex items-center justify-center gap-6 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-600"></div>
-                <span className="text-sm text-gray-600">Recruiter Revenue</span>
+
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={revenueData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="month" 
+                      stroke="#9ca3af"
+                      style={{ fontSize: '12px' }}
+                    />
+                    <YAxis 
+                      stroke="#9ca3af"
+                      style={{ fontSize: '12px' }}
+                      tickFormatter={(value) => `₹${value / 1000}k`}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="recruiter" 
+                      stroke="#2563eb" 
+                      strokeWidth={3}
+                      dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, strokeWidth: 2 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="jobseeker" 
+                      stroke="#22c55e" 
+                      strokeWidth={3}
+                      dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="text-sm text-gray-600">Job Seeker Revenue</span>
+              <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
+                <div>
+                  <p className="text-xs text-gray-500">Recruiter Revenue</p>
+                  <p className="text-sm font-semibold text-gray-900 mt-1">Total {revenueSummary?.year}</p>
+                  <p className="text-xs text-blue-600">₹{revenueSummary?.recruiter_revenue.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Job Seeker Revenue</p>
+                  <p className="text-sm font-semibold text-gray-900 mt-1">Total {revenueSummary?.year}</p>
+                  <p className="text-xs text-green-600">₹{revenueSummary?.jobseeker_revenue.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Growth Rate</p>
+                  <p className="text-sm font-semibold text-gray-900 mt-1">Year-over-Year</p>
+                  <p className="text-xs">{revenueSummary?.growth_rate || "No previous data"}</p>
+                </div>
               </div>
             </div>
 
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="month" 
-                    stroke="#9ca3af"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis 
-                    stroke="#9ca3af"
-                    style={{ fontSize: '12px' }}
-                    tickFormatter={(value) => `₹${value / 1000}k`}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="recruiter" 
-                    stroke="#2563eb" 
-                    strokeWidth={3}
-                    dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, strokeWidth: 2 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="jobseeker" 
-                    stroke="#22c55e" 
-                    strokeWidth={3}
-                    dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, strokeWidth: 2 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
-              <div>
-                <p className="text-xs text-gray-500">Recruiter Revenue</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">Total {revenueSummary?.year}</p>
-                <p className="text-xs text-blue-600">₹{revenueSummary?.recruiter_revenue.toLocaleString()}</p>
+            {/* Recent Notifications */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-semibold text-gray-900">Recent Notifications</h2>
+                <Bell className="w-5 h-5 text-gray-400" />
               </div>
-              <div>
-                <p className="text-xs text-gray-500">Job Seeker Revenue</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">Total {revenueSummary?.year}</p>
-                <p className="text-xs text-green-600">₹{revenueSummary?.jobseeker_revenue.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Growth Rate</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">Year-over-Year</p>
-                <p className="text-xs">{revenueSummary?.growth_rate || "No previous data"}</p>
+
+              <div className="space-y-3">
+                {recentNotifications.length === 0 ? (
+                  <p className="text-sm text-gray-500">No notifications available</p>
+                ) : (
+                  recentNotifications.slice(0, 6).map((item) => (
+                    <div
+                      key={item.id}
+                      className={`rounded-lg border p-3 ${
+                        item.is_read
+                          ? "border-gray-200 bg-white"
+                          : "border-blue-200 bg-blue-50/40"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {item.title || "Notification"}
+                          </p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {item.message || "No message"}
+                          </p>
+                        </div>
+                        {!item.is_read && (
+                          <span className="w-2 h-2 rounded-full bg-blue-600 mt-1.5 shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">
+                        {formatDateTime(item.created_at)}
+                      </p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
