@@ -197,3 +197,8 @@ export const getJobseekerUnreadNotificationsCount = async () => {
 
   return res.data?.count ?? 0;
 };
+
+export const markAllJobseekerNotificationsRead = async () => {
+  const res = await api.patch("/v1/notifications/mark-all-read/");
+  return res.data;
+};

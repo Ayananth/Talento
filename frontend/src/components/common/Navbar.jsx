@@ -17,6 +17,7 @@ import { useUnread } from "@/context/UnreadContext";
 import {
   getJobseekerNotifications,
   getJobseekerUnreadNotificationsCount,
+  markAllJobseekerNotificationsRead,
   updateJobseekerNotificationReadStatus,
 } from "@/apis/jobseeker/apis";
 
@@ -27,6 +28,7 @@ export function Navbar({ role }) {
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [markingAllNotifications, setMarkingAllNotifications] = useState(false);
   const [notificationsPage, setNotificationsPage] = useState(1);
   const [notificationsCount, setNotificationsCount] = useState(0);
   const [updatingNotificationId, setUpdatingNotificationId] = useState(null);
@@ -141,6 +143,21 @@ export function Navbar({ role }) {
       console.error("Failed to mark notification as read", error);
     } finally {
       setUpdatingNotificationId(null);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      setMarkingAllNotifications(true);
+      await markAllJobseekerNotificationsRead();
+      await Promise.all([
+        fetchNotifications(notificationsPage),
+        fetchUnreadNotificationsCount(),
+      ]);
+    } catch (error) {
+      console.error("Failed to mark all notifications as read", error);
+    } finally {
+      setMarkingAllNotifications(false);
     }
   };
 
@@ -370,12 +387,25 @@ export function Navbar({ role }) {
                   {notificationsCount} total · {unreadNotificationsCount} unread
                 </p>
               </div>
-              <button
-                onClick={closeNotificationDrawer}
-                className="p-2 rounded-lg hover:bg-gray-100"
-              >
-                <X size={18} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleMarkAllRead}
+                  disabled={markingAllNotifications || unreadNotificationsCount === 0}
+                  className={`text-xs px-2.5 py-1.5 rounded-md border ${
+                    markingAllNotifications || unreadNotificationsCount === 0
+                      ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                      : "text-gray-700 border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {markingAllNotifications ? "Marking..." : "Mark all read"}
+                </button>
+                <button
+                  onClick={closeNotificationDrawer}
+                  className="p-2 rounded-lg hover:bg-gray-100"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
