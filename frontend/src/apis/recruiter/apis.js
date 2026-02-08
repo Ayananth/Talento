@@ -137,6 +137,22 @@ export const getRecruiterNotifications = async ({
   return res.data;
 };
 
+export const updateRecruiterNotificationReadStatus = async (
+  notificationId,
+  isRead
+) => {
+  const res = await api.patch(
+    `/v1/notifications/${notificationId}/read-status/`,
+    { is_read: isRead }
+  );
+  return res.data;
+};
+
+export const markAllRecruiterNotificationsRead = async () => {
+  const res = await api.patch("/v1/notifications/mark-all-read/");
+  return res.data;
+};
+
 
 export const getApplicantDetails = async (applicationId) => {
   const res = await api.get(

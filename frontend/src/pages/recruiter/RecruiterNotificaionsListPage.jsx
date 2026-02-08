@@ -1,8 +1,12 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Bell, Filter } from "lucide-react";
 
 import Pagination from "@/components/common/Pagination";
-import { getRecruiterNotifications } from "@/apis/recruiter/apis";
+import {
+  getRecruiterNotifications,
+  markAllRecruiterNotificationsRead,
+  updateRecruiterNotificationReadStatus,
+} from "@/apis/recruiter/apis";
 import { PAGE_SIZE } from "@/constants/constants";
 
 const TYPE_OPTIONS = [
@@ -31,6 +35,8 @@ const RecruiterNotificaionsListPage = () => {
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [markingAll, setMarkingAll] = useState(false);
+  const [updatingId, setUpdatingId] = useState(null);
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -49,34 +55,57 @@ const RecruiterNotificaionsListPage = () => {
     return () => clearTimeout(timeout);
   }, [searchInput]);
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        setLoading(true);
-        const data = await getRecruiterNotifications({
-          page,
-          ordering,
-          search,
-          type: typeFilter,
-          isRead: isReadFilter,
-        });
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getRecruiterNotifications({
+        page,
+        ordering,
+        search,
+        type: typeFilter,
+        isRead: isReadFilter,
+      });
 
-        setNotifications(data.results || []);
-        setCount(data.count || 0);
-      } catch (error) {
-        console.error("Failed to load notifications", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNotifications();
+      setNotifications(data.results || []);
+      setCount(data.count || 0);
+    } catch (error) {
+      console.error("Failed to load notifications", error);
+    } finally {
+      setLoading(false);
+    }
   }, [page, ordering, search, typeFilter, isReadFilter]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   const hasActiveFilters = useMemo(
     () => Boolean(search || typeFilter || isReadFilter),
     [search, typeFilter, isReadFilter]
   );
+  const handleToggleReadStatus = async (notificationId, isRead) => {
+    try {
+      setUpdatingId(notificationId);
+      await updateRecruiterNotificationReadStatus(notificationId, isRead);
+      await fetchNotifications();
+    } catch (error) {
+      console.error("Failed to update notification status", error);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      setMarkingAll(true);
+      await markAllRecruiterNotificationsRead();
+      await fetchNotifications();
+    } catch (error) {
+      console.error("Failed to mark all notifications as read", error);
+    } finally {
+      setMarkingAll(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -157,25 +186,41 @@ const RecruiterNotificaionsListPage = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
-            <Filter className="w-4 h-4" />
-            <span>{count} notification(s) found</span>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-3">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <Filter className="w-4 h-4" />
+              <span>{count} notification(s) found</span>
+            </div>
+
+            <button
+              onClick={handleMarkAllAsRead}
+              disabled={markingAll}
+              className={`h-8 px-3 text-xs rounded-lg border ${
+                markingAll
+                  ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                  : "text-blue-700 border-blue-200 bg-blue-50 hover:bg-blue-100"
+              }`}
+            >
+              {markingAll ? "Marking..." : "Mark all as read"}
+            </button>
           </div>
+
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="hidden md:grid grid-cols-12 bg-gray-50 border-b px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <div className="col-span-7">Notification</div>
+            <div className="col-span-5">Notification</div>
             <div className="col-span-2">Type</div>
             <div className="col-span-1">Status</div>
             <div className="col-span-2">Date</div>
+            <div className="col-span-2">Action</div>
           </div>
 
           <div className="divide-y">
             {notifications.map((notification) => (
               <React.Fragment key={notification.id}>
                 <div className="hidden md:grid grid-cols-12 px-6 py-4 items-start gap-3">
-                  <div className="col-span-7">
+                  <div className="col-span-5">
                     <p className="text-sm font-semibold text-gray-900">
                       {notification.title || TYPE_LABELS[notification.type] || "Notification"}
                     </p>
@@ -205,6 +250,26 @@ const RecruiterNotificaionsListPage = () => {
                   <div className="col-span-2 text-sm text-gray-500">
                     {new Date(notification.created_at).toLocaleString()}
                   </div>
+
+                  <div className="col-span-2">
+                    <button
+                      onClick={() =>
+                        handleToggleReadStatus(notification.id, !notification.is_read)
+                      }
+                      disabled={updatingId === notification.id}
+                      className={`text-xs px-3 py-1 rounded-md border ${
+                        updatingId === notification.id
+                          ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                          : "text-gray-700 border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {updatingId === notification.id
+                        ? "Saving..."
+                        : notification.is_read
+                        ? "Mark unread"
+                        : "Mark read"}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="md:hidden px-4 py-4 space-y-3">
@@ -233,6 +298,23 @@ const RecruiterNotificaionsListPage = () => {
                       {new Date(notification.created_at).toLocaleString()}
                     </span>
                   </div>
+                  <button
+                    onClick={() =>
+                      handleToggleReadStatus(notification.id, !notification.is_read)
+                    }
+                    disabled={updatingId === notification.id}
+                    className={`text-xs px-3 py-1 rounded-md border ${
+                      updatingId === notification.id
+                        ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                        : "text-gray-700 border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {updatingId === notification.id
+                      ? "Saving..."
+                      : notification.is_read
+                      ? "Mark unread"
+                      : "Mark read"}
+                  </button>
                 </div>
               </React.Fragment>
             ))}
