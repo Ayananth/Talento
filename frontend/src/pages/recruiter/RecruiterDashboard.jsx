@@ -156,7 +156,7 @@ const RecruiterDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard label="Active Jobs" value={totalActiveJobs} Icon={Briefcase} />
         <StatCard label="Total Applications" value={stats.total_active || 0} Icon={Users} />
-        <StatCard label="Profile Views" value={totalViews} Icon={Eye} />
+        {/* <StatCard label="Profile Views" value={totalViews} Icon={Eye} /> */}
         <StatCard label="Unread Notifications" value={unreadNotificationCount} Icon={Bell} />
       </div>
 
