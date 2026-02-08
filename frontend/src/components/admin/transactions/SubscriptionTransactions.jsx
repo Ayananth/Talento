@@ -418,11 +418,14 @@ const getStartOfYear = () => {
 };
 
 const getToday = () => {
-  return new Date().toISOString().split("T")[0];
+  return formatLocalDate(new Date());
 };
 
-const toISODate = (dateObj) => {
-  return dateObj.toISOString().split("T")[0];
+const formatLocalDate = (dateObj) => {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 const getThisYearRange = () => {
@@ -446,7 +449,7 @@ const getThisMonthRange = () => {
   const now = new Date();
   const first = new Date(now.getFullYear(), now.getMonth(), 1);
   return {
-    from: toISODate(first),
+    from: formatLocalDate(first),
     to: getToday(),
   };
 };
@@ -456,8 +459,8 @@ const getLast30DaysRange = () => {
   const from = new Date(now);
   from.setDate(now.getDate() - 29);
   return {
-    from: toISODate(from),
-    to: toISODate(now),
+    from: formatLocalDate(from),
+    to: formatLocalDate(now),
   };
 };
 
