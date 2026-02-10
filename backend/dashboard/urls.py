@@ -33,6 +33,12 @@ path(
 ),
 
 path(
+    "jobs/<int:pk>/unpublish",
+    views.AdminJobUnpublishView.as_view(),
+    name="admin-job-unpublish",
+),
+
+path(
     "recruiters/<int:pk>/job-posting/",
     views.AdminRecruiterJobPostingView.as_view(),
     name="admin-job-toggle",

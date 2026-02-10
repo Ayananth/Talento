@@ -116,3 +116,16 @@ class AdminJobDetailSerializer(serializers.ModelSerializer):
             obj.location_country,
         ]
         return ", ".join([p for p in parts if p])
+
+
+class AdminJobUnpublishSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = []
+
+    def validate(self, attrs):
+        if self.instance.status != Job.Status.PUBLISHED:
+            raise serializers.ValidationError(
+                "Only published jobs can be unpublished."
+            )
+        return attrs
