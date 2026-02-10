@@ -113,8 +113,8 @@ export default function RecruiterJobDetailPage() {
         salary_currency: job?.salary_currency || "INR",
         salary_hidden: form.salary_hidden,
         openings: Number(form.openings),
-        application_deadline: form.application_deadline || null,
-        expires_at: form.expires_at || null,
+        application_deadline: toIsoFromLocalInput(form.application_deadline),
+        expires_at: toIsoFromLocalInput(form.expires_at),
         skills: form.skills
           ? form.skills.split(",").map((s) => s.trim()).filter(Boolean)
           : [],
@@ -420,7 +420,7 @@ export default function RecruiterJobDetailPage() {
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-100"
               />
             </Field>
-            {/* <Field label="Application Deadline">
+            <Field label="Application Deadline">
               <input
                 type="datetime-local"
                 name="application_deadline"
@@ -428,8 +428,8 @@ export default function RecruiterJobDetailPage() {
                 onChange={handleChange}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-100"
               />
-            </Field> */}
-            <Field label="Expiry Date">
+            </Field>
+            {/* <Field label="Expiry Date">
               <input
                 type="datetime-local"
                 name="expires_at"
@@ -437,7 +437,7 @@ export default function RecruiterJobDetailPage() {
                 onChange={handleChange}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-100"
               />
-            </Field>
+            </Field> */}
           </div>
 
           <div className="mt-4 space-y-4">
@@ -603,4 +603,10 @@ function toLocalDateTimeInput(date) {
   const h = pad(dt.getHours());
   const min = pad(dt.getMinutes());
   return `${y}-${m}-${d}T${h}:${min}`;
+}
+
+function toIsoFromLocalInput(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
