@@ -73,8 +73,8 @@ export default function JobDetailPage() {
      Render
   ---------------------------------- */
   return (
-    <section className="bg-white py-10">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="bg-gradient-to-b from-slate-50 via-white to-blue-50 py-8 md:py-10">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT */}
           <main className="lg:col-span-8 space-y-8">
@@ -95,10 +95,12 @@ export default function JobDetailPage() {
               jobType={job.job_type}
               workMode={job.work_mode}
               experienceLevel={job.experience_level}
+              experience={job.experience}
               salaryMin={job.salary_min}
               salaryMax={job.salary_max}
               salaryCurrency={job.salary_currency}
               publishedAt={job.published_at}
+              applicationDeadline={job.application_deadline}
               locationCity={job.location_city}
               locationState={job.location_state}
               locationCountry={job.location_country}
@@ -106,6 +108,9 @@ export default function JobDetailPage() {
 
             <JobDescription
               description={job.description}
+              responsibilities={job.responsibilities}
+              requirements={job.requirements}
+              educationRequirement={job.education_requirement}
               skills={job.skills}
             />
 
@@ -121,7 +126,7 @@ export default function JobDetailPage() {
           </main>
 
           {/* RIGHT */}
-          <aside className="lg:col-span-4 space-y-8">
+          <aside className="space-y-8 lg:col-span-4 lg:sticky lg:top-20 self-start">
             <CompanyInfoCard
               companyName={job.company_name}
               companyAbout={job.company_about}
