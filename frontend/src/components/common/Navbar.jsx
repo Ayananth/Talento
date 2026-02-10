@@ -186,6 +186,21 @@ export function Navbar({ role }) {
     setProfileOpen(false);
   };
 
+  const redirectNotification = (notification) => {
+    if (notification.type === "JobMatchFound") {
+      navigate("/jobs/" + notification.related_id);
+      closeNotificationDrawer();
+    }
+    if (notification.type === "StatusChange") {
+      navigate("/profile/applied-jobs/");
+      closeNotificationDrawer();
+    }
+    if (notification.type === "SubscriptionEnd") {
+      navigate("/premium");
+      closeNotificationDrawer();
+    }
+  };
+
   return (
     <nav
       className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200 shadow-sm"
@@ -417,7 +432,8 @@ export function Navbar({ role }) {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                    {console.log("Notification:", notification)}
+                    <div className="min-w-0" onClick={() => redirectNotification(notification)}>
                       <p className="text-sm font-semibold text-gray-900">
                         {notification.title || "Notification"}
                       </p>
