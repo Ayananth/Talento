@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bell } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import Pagination from "@/components/common/Pagination";
 import {
@@ -40,6 +41,8 @@ const RecruiterNotificaionsListPage = () => {
   const previousUnreadCountRef = useRef(0);
 
   const totalPages = Math.ceil(count / Number(PAGE_SIZE || 10));
+
+  const navigate = useNavigate();
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -114,6 +117,21 @@ const RecruiterNotificaionsListPage = () => {
       setMarkingAll(false);
     }
   };
+
+    const redirectNotification = (notification) => {
+      if (notification.type === "JobApplication") {
+        navigate("/recruiter/applications/" + notification.related_id);
+      }
+      if (notification.type === "AdminAction") {
+        navigate("/recruiter/profile/");
+      }
+      if (notification.type === "JobExpired") {
+        navigate("/recruiter/jobs/" + notification.related_id);
+      }
+      if (notification.type === "SubscriptionEnd") {
+        navigate("/recruiter/premium/");
+      }
+    };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-50 p-4 md:p-6">
@@ -218,7 +236,7 @@ const RecruiterNotificaionsListPage = () => {
                   : "border-blue-200 bg-gradient-to-r from-blue-50/60 to-white"
               }`}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3" onClick={() => redirectNotification(notification)}>
                 <div className="mt-1">
                   <span
                     className={`block w-2.5 h-2.5 rounded-full ${

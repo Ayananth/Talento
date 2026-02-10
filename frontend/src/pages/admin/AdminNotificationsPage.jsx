@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 
 import Pagination from "@/components/common/Pagination";
@@ -36,6 +37,7 @@ export default function AdminNotificationsPage() {
   const [ordering, setOrdering] = useState("-created_at");
 
   const totalPages = Math.ceil(count / Number(PAGE_SIZE || 10));
+  const navigate = useNavigate();
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -90,6 +92,21 @@ export default function AdminNotificationsPage() {
   };
 
   const formatDateTime = (value) => new Date(value).toLocaleString();
+
+    const redirectNotification = (notification) => {
+      if (notification.type === "RecruiterActions") {
+        navigate("/admin/recruiter/approvals/" + notification.related_id);
+      }
+      if (notification.type === "JobPosted") {
+        navigate("/admin/jobs/" + notification.related_id);
+      }
+      if (notification.type === "NewSubscriber") {
+        navigate("/admin/transactions/" + notification.related_id);
+      }
+      if (notification.type === "UserRegistraion") {
+        navigate("/admin/users/" + notification.related_id);
+      }
+    };
 
   return (
     <div className="space-y-5">
@@ -191,7 +208,8 @@ export default function AdminNotificationsPage() {
                 : "border-blue-200 bg-gradient-to-r from-blue-50/60 to-white"
             }`}
           >
-            <div className="flex items-start gap-3">
+            {console.log("Notification:", notification)}
+            <div className="flex items-start gap-3" onClick={() => redirectNotification(notification)}>
               <div className="mt-1">
                 <span
                   className={`block w-2.5 h-2.5 rounded-full ${
