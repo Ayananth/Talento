@@ -14,4 +14,4 @@ def notify_new_job_signal(sender, instance, created, **kwargs):
     if not created:
         return
 
-    transaction.on_commit(lambda: notify_admins_new_job(instance.id))
+    transaction.on_commit(lambda: notify_admins_new_job(instance))
