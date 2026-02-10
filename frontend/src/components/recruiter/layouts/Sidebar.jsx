@@ -39,6 +39,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Messages", path: "/recruiter/messages" },
     { name: "Jobs", path: "/recruiter/jobs" },
     { name: "Applications", path: "/recruiter/applications" },
+    { name: "Support Tickets", path: "/recruiter/tickets" },
     { name: "Notifications", path: "/recruiter/notifications" },
     // { name: "Settings", path: "/recruiter/settings" },
     // { name: "Logout", path: "/logout" },
@@ -53,7 +54,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
     <ul className="space-y-3">
       {menuItems.map((item) => {
-        const isActive = location.pathname === item.path;
+        const isActive =
+          location.pathname === item.path ||
+          location.pathname.startsWith(`${item.path}/`);
         const isMessages = item.name === "Messages";
         const isNotifications = item.name === "Notifications";
 

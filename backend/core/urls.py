@@ -36,6 +36,7 @@ urlpatterns = [
     path("v1/subscriptions/", include("subscriptions.urls", namespace="subscriptions")),
     path("v1/vector/", include("embeddings.urls", namespace="embeddings")),
     path("v1/notifications/", include("notifications.urls", namespace="notifications")),
+    path("v1/support/", include("support.urls", namespace="support")),
 
 
 ]

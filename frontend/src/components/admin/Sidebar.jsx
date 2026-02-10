@@ -41,6 +41,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       count: unreadNotificationsCount,
     },
     { name: "Transactions", path: "/admin/transactions",  },
+    { name: "Support Tickets", path: "/admin/tickets" },
     { name: "Approvals", path: "/admin/recruiter/approvals",count: pendingNew?.total_pending_recruiters ?? 0, },
     { name: "Job Listings", path: "/admin/jobs" },
     { name: "Users", path: "/admin/users" },
@@ -55,7 +56,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       <ul className="space-y-3">
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive =
+            item.path === "/admin"
+              ? location.pathname === item.path
+              : location.pathname === item.path ||
+                location.pathname.startsWith(`${item.path}/`);
 
           return (
             <li key={item.path}>

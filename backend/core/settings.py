@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "subscriptions.apps.SubscriptionsConfig",
     "django_celery_beat",
     "notifications.apps.NotificationsConfig",
+    "support.apps.SupportConfig",
     "dashboard",
     "pgvector.django",
     "embeddings.apps.EmbeddingsConfig",

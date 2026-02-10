@@ -12,6 +12,8 @@ import RecruiterProfilePage from "../../pages/recruiter/RecruiterProfilePage";
 import RecruiterApplicationsListPage from "../../pages/recruiter/RecruiterApplicationsListPage";
 import RecruiterNotificaionsListPage from "../../pages/recruiter/RecruiterNotificaionsListPage";
 import ApplicantDetailsPage from "../../pages/recruiter/ApplicantDetailsPage";
+import RecruiterTicketsPage from "../../pages/recruiter/RecruiterTicketsPage";
+import RecruiterTicketDetailPage from "../../pages/recruiter/RecruiterTicketDetailPage";
 import MessagesPageResponsive from "../../pages/jobseeker/MessagesPageResponsive";
 import JobseekerPremium from "../../pages/jobseeker/JobseekerPremium";
 
@@ -70,6 +72,14 @@ const recruiterRoutes = [
           {
             path: "notifications",
             element: <RecruiterNotificaionsListPage />,
+          },
+          {
+            path: "tickets",
+            element: <RecruiterTicketsPage />,
+          },
+          {
+            path: "tickets/:id",
+            element: <RecruiterTicketDetailPage />,
           },
 
 

@@ -12,6 +12,8 @@ import MessagesPageResponsive from '@/pages/jobseeker/MessagesPageResponsive';
 import AppliedJobsDashboard from "../../pages/jobseeker/AppliedJobsDashboard";
 import JobseekerPremium from "../../pages/jobseeker/JobseekerPremium";
 import SavedJobsDashboard from "../../pages/jobseeker/SavedJobsDashboard";
+import JobseekerSupportPage from "../../pages/jobseeker/JobseekerSupportPage";
+import JobseekerSupportDetailPage from "../../pages/jobseeker/JobseekerSupportDetailPage";
 
 
 
@@ -71,6 +73,14 @@ const jobseekerRoutes = [
       {
         element: <RoleRoute allowedRoles={["jobseeker"]} />,
         children: [{ path: "saved-jobs", element: <SavedJobsDashboard /> }],
+      },
+      {
+        element: <RoleRoute allowedRoles={["jobseeker"]} />,
+        children: [{ path: "support", element: <JobseekerSupportPage /> }],
+      },
+      {
+        element: <RoleRoute allowedRoles={["jobseeker"]} />,
+        children: [{ path: "support/:id", element: <JobseekerSupportDetailPage /> }],
       },
 
 
