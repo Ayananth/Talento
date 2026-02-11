@@ -1,6 +1,6 @@
 # Talento – AI-Powered Job Portal Application
 
-Talento is a full-stack AI-powered job portal application where job seekers can discover and apply for jobs, and recruiters can post jobs and manage candidates efficiently.
+Talento is a full-stack AI-powered job portal application where job seekers can discover and apply for jobs, and recruiters can post jobs and manage candidates efficiently using the power of AI.
 
 The platform integrates intelligent features like semantic job matching, resume parsing, and AI-driven insights to improve the hiring experience for both candidates and recruiters.
 
@@ -72,10 +72,10 @@ This will:
 - Run migrations  
 - Start the Django server  
 
-Backend will typically run at:
+Backend will run at:
 
 ```
-http://localhost:8000
+http://localhost:8003
 ```
 
 ---
@@ -90,7 +90,7 @@ npm install
 npm run dev
 ```
 
-Then visit the URL shown in the terminal (typically):
+Then visit the URL shown in the terminal:
 
 ```
 http://localhost:5173
@@ -109,34 +109,12 @@ DATABASE_URL=your_database_url
 OPENAI_API_KEY=your_openai_key
 ```
 
-Adjust values according to your local setup.
-
----
-
-## 📡 API Overview
-
-Base URL:
-
-```
-http://localhost:8000/api/
-```
-
-Example endpoints:
-- `POST /auth/register/`
-- `POST /auth/login/`
-- `GET /jobs/`
-- `POST /jobs/`
-- `POST /applications/`
-
----
-
 ## 🧠 Future Enhancements
 
 - AI-powered resume tailoring  
 - Automated job application workflows  
-- Interview preparation assistant  
-- Job recommendation scoring system  
-- Admin analytics dashboard  
+- Interview preparation assistant
+- Video call interview
 
 ---
 
