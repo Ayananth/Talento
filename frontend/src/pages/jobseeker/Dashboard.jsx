@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ProfileHeader from '@/components/jobseeker/ProfileHeader'
 import Sidebar from '@/components/jobseeker/Sidebar'
 import ResumeUploadCard from '@/components/jobseeker/ResumeUploadCard'
