@@ -3,7 +3,10 @@ import Pagination from "@/components/common/Pagination";
 import ResponsiveTable from "@/components/admin/ResponsiveTable";
 import { PAGE_SIZE } from "@/constants/constants";
 import { Download } from "lucide-react";
-import { getTransactions } from "../../../apis/admin/getTransactions";
+import {
+  getTransactions,
+  getTransactionRevenueSummary,
+} from "../../../apis/admin/getTransactions";
 import api from "@/apis/api";
 
 
@@ -21,6 +24,12 @@ export default function SubscriptionTransactionsPage() {
 
   const [fromDate, setFromDate] = useState(getStartOfYear());
   const [toDate, setToDate] = useState(getToday());
+  const [activeRange, setActiveRange] = useState("this_year");
+  const [revenue, setRevenue] = useState({
+    jobseeker_revenue: 0,
+    recruiter_revenue: 0,
+    total_revenue: 0,
+  });
 
   const totalPages = Math.ceil(count / PAGE_SIZE);
 
@@ -58,11 +67,34 @@ export default function SubscriptionTransactionsPage() {
     }
   };
 
+  const fetchRevenueSummary = async () => {
+    try {
+      const summary = await getTransactionRevenueSummary({
+        from_date: fromDate,
+        to_date: toDate,
+      });
+
+      console.log(summary)
+
+      setRevenue({
+        jobseeker_revenue: summary?.jobseeker_revenue ?? 0,
+        recruiter_revenue: summary?.recruiter_revenue ?? 0,
+        total_revenue: summary?.total_revenue ?? 0,
+      });
+    } catch (err) {
+      console.error("Failed to fetch revenue summary", err);
+    }
+  };
+
   /* ---------------- Effects ---------------- */
 
   useEffect(() => {
     fetchData(page);
   }, [page, ordering, statusFilter, planFilter, fromDate, toDate]);
+
+  useEffect(() => {
+    fetchRevenueSummary();
+  }, [fromDate, toDate]);
 
   /* ---------------- Sorting ---------------- */
 
@@ -202,6 +234,77 @@ const handleExport = async () => {
         Subscription Transactions
       </h2>
 
+      {/* REVENUE SUMMARY */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <RevenueCard
+          label="Jobseeker Revenue"
+          value={revenue.jobseeker_revenue}
+          tone="blue"
+        />
+        <RevenueCard
+          label="Recruiter Revenue"
+          value={revenue.recruiter_revenue}
+          tone="emerald"
+        />
+        <RevenueCard
+          label="Total Revenue"
+          value={revenue.total_revenue}
+          tone="violet"
+        />
+      </div>
+
+      {/* QUICK DATE RANGES */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        <button
+          onClick={() => {
+            const { from, to } = getThisYearRange();
+            setFromDate(from);
+            setToDate(to);
+            setActiveRange("this_year");
+            setPage(1);
+          }}
+          className={getRangeBtnClass(activeRange === "this_year")}
+        >
+          This Year
+        </button>
+        <button
+          onClick={() => {
+            const { from, to } = getLastYearRange();
+            setFromDate(from);
+            setToDate(to);
+            setActiveRange("last_year");
+            setPage(1);
+          }}
+          className={getRangeBtnClass(activeRange === "last_year")}
+        >
+          Last Year
+        </button>
+        <button
+          onClick={() => {
+            const { from, to } = getThisMonthRange();
+            setFromDate(from);
+            setToDate(to);
+            setActiveRange("this_month");
+            setPage(1);
+          }}
+          className={getRangeBtnClass(activeRange === "this_month")}
+        >
+          This Month
+        </button>
+        <button
+          onClick={() => {
+            const { from, to } = getLast30DaysRange();
+            setFromDate(from);
+            setToDate(to);
+            setActiveRange("last_30_days");
+            setPage(1);
+          }}
+          className={getRangeBtnClass(activeRange === "last_30_days")}
+        >
+          Last 30 Days
+        </button>
+      </div>
+
       {/* FILTER + EXPORT TOOLBAR */}
       <div
         className="mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3
@@ -213,6 +316,7 @@ const handleExport = async () => {
           value={fromDate}
           onChange={(e) => {
             setFromDate(e.target.value);
+            setActiveRange("custom");
             setPage(1);
           }}
           className="h-9 px-3 text-sm border border-gray-300 rounded-lg"
@@ -224,6 +328,7 @@ const handleExport = async () => {
           value={toDate}
           onChange={(e) => {
             setToDate(e.target.value);
+            setActiveRange("custom");
             setPage(1);
           }}
           className="h-9 px-3 text-sm border border-gray-300 rounded-lg"
@@ -275,8 +380,9 @@ const handleExport = async () => {
             onClick={() => {
               setStatusFilter("");
               setPlanFilter("");
-              setFromDate("");
-              setToDate("");
+              setFromDate(getStartOfYear());
+              setToDate(getToday());
+              setActiveRange("this_year");
               setPage(1);
             }}
             className="text-sm text-gray-500 hover:text-gray-700 px-2"
@@ -312,5 +418,70 @@ const getStartOfYear = () => {
 };
 
 const getToday = () => {
-  return new Date().toISOString().split("T")[0];
+  return formatLocalDate(new Date());
 };
+
+const formatLocalDate = (dateObj) => {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getThisYearRange = () => {
+  const now = new Date();
+  return {
+    from: `${now.getFullYear()}-01-01`,
+    to: getToday(),
+  };
+};
+
+const getLastYearRange = () => {
+  const now = new Date();
+  const year = now.getFullYear() - 1;
+  return {
+    from: `${year}-01-01`,
+    to: `${year}-12-31`,
+  };
+};
+
+const getThisMonthRange = () => {
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth(), 1);
+  return {
+    from: formatLocalDate(first),
+    to: getToday(),
+  };
+};
+
+const getLast30DaysRange = () => {
+  const now = new Date();
+  const from = new Date(now);
+  from.setDate(now.getDate() - 29);
+  return {
+    from: formatLocalDate(from),
+    to: formatLocalDate(now),
+  };
+};
+
+const getRangeBtnClass = (active) =>
+  `px-3 py-1.5 text-sm rounded-lg border transition ${
+    active
+      ? "bg-blue-600 text-white border-blue-600"
+      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+  }`;
+
+function RevenueCard({ label, value, tone = "blue" }) {
+  const toneClasses = {
+    blue: "bg-blue-50 border-blue-100 text-blue-700",
+    emerald: "bg-emerald-50 border-emerald-100 text-emerald-700",
+    violet: "bg-violet-50 border-violet-100 text-violet-700",
+  };
+
+  return (
+    <div className={`rounded-xl border p-4 ${toneClasses[tone]}`}>
+      <p className="text-sm font-medium">{label}</p>
+      <p className="text-2xl font-bold mt-1">₹{value || 0}</p>
+    </div>
+  );
+}

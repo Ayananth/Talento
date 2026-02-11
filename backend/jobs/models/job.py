@@ -43,6 +43,10 @@ class Job(models.Model):
     # Basic Info
     title = models.CharField(max_length=255)
     description = models.TextField()
+    responsibilities = models.TextField(blank=True, null=True)
+    requirements = models.TextField(blank=True, null=True)
+    education_requirement = models.TextField(blank=True, null=True)
+    application_deadline = models.DateTimeField(blank=True, null=True)
 
     #Job Details
     job_type = models.CharField(
@@ -59,6 +63,9 @@ class Job(models.Model):
         max_length=20,
         choices=ExperienceLevel.choices
     )
+    experience = models.PositiveIntegerField(blank=True, null=True, help_text="Experience in years")
+
+
 
     #  Location
     location_city = models.CharField(max_length=100, blank=True, null=True)

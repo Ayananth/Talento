@@ -19,6 +19,7 @@ from .filters import AdminJobFilter
 from .serializers import (
     AdminJobDetailSerializer,
     AdminJobListSerializer,
+    AdminJobUnpublishSerializer,
     TransactionListSerializer
 )
 from .services import get_admin_stats_overview, get_top_candidates, get_top_recruiters, get_monthly_revenue_split, get_revenue_summary, get_recruiter_pending_counts
@@ -114,6 +115,48 @@ class TransactionListAPIView(ListAPIView):
             UserSubscription.objects
             .select_related("user", "plan")
             .exclude(status="pending")
+        )
+
+
+class TransactionRevenueSummaryAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get_queryset(self):
+        return (
+            UserSubscription.objects
+            .select_related("plan")
+            .exclude(status="pending")
+        )
+
+    def get(self, request):
+        filterset = TransactionFilter(
+            request.GET,
+            queryset=self.get_queryset(),
+        )
+
+        if not filterset.is_valid():
+            return Response(
+                filterset.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        qs = filterset.qs.exclude(status="failed")
+
+        jobseeker_revenue = (
+            qs.filter(plan__plan_type="jobseeker")
+            .aggregate(total=Sum("plan__price"))["total"] or 0
+        )
+        recruiter_revenue = (
+            qs.filter(plan__plan_type="recruiter")
+            .aggregate(total=Sum("plan__price"))["total"] or 0
+        )
+
+        return Response(
+            {
+                "jobseeker_revenue": jobseeker_revenue,
+                "recruiter_revenue": recruiter_revenue,
+                "total_revenue": jobseeker_revenue + recruiter_revenue,
+            }
         )
 
 
@@ -268,6 +311,47 @@ class AdminRecruiterJobPostingView(APIView):
             {
                 "id": recruiter.id,
                 "can_post_jobs": recruiter.can_post_jobs,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminJobUnpublishView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def patch(self, request, pk):
+        logger.info(
+            "Admin job unpublish requested",
+            extra={
+                "job_id": pk,
+                "admin_id": request.user.id,
+            },
+        )
+
+        job = get_object_or_404(Job, pk=pk)
+
+        serializer = AdminJobUnpublishSerializer(instance=job, data={})
+        serializer.is_valid(raise_exception=True)
+
+        job.status = Job.Status.BLOCKED
+        job.is_active = False
+        job.save(update_fields=["status", "is_active", "updated_at"])
+
+        logger.info(
+            "Admin job unpublished",
+            extra={
+                "job_id": job.id,
+                "status": job.status,
+                "is_active": job.is_active,
+            },
+        )
+
+        return Response(
+            {
+                "id": job.id,
+                "status": job.status,
+                "is_active": job.is_active,
+                "detail": "Job unpublished successfully.",
             },
             status=status.HTTP_200_OK,
         )

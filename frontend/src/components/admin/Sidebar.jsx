@@ -1,16 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
+import { getAdminUnreadNotificationsCount } from "@/apis/admin/notifications";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-    const { pendingNew, Contextloading } = useAdmin();
+  const { pendingNew, Contextloading } = useAdmin();
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const refreshUnreadNotifications = async () => {
+      try {
+        const count = await getAdminUnreadNotificationsCount();
+        if (isMounted) {
+          setUnreadNotificationsCount(count);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin unread notifications count", error);
+      }
+    };
+
+    refreshUnreadNotifications();
+    const intervalId = setInterval(refreshUnreadNotifications, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [location.pathname]);
   
 
   const menuItems = [
     { name: "Dashboard", path: "/admin",  },
+    {
+      name: "Notifications",
+      path: "/admin/notifications",
+      count: unreadNotificationsCount,
+    },
     { name: "Transactions", path: "/admin/transactions",  },
+    { name: "Support Tickets", path: "/admin/tickets" },
     { name: "Approvals", path: "/admin/recruiter/approvals",count: pendingNew?.total_pending_recruiters ?? 0, },
     { name: "Job Listings", path: "/admin/jobs" },
     { name: "Users", path: "/admin/users" },
@@ -25,11 +56,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       <ul className="space-y-3">
         {menuItems.map((item) => {
-          console.log("location path",location.pathname)
-          console.log(item.path)
-
-          console.log("")
-          const isActive = location.pathname === item.path;
+          const isActive =
+            item.path === "/admin"
+              ? location.pathname === item.path
+              : location.pathname === item.path ||
+                location.pathname.startsWith(`${item.path}/`);
 
           return (
             <li key={item.path}>

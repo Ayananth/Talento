@@ -22,3 +22,20 @@ export const getTransactions = async ({
   const res = await api.get("/v1/admin/transactions/", { params });
   return res.data;
 };
+
+export const getTransactionRevenueSummary = async ({
+  from_date = "",
+  to_date = "",
+} = {}) => {
+  const params = {
+    ...(from_date && { from_date }),
+    ...(to_date && { to_date }),
+  };
+
+  const res = await api.get(
+    "/v1/admin/transactions/revenue-summary/",
+    { params }
+  );
+
+  return res.data;
+};

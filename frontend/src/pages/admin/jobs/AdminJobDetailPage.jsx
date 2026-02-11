@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { getAdminJobDetails } from "@/apis/admin/jobs";
+import { getAdminJobDetails, unpublishAdminJob } from "@/apis/admin/jobs";
 import { formatDateTime } from "@/utils/common/utils";
 
 export default function AdminJobDetailPage() {
@@ -10,6 +10,8 @@ export default function AdminJobDetailPage() {
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [unpublishing, setUnpublishing] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   /* ---------------------------------------------------
      FETCH JOB
@@ -51,9 +53,35 @@ export default function AdminJobDetailPage() {
       .join(", ");
 
   const salary =
-    job.salary_min || job.salary_max
+    job.salary_hidden
+      ? "Hidden"
+      : job.salary_min || job.salary_max
       ? `${job.salary_min ?? "—"} - ${job.salary_max ?? "—"} ${job.salary_currency || ""}`
       : "Not disclosed";
+
+  const canUnpublish = job.status === "published";
+
+  const handleUnpublish = async () => {
+    if (!canUnpublish || unpublishing) return;
+
+    setActionError("");
+    setUnpublishing(true);
+    try {
+      const res = await unpublishAdminJob(id);
+      setJob((prev) => ({
+        ...prev,
+        status: res.status ?? prev.status,
+      }));
+    } catch (err) {
+      console.error("Failed to unpublish job", err);
+      setActionError(
+        err?.response?.data?.detail ||
+          "Failed to unpublish job. Please try again."
+      );
+    } finally {
+      setUnpublishing(false);
+    }
+  };
 
   /* ---------------------------------------------------
      RENDER
@@ -93,11 +121,20 @@ export default function AdminJobDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* META CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InfoCard label="Job Type" value={job.job_type} />
-            <InfoCard label="Work Mode" value={job.work_mode} />
-            <InfoCard label="Experience Level" value={job.experience_level} />
+            <InfoCard label="Job Type" value={toTitle(job.job_type)} />
+            <InfoCard label="Work Mode" value={toTitle(job.work_mode)} />
+            <InfoCard
+              label="Experience Level"
+              value={toTitle(job.experience_level)}
+            />
+            <InfoCard
+              label="Experience (Years)"
+              value={job.experience ?? "—"}
+            />
+            <InfoCard label="Openings" value={job.openings ?? "—"} />
             <InfoCard label="Salary" value={salary} />
             <InfoCard label="Location" value={location || "—"} />
+            <InfoCard label="Views" value={job.view_count ?? "—"} />
           </div>
 
           {/* DESCRIPTION */}
@@ -133,6 +170,35 @@ export default function AdminJobDetailPage() {
               </p>
             )}
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white border rounded-lg p-5">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                Responsibilities
+              </h4>
+              <p className="text-sm text-gray-700 whitespace-pre-line">
+                {job.responsibilities || "Not specified."}
+              </p>
+            </div>
+
+            <div className="bg-white border rounded-lg p-5">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                Requirements
+              </h4>
+              <p className="text-sm text-gray-700 whitespace-pre-line">
+                {job.requirements || "Not specified."}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border rounded-lg p-5">
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">
+              Education Requirement
+            </h4>
+            <p className="text-sm text-gray-700 whitespace-pre-line">
+              {job.education_requirement || "Not specified."}
+            </p>
+          </div>
         </div>
 
         {/* RIGHT SIDEBAR */}
@@ -147,6 +213,14 @@ export default function AdminJobDetailPage() {
             <hr />
 
             <SidebarItem
+              label="Application Deadline"
+              value={
+                job.application_deadline
+                  ? formatDateTime(job.application_deadline)
+                  : "—"
+              }
+            />
+            <SidebarItem
               label="Published At"
               value={job.published_at ? formatDateTime(job.published_at) : "—"}
             />
@@ -154,16 +228,39 @@ export default function AdminJobDetailPage() {
               label="Expires At"
               value={job.expires_at ? formatDateTime(job.expires_at) : "—"}
             />
-            {/* <SidebarItem
+            <SidebarItem
               label="Created At"
               value={job.created_at ? formatDateTime(job.created_at) : "—"}
-            /> */}
+            />
+            <SidebarItem
+              label="Updated At"
+              value={job.updated_at ? formatDateTime(job.updated_at) : "—"}
+            />
+            <SidebarItem
+              label="Active"
+              value={job.is_active ? "Yes" : "No"}
+            />
 
             {/* ADMIN ACTIONS (future-ready) */}
             <div className="pt-4">
-              <button className="w-full px-4 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700">
-                Unpublish Job
+              <button
+                onClick={handleUnpublish}
+                disabled={!canUnpublish || unpublishing}
+                className={`w-full px-4 py-2 text-sm rounded-md text-white ${
+                  canUnpublish && !unpublishing
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {unpublishing
+                  ? "Unpublishing..."
+                  : canUnpublish
+                    ? "Unpublish Job"
+                    : "Job Already Unpublished"}
               </button>
+              {actionError && (
+                <p className="mt-2 text-xs text-red-600">{actionError}</p>
+              )}
             </div>
           </div>
         </div>
@@ -196,4 +293,11 @@ function SidebarItem({ label, value }) {
       </p>
     </div>
   );
+}
+
+function toTitle(value) {
+  if (!value) return "—";
+  return value
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (s) => s.toUpperCase());
 }

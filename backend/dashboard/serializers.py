@@ -87,9 +87,13 @@ class AdminJobDetailSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "responsibilities",
+            "requirements",
+            "education_requirement",
             "job_type",
             "work_mode",
             "experience_level",
+            "experience",
             "location_city",
             "location_state",
             "location_country",
@@ -97,12 +101,18 @@ class AdminJobDetailSerializer(serializers.ModelSerializer):
             "salary_min",
             "salary_max",
             "salary_currency",
+            "salary_hidden",
+            "openings",
+            "application_deadline",
             "published_at",
             "skills",
             "email",
             "company",
             "expires_at",
             "created_at",
+            "updated_at",
+            "view_count",
+            "is_active",
             "status"
         ]
 
@@ -116,3 +126,16 @@ class AdminJobDetailSerializer(serializers.ModelSerializer):
             obj.location_country,
         ]
         return ", ".join([p for p in parts if p])
+
+
+class AdminJobUnpublishSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = []
+
+    def validate(self, attrs):
+        if self.instance.status != Job.Status.PUBLISHED:
+            raise serializers.ValidationError(
+                "Only published jobs can be unpublished."
+            )
+        return attrs

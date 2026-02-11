@@ -24,5 +24,9 @@ export const getAdminJobDetails = async (id) => {
   return res.data;
 };
 
+export const unpublishAdminJob = async (id) => {
+  const res = await api.patch(`/v1/admin/jobs/${id}/unpublish`);
+  return res.data;
+};
 
 

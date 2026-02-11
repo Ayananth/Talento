@@ -117,6 +117,53 @@ export const getRecruiterApplicationStats = async () => {
   return res.data;
 }
 
+export const getRecruiterNotifications = async ({
+  page = 1,
+  ordering = "-created_at",
+  search = "",
+  type = "",
+  isRead = "",
+} = {}) => {
+  const res = await api.get("/v1/notifications/", {
+    params: {
+      page,
+      ...(ordering && { ordering }),
+      ...(search && { search }),
+      ...(type && { type }),
+      ...(isRead !== "" && { is_read: isRead }),
+    },
+  });
+
+  return res.data;
+};
+
+export const updateRecruiterNotificationReadStatus = async (
+  notificationId,
+  isRead
+) => {
+  const res = await api.patch(
+    `/v1/notifications/${notificationId}/read-status/`,
+    { is_read: isRead }
+  );
+  return res.data;
+};
+
+export const markAllRecruiterNotificationsRead = async () => {
+  const res = await api.patch("/v1/notifications/mark-all-read/");
+  return res.data;
+};
+
+export const getRecruiterUnreadNotificationsCount = async () => {
+  const res = await api.get("/v1/notifications/", {
+    params: {
+      page: 1,
+      is_read: false,
+    },
+  });
+
+  return res.data?.count ?? 0;
+};
+
 
 export const getApplicantDetails = async (applicationId) => {
   const res = await api.get(

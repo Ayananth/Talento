@@ -9,6 +9,7 @@ from profiles.models import JobSeekerResume
 from embeddings.models import JobEmbedding, ResumeEmbedding
 from embeddings.services import generate_embedding, build_job_text
 from embeddings.resume_parser import extract_text_from_pdf, parse_resume_with_ai, build_candidate_text
+from embeddings.usecases import notify_job_match_sent
 
 logger = logging.getLogger(__name__)
 
@@ -279,6 +280,7 @@ def notify_matching_candidates_task(self, job_id):
         logger.info(f"{user.email, similarity}")
 
         send_job_match_email(user.email, job, similarity)
+        notify_job_match_sent(user, job, similarity)
 
         notified += 1
 
