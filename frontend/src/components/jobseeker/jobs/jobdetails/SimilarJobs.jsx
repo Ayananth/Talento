@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { Briefcase, Clock, MapPin } from "lucide-react";
 
 import { getJobs } from "@/apis/jobseeker/apis";
+import companyPlaceholder from "@/assets/common/image.png";
+
+const MAX_COMPANY_JOBS = 4;
 
 function formatPostedAgo(dateValue) {
   if (!dateValue) return "Recently posted";
@@ -55,7 +58,7 @@ export default function SimilarJobs({ jobId, recruiterId, companyName }) {
         const sameCompanyJobs = (res?.results || []).filter(
           (job) => String(job.id) !== String(jobId)
         );
-        setJobs(sameCompanyJobs.slice(0, 4));
+        setJobs(sameCompanyJobs.slice(0, MAX_COMPANY_JOBS));
       } catch (err) {
         console.error("Failed to load company jobs", err);
         setError("Unable to load more jobs from this company.");
@@ -108,7 +111,11 @@ export default function SimilarJobs({ jobId, recruiterId, companyName }) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-xs text-slate-400">Logo</span>
+                  <img
+                    src={companyPlaceholder}
+                    alt={companyName || "Company"}
+                    className="w-full h-full object-cover"
+                  />
                 )}
               </div>
 
