@@ -32,6 +32,7 @@ export function Navbar({ role }) {
   const [notificationsPage, setNotificationsPage] = useState(1);
   const [notificationsCount, setNotificationsCount] = useState(0);
   const [updatingNotificationId, setUpdatingNotificationId] = useState(null);
+  const [notificationReadFilter, setNotificationReadFilter] = useState("false");
 
 
   const {
@@ -80,6 +81,7 @@ export function Navbar({ role }) {
       const data = await getJobseekerNotifications({
         page,
         ordering: "-created_at",
+        isRead: notificationReadFilter,
       });
 
       setNotifications(data?.results || []);
@@ -89,7 +91,7 @@ export function Navbar({ role }) {
     } finally {
       setNotificationsLoading(false);
     }
-  }, [isAuthenticated, isJobseeker, notificationsPage]);
+  }, [isAuthenticated, isJobseeker, notificationsPage, notificationReadFilter]);
 
   useEffect(() => {
     fetchUnreadNotificationsCount();
@@ -123,6 +125,7 @@ export function Navbar({ role }) {
   ]);
 
   const openNotificationDrawer = () => {
+    setNotificationReadFilter("false");
     setNotificationDrawerOpen(true);
     setNotificationsPage(1);
   };
@@ -399,7 +402,7 @@ export function Navbar({ role }) {
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Notifications</h2>
                 <p className="text-xs text-gray-500">
-                  {notificationsCount} total · {unreadNotificationsCount} unread
+                  Showing {notificationsCount} {notificationReadFilter === "true" ? "read" : "unread"} notification{notificationsCount === 1 ? "" : "s"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -423,6 +426,37 @@ export function Navbar({ role }) {
               </div>
             </div>
 
+            <div className="px-4 py-3 border-b">
+              <div className="inline-flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => {
+                    setNotificationReadFilter("false");
+                    setNotificationsPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-sm rounded-md transition ${
+                    notificationReadFilter === "false"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Unread
+                </button>
+                <button
+                  onClick={() => {
+                    setNotificationReadFilter("true");
+                    setNotificationsPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-sm rounded-md transition ${
+                    notificationReadFilter === "true"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Read
+                </button>
+              </div>
+            </div>
+
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {notifications.map((notification) => (
                 <div
@@ -432,7 +466,6 @@ export function Navbar({ role }) {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    {console.log("Notification:", notification)}
                     <div className="min-w-0" onClick={() => redirectNotification(notification)}>
                       <p className="text-sm font-semibold text-gray-900">
                         {notification.title || "Notification"}
