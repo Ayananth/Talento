@@ -20,9 +20,11 @@ const READ_FILTERS = [
 
 const TYPE_FILTERS = [
   { value: "", label: "All Types" },
-  { value: "JobApplication", label: "Job Application" },
-  { value: "StatusChange", label: "Status Change" },
-  { value: "NewMessage", label: "New Message" },
+  { value: "RecruiterActions", label: "Recruiter Actions" },
+  { value: "NewSubscriber", label: "New Subscriber" },
+  { value: "UserRegistration", label: "User Registration" },
+  { value: "JobMatchSent", label: "Job Match Sent" },
+  { value: "JobPosted", label: "Job Posted" },
   { value: "Other", label: "Other" },
 ];
 
@@ -110,7 +112,7 @@ export default function AdminNotificationsPage() {
       if (notification.type === "NewSubscriber") {
         navigate("/admin/transactions/" + notification.related_id);
       }
-      if (notification.type === "UserRegistraion") {
+      if (notification.type === "UserRegistration") {
         navigate("/admin/users/" + notification.related_id);
       }
     };
