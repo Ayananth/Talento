@@ -6,6 +6,8 @@ from embeddings.tasks import compute_job_match_task
 from django.db import transaction
 
 from notifications.services import create_notification
+from notifications.choices import TypeChoices, RoleChoices
+
 
 
 logger = logging.getLogger(__name__)
@@ -25,10 +27,10 @@ def notify_new_application_signal(sender, instance, created, **kwargs):
 
         create_notification(
             user=instance.job.recruiter.user,
-            user_role="recruiter",
+            user_role=RoleChoices.RECRUITER,
             title="New Job Application",
             message=f"{instance.applicant.fullname} applied for {instance.job.title}",
-            type="JobApplication",
+            type=TypeChoices.JOB_APPLICATION,
             related_id=instance.pk
         )
 
@@ -39,10 +41,10 @@ def notify_status_change_signal(sender, instance, created, **kwargs):
     if instance._previous_status != instance.status:
         create_notification(
             user=instance.applicant.user,
-            user_role="jobseeker",
+            user_role=RoleChoices.JOBSEEKER,
             title="Application Status Changed",
             message=f"Application status changed to {instance.status} for {instance.job.title}",
-            type="StatusChange",
+            type=TypeChoices.STATUS_CHANGE,
             related_id=instance.pk
         )
 

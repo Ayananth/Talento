@@ -1,4 +1,5 @@
 from .models import Notification
+from .choices import TypeChoices, RoleChoices
 
 
 REQUIRED_FIELDS = ["user", "title", "message", "type"]

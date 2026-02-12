@@ -2,9 +2,12 @@ import logging
 from celery import shared_task
 from django.utils import timezone
 from django.db import transaction
+from django.db.models import Q
+
 
 from jobs.models.job import Job
 from notifications.services import bulk_create_notifications
+from notifications.choices import TypeChoices, RoleChoices
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +22,8 @@ def expire_jobs(self):
 
     jobs = list(
         Job.objects.filter(
+            Q(expires_at__lt=now) | Q(application_deadline__lt=now),
             status=Job.Status.PUBLISHED,
-            expires_at__lt=now,
             is_active=True,
         ).select_related("recruiter__user")
     )
@@ -45,13 +48,13 @@ def expire_jobs(self):
     notification_data = [
         {
             "user": job.recruiter.user,
-            "user_role": "recruiter",
+            "user_role": RoleChoices.RECRUITER,
             "title": "Job Expired",
             "message": (
                 f"Your job posting '{job.title}' has expired. "
                 f"You can repost or extend it from your dashboard."
             ),
-            "type": "job_expired",
+            "type": TypeChoices.JOB_EXPIRED,
             "related_id": job.id,
         }
         for job in jobs

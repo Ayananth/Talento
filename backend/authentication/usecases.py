@@ -1,5 +1,6 @@
 from authentication.services import get_admin_users
 from notifications.services import bulk_create_notifications
+from notifications.choices import TypeChoices, RoleChoices
 
 def notify_admins_new_user(user):
     admins = get_admin_users()
@@ -7,10 +8,10 @@ def notify_admins_new_user(user):
     data_list = [
         {
             "user": admin,
-            "user_role": "admin",
+            "user_role": RoleChoices.ADMIN,
             "title": "New User Registered",
             "message": f"New user registered: {user.username or user.email} as {user.role}",
-            "type": "UserRegistraion",
+            "type": TypeChoices.USER_REGISTRATION,
             "related_id": user.id,
         }
         for admin in admins

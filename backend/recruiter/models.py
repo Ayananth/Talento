@@ -105,7 +105,7 @@ class RecruiterProfile(models.Model):
 
 
     def is_published(self) -> bool:
-        return self.status == "published"
+        return self.status == "approved"
 
 
     def is_pending_review(self) -> bool:

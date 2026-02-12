@@ -3,6 +3,7 @@
 import logging
 from authentication.services import get_admin_users
 from notifications.services import bulk_create_notifications
+from notifications.choices import TypeChoices, RoleChoices
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +17,13 @@ def notify_job_match_sent(user, job, similarity):
         #  Candidate notification
         {
             "user": user,
-            "user_role": "candidate",
+            "user_role": RoleChoices.JOBSEEKER,
             "title": "New Job Match Found",
             "message": (
                 f"A job matching your profile ({similarity_pct}% match) "
                 f"is available: {job.title}"
             ),
-            "type": "JobMatchFound",
+            "type": TypeChoices.JOB_MATCH_FOUND,
             "related_id": job.id,
         }
     ]
@@ -32,13 +33,13 @@ def notify_job_match_sent(user, job, similarity):
         data_list.append(
             {
                 "user": admin,
-                "user_role": "admin",
+                "user_role": RoleChoices.ADMIN,
                 "title": "Job Match Email Sent",
                 "message": (
                     f"Job match email sent to {user.email} "
                     f"for job '{job.title}' ({similarity_pct}% match)."
                 ),
-                "type": "JobMatchEmailSent",
+                "type": TypeChoices.JOB_MATCH_SENT,
                 "related_id": job.id,
             }
         )

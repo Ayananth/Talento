@@ -204,7 +204,7 @@ class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
         profile.draft_logo = None
         profile.draft_business_registration_doc = None
 
-        profile.status = "published"
+        profile.status = "approved"
         profile.rejection_reason = ""
         profile.verified_at = timezone.now()
         profile.save()
@@ -226,7 +226,7 @@ class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
 
         return Response(
             {
-                "detail": "Recruiter profile approved and published successfully.",
+                "detail": "Recruiter profile approved successfully.",
                 "status": profile.status,
                 "published_data": {
                     "company_name": profile.company_name,
