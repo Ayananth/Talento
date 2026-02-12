@@ -5,6 +5,7 @@ export const getJobs = async ({
   ordering = "-published_at",
   search = "",
   location = "",
+  recruiterId = "",
   pageSize = "12",
   filters = {},
 } = {}) => {
@@ -14,25 +15,26 @@ export const getJobs = async ({
       ...(ordering && { ordering }),
       ...(search && { search }),
       ...(location && { location_city: location }),
+      ...(recruiterId && { recruiter_id: recruiterId }),
       ...(pageSize && {page_size: pageSize}),
 
-      ...(filters&& filters.workMode&&filters.workMode.length && {
+      ...(filters?.workMode?.length && {
         work_mode: filters.workMode.join(","),
       }),
 
-      ...(filters.jobType.length && {
+      ...(filters?.jobType?.length && {
         job_type: filters.jobType.join(","),
       }),
-      ...(filters.experience.length && {
+      ...(filters?.experience?.length && {
         experience_level: filters.experience.join(","),
       }),
-      ...(filters.postedWithin && {
+      ...(filters?.postedWithin && {
         posted_within: filters.postedWithin,
       }),
-      ...(filters.salaryMin && {
+      ...(filters?.salaryMin && {
         salary_min: filters.salaryMin,
       }),
-      ...(filters.salaryMax && {
+      ...(filters?.salaryMax && {
         salary_max: filters.salaryMax,
       }),
 
