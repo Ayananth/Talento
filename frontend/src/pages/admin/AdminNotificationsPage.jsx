@@ -6,9 +6,11 @@ import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import {
   getAdminNotifications,
+  getAdminUnreadNotificationsCount,
   markAllAdminNotificationsRead,
   updateAdminNotificationReadStatus,
 } from "@/apis/admin/notifications";
+import { useAdminUnread } from "@/context/AdminUnreadContext";
 
 const READ_FILTERS = [
   { value: "", label: "All" },
@@ -25,6 +27,7 @@ const TYPE_FILTERS = [
 ];
 
 export default function AdminNotificationsPage() {
+  const { setUnreadNotificationsCount } = useAdminUnread();
   const [notifications, setNotifications] = useState([]);
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -42,21 +45,25 @@ export default function AdminNotificationsPage() {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getAdminNotifications({
-        page,
-        ordering,
-        isRead: isReadFilter,
-        type: typeFilter,
-      });
+      const [data, unreadCount] = await Promise.all([
+        getAdminNotifications({
+          page,
+          ordering,
+          isRead: isReadFilter,
+          type: typeFilter,
+        }),
+        getAdminUnreadNotificationsCount(),
+      ]);
 
       setNotifications(data.results || []);
       setCount(data.count || 0);
+      setUnreadNotificationsCount(unreadCount);
     } catch (error) {
       console.error("Failed to load admin notifications", error);
     } finally {
       setLoading(false);
     }
-  }, [page, ordering, isReadFilter, typeFilter]);
+  }, [page, ordering, isReadFilter, typeFilter, setUnreadNotificationsCount]);
 
   useEffect(() => {
     fetchNotifications();
@@ -208,7 +215,6 @@ export default function AdminNotificationsPage() {
                 : "border-blue-200 bg-gradient-to-r from-blue-50/60 to-white"
             }`}
           >
-            {console.log("Notification:", notification)}
             <div className="flex items-start gap-3">
               <div className="mt-1">
                 <span

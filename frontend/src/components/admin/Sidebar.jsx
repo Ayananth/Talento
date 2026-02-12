@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
 import { getAdminUnreadNotificationsCount } from "@/apis/admin/notifications";
+import { useAdminUnread } from "@/context/AdminUnreadContext";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { pendingNew, Contextloading } = useAdmin();
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const { unreadNotificationsCount, setUnreadNotificationsCount } = useAdminUnread();
 
   useEffect(() => {
     let isMounted = true;
@@ -30,7 +31,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, [location.pathname]);
+  }, [location.pathname, setUnreadNotificationsCount]);
   
 
   const menuItems = [
