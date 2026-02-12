@@ -11,7 +11,6 @@ def notify_admins_recruiter_pending_review(recruiter_profile):
     admins = get_admin_users()
     logger.info("Notifying admins about recruiter pending review. recruiter_profile_id=%s", recruiter_profile)
 
-    company_name = "New Recruiter"
 
     data_list = [
         {
@@ -19,8 +18,7 @@ def notify_admins_recruiter_pending_review(recruiter_profile):
             "user_role": RoleChoices.ADMIN,
             "title": "Recruiter Approval Required",
             "message": (
-                f"{company_name} has registered as a recruiter "
-                f"and is waiting for approval."
+                f"New Recruiter is waiting for approval."
             ),
             "type": TypeChoices.RECRUITER_ACTIONS,
             "related_id": recruiter_profile.id,

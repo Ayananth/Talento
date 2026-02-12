@@ -25,6 +25,7 @@ from django.db import transaction
 from notifications.events import NotificationEvent
 from notifications.service import notify_admin
 from notifications.tasks import notify_admin_task, notify_recruiter_task
+from .usecases import notify_admins_recruiter_pending_review
 
 
 logger = logging.getLogger(__name__)
@@ -70,12 +71,17 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
         profile_id = profile.id
 
         if profile.is_first_submission():
-            transaction.on_commit(
-                lambda pid=profile_id: notify_admin_task.delay(
-                    event=NotificationEvent.RECRUITER_APPROVAL_REQUESTED,
-                    payload={"recruiter_profile_id": pid}
+            try:
+
+                notify_admins_recruiter_pending_review(profile)
+                transaction.on_commit(
+                    lambda pid=profile_id: notify_admin_task.delay(
+                        event=NotificationEvent.RECRUITER_APPROVAL_REQUESTED,
+                        payload={"recruiter_profile_id": pid}
+                    )
                 )
-            )
+            except Exception: 
+                logger.exception( "Failed to notify admins about recruiter pending review. recruiter_profile_id=%s", profile_id ) 
 
 
 
