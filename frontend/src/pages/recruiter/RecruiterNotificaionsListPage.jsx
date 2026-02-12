@@ -21,8 +21,9 @@ const READ_FILTERS = [
 const TYPE_FILTERS = [
   { value: "", label: "All Types" },
   { value: "JobApplication", label: "Job Application" },
-  { value: "StatusChange", label: "Status Change" },
-  { value: "NewMessage", label: "New Message" },
+  { value: "AdminActions", label: "Admin Actions" },
+  { value: "JobExpired", label: "Job Expired" },
+  { value: "SubscriptionEnd", label: "Subscription End" },
   { value: "Other", label: "Other" },
 ];
 
@@ -122,7 +123,7 @@ const RecruiterNotificaionsListPage = () => {
       if (notification.type === "JobApplication") {
         navigate("/recruiter/applications/" + notification.related_id);
       }
-      if (notification.type === "AdminAction") {
+      if (notification.type === "AdminActions" || notification.type === "AdminAction") {
         navigate("/recruiter/profile/");
       }
       if (notification.type === "JobExpired") {
