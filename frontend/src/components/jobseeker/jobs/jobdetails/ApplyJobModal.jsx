@@ -3,42 +3,6 @@ import { getMyProfile, getMyResumes, applyToJob } from "../../../../apis/jobseek
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-const EMPTY_PARSED_FORM = {
-  role: "",
-  skills: "",
-  education: "",
-  projects_summary: "",
-  experience_summary: "",
-};
-
-const toText = (value) => (value == null ? "" : String(value).trim());
-
-const toSkillsText = (skills) => {
-  if (Array.isArray(skills)) {
-    return skills.map((item) => toText(item)).filter(Boolean).join(", ");
-  }
-  return toText(skills);
-};
-
-const mapParsedDataToForm = (parsedData) => ({
-  role: toText(parsedData?.role),
-  skills: toSkillsText(parsedData?.skills),
-  education: toText(parsedData?.education),
-  projects_summary: toText(parsedData?.projects_summary),
-  experience_summary: toText(parsedData?.experience_summary),
-});
-
-const normalizeParsedSnapshot = (form) => ({
-  role: toText(form.role),
-  skills: toSkillsText(form.skills)
-    .split(",")
-    .map((skill) => skill.trim())
-    .filter(Boolean),
-  education: toText(form.education),
-  projects_summary: toText(form.projects_summary),
-  experience_summary: toText(form.experience_summary),
-});
-
 const DANGEROUS_REGEX = /(<script|<\/script>|<.*?>|javascript:|onerror=|onload=)/i;
 
 const isCoverLetterUnsafe = (text) => DANGEROUS_REGEX.test(text);
@@ -57,8 +21,6 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
-
-  const [parsedForm, setParsedForm] = useState(EMPTY_PARSED_FORM);
 
   const [coverLetter, setCoverLetter] = useState("");
   const [currentSalary, setCurrentSalary] = useState("");
@@ -117,8 +79,6 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
     setSelectedResume(null);
     setStep(1);
 
-    setParsedForm(EMPTY_PARSED_FORM);
-
     setCurrentSalary("");
     setExpectedSalary("");
     setNoticePeriod("");
@@ -140,7 +100,6 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
         setError("Please select a resume to continue.");
         return;
       }
-      setParsedForm(mapParsedDataToForm(selectedResume.parsed_data || {}));
     }
 
     setStep(2);
@@ -197,7 +156,6 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
         currentSalary: currentSalary ? Number(currentSalary) : null,
         expectedSalary: Number(expectedSalary),
         noticePeriod: noticePeriod || "",
-        parsedDataSnapshot: normalizeParsedSnapshot(parsedForm),
       };
 
       if (resumeType === "existing") {
@@ -268,7 +226,7 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
       <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-slate-900">Apply for this job</h2>
-          <span className="text-xs text-slate-500">Step {step} of 3</span>
+          <span className="text-xs text-slate-500">Step {step} of 2</span>
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 rounded-lg p-1"
@@ -340,70 +298,6 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
           )}
 
           {step === 2 && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-900">Parsed Resume Data</h3>
-              <p className="text-xs text-slate-500">
-                These values are loaded from selected resume parsed data. You can edit them for this
-                application only.
-              </p>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700">Role</label>
-                <input
-                  type="text"
-                  value={parsedForm.role}
-                  onChange={(e) => setParsedForm((prev) => ({ ...prev, role: e.target.value }))}
-                  className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700">Skills (comma separated)</label>
-                <input
-                  type="text"
-                  value={parsedForm.skills}
-                  onChange={(e) => setParsedForm((prev) => ({ ...prev, skills: e.target.value }))}
-                  className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700">Education</label>
-                <textarea
-                  rows={3}
-                  value={parsedForm.education}
-                  onChange={(e) => setParsedForm((prev) => ({ ...prev, education: e.target.value }))}
-                  className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700">Projects Summary</label>
-                <textarea
-                  rows={3}
-                  value={parsedForm.projects_summary}
-                  onChange={(e) =>
-                    setParsedForm((prev) => ({ ...prev, projects_summary: e.target.value }))
-                  }
-                  className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700">Experience Summary</label>
-                <textarea
-                  rows={3}
-                  value={parsedForm.experience_summary}
-                  onChange={(e) =>
-                    setParsedForm((prev) => ({ ...prev, experience_summary: e.target.value }))
-                  }
-                  className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
             <>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">
@@ -549,25 +443,6 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
             <>
               <button
                 onClick={() => setStep(1)}
-                disabled={loading}
-                className="px-4 py-2 rounded-lg border text-slate-700 hover:bg-slate-100"
-              >
-                Back
-              </button>
-              <button
-                onClick={() => setStep(3)}
-                disabled={loading}
-                className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </>
-          )}
-
-          {step === 3 && (
-            <>
-              <button
-                onClick={() => setStep(2)}
                 disabled={loading}
                 className="px-4 py-2 rounded-lg border text-slate-700 hover:bg-slate-100"
               >
