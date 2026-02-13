@@ -267,9 +267,9 @@ export default function ProfileHeader({subscription}) {
                   <p className="mt-2 text-base font-medium text-slate-700 sm:text-lg">
                     {getVal(profile.headline, "Add your professional headline")}
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">
+                  {/* <p className="mt-1 text-sm text-slate-500">
                     Currently at {getVal(exp.company, "Add your company")}
-                  </p>
+                  </p> */}
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <InfoChip
