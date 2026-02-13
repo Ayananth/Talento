@@ -530,13 +530,27 @@ class JobSeekerAccomplishmentView(APIView):
 class JobSeekerResumeView(APIView):
     permission_classes = [IsJobseeker]
 
-    def get(self, request):
+    def get(self, request, pk=None):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+
+        if pk:
+            logger.info(
+                "Jobseeker resume detail requested",
+                extra={"user_id": request.user.id, "resume_id": pk},
+            )
+            try:
+                resume = JobSeekerResume.objects.get(id=pk, profile=profile)
+            except JobSeekerResume.DoesNotExist:
+                return Response({"error": "Resume not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = JobSeekerResumeSerializer(resume, context={"profile": profile})
+            return Response(serializer.data)
+
         logger.info(
             "Jobseeker resume list requested",
             extra={"user_id": request.user.id},
         )
 
-        profile = JobSeekerProfile.objects.get(user=request.user)
         resumes = JobSeekerResume.objects.filter(profile=profile)
         serializer = JobSeekerResumeSerializer(resumes, many=True, context={"profile": profile})
         return Response(serializer.data)
@@ -551,7 +565,7 @@ class JobSeekerResumeView(APIView):
         serializer = JobSeekerResumeSerializer(data=request.data, context={"profile": profile})
 
         if serializer.is_valid():
-            serializer.save(profile=profile)
+            serializer.save(profile=profile, status=JobSeekerResume.Status.PARSING)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -565,11 +579,11 @@ class JobSeekerResumeView(APIView):
         if not pk:
             return Response({"error": "Resume ID required"}, status=status.HTTP_400_BAD_REQUEST)
 
+        profile = JobSeekerProfile.objects.get(user=request.user)
         try:
-            resume = JobSeekerResume.objects.get(id=pk)
+            resume = JobSeekerResume.objects.get(id=pk, profile=profile)
         except JobSeekerResume.DoesNotExist:
             return Response({"error": "Resume not found"}, status=status.HTTP_404_NOT_FOUND)
-        profile = JobSeekerProfile.objects.get(user=request.user)
         serializer = JobSeekerResumeSerializer(resume, data=request.data, partial=True, context={"profile": profile})
 
         if serializer.is_valid():
@@ -624,6 +638,56 @@ class JobSeekerResumeView(APIView):
                 )
 
         return Response({"message": "Resume deleted"})
+
+
+class ConfirmResumeAPIView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def patch(self, request, pk):
+        profile = JobSeekerProfile.objects.get(user=request.user)
+
+        try:
+            resume = JobSeekerResume.objects.get(id=pk, profile=profile)
+        except JobSeekerResume.DoesNotExist:
+            return Response({"error": "Resume not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not resume.is_default:
+            return Response(
+                {"error": "Only default resume can be confirmed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        role = (request.data.get("role") or "").strip()
+        education = (request.data.get("education") or "").strip()
+        projects_summary = (request.data.get("projects_summary") or "").strip()
+        experience_summary = (request.data.get("experience_summary") or "").strip()
+
+        raw_skills = request.data.get("skills", [])
+        if isinstance(raw_skills, str):
+            skills = [s.strip() for s in raw_skills.split(",") if s.strip()]
+        elif isinstance(raw_skills, list):
+            skills = [str(s).strip() for s in raw_skills if str(s).strip()]
+        else:
+            skills = []
+
+        resume.parsed_data = {
+            "role": role,
+            "skills": skills,
+            "education": education,
+            "projects_summary": projects_summary,
+            "experience_summary": experience_summary,
+        }
+        resume.status = JobSeekerResume.Status.CONFIRMED
+        resume.parsing_error = ""
+        resume.save(update_fields=["parsed_data", "status", "parsing_error"])
+
+        logger.info(
+            "Resume confirmed by user",
+            extra={"user_id": request.user.id, "resume_id": resume.id},
+        )
+
+        serializer = JobSeekerResumeSerializer(resume, context={"profile": profile})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
