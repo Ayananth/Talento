@@ -1,5 +1,6 @@
 from celery import shared_task
 from django.db import transaction
+from django.utils import timezone
 import time
 import logging
 import os
@@ -10,6 +11,7 @@ from embeddings.models import JobEmbedding, ResumeEmbedding
 from embeddings.services import generate_embedding, build_job_text
 from embeddings.resume_parser import extract_text_from_pdf, parse_resume_with_ai, build_candidate_text
 from embeddings.usecases import notify_job_match_sent
+from subscriptions.models import UserSubscription
 
 logger = logging.getLogger(__name__)
 
@@ -264,7 +266,20 @@ def notify_matching_candidates_task(self, job_id):
 
     logger.info(f"{matches=}")
 
+    candidate_user_ids = list(
+        matches.values_list("resume__profile__user_id", flat=True).distinct()
+    )
+    active_subscriber_ids = set(
+        UserSubscription.objects.filter(
+            user_id__in=candidate_user_ids,
+            status="active",
+            end_date__gt=timezone.now(),
+            plan__plan_type="jobseeker",
+        ).values_list("user_id", flat=True)
+    )
+
     notified = 0
+    skipped_no_subscription = 0
 
     for emb in matches:
         similarity = 1 - emb.distance
@@ -277,6 +292,10 @@ def notify_matching_candidates_task(self, job_id):
         profile = emb.resume.profile
         user = profile.user
 
+        if user.id not in active_subscriber_ids:
+            skipped_no_subscription += 1
+            continue
+
         logger.info(f"{user.email, similarity}")
 
         send_job_match_email(user.email, job, similarity)
@@ -285,5 +304,7 @@ def notify_matching_candidates_task(self, job_id):
         notified += 1
 
     logger.info(
-        f"Job notifications sent | job_id={job_id} | count={notified}"
+        "Job notifications sent | "
+        f"job_id={job_id} | count={notified} | "
+        f"skipped_no_subscription={skipped_no_subscription}"
     )
