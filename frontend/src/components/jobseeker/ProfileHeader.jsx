@@ -273,12 +273,12 @@ export default function ProfileHeader({subscription}) {
             </div>
           </div>
 
-          {/* RIGHT SECTION - STATS */}
+          {/* RIGHT SECTION - STATS
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-8 flex flex-col justify-center gap-8 w-full lg:w-1/3">
             <StatBox number="0" label="Search Appearances" />
             <div className="h-px bg-blue-200" />
             <StatBox number="0" label="Recruiter Actions" />
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
