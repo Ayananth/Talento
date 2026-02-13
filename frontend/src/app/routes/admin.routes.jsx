@@ -20,6 +20,7 @@ import AdminNotificationsPage from "@/pages/admin/AdminNotificationsPage";
 import AdminTicketsPage from "@/pages/admin/tickets/AdminTicketsPage";
 import AdminTicketDetailPage from "@/pages/admin/tickets/AdminTicketDetailPage";
 import { AdminProvider } from "../../context/AdminContext";
+import { AdminUnreadProvider } from "../../context/AdminUnreadContext";
 
 const adminRoutes = [
   {
@@ -27,7 +28,9 @@ const adminRoutes = [
     element: (
       <RequireAuth>
         <AdminProvider>
-          <AdminLayout />
+          <AdminUnreadProvider>
+            <AdminLayout />
+          </AdminUnreadProvider>
         </AdminProvider>
       </RequireAuth>
     ),

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import useAuth from "@/auth/context/useAuth";
 import { useUnread } from "@/context/UnreadContext";
+import { fetchConversations } from "@/apis/common/fetchConversations";
 import {
   getJobseekerNotifications,
   getJobseekerUnreadNotificationsCount,
@@ -32,10 +33,12 @@ export function Navbar({ role }) {
   const [notificationsPage, setNotificationsPage] = useState(1);
   const [notificationsCount, setNotificationsCount] = useState(0);
   const [updatingNotificationId, setUpdatingNotificationId] = useState(null);
+  const [notificationReadFilter, setNotificationReadFilter] = useState("false");
 
 
   const {
     totalUnread,
+    setTotalUnread,
     unreadNotificationsCount,
     setUnreadNotificationsCount,
   } = useUnread();
@@ -72,6 +75,24 @@ export function Navbar({ role }) {
     }
   }, [isAuthenticated, isJobseeker, setUnreadNotificationsCount]);
 
+  const fetchUnreadMessagesCount = useCallback(async () => {
+    if (!isAuthenticated) {
+      setTotalUnread(0);
+      return;
+    }
+
+    try {
+      const conversations = await fetchConversations();
+      const unreadTotal = conversations.reduce(
+        (sum, conversation) => sum + (conversation?.unread_count ?? 0),
+        0
+      );
+      setTotalUnread(unreadTotal);
+    } catch (error) {
+      console.error("Failed to fetch unread messages count", error);
+    }
+  }, [isAuthenticated, setTotalUnread]);
+
   const fetchNotifications = useCallback(async (page = notificationsPage) => {
     if (!isAuthenticated || !isJobseeker) return;
 
@@ -80,6 +101,7 @@ export function Navbar({ role }) {
       const data = await getJobseekerNotifications({
         page,
         ordering: "-created_at",
+        isRead: notificationReadFilter,
       });
 
       setNotifications(data?.results || []);
@@ -89,17 +111,27 @@ export function Navbar({ role }) {
     } finally {
       setNotificationsLoading(false);
     }
-  }, [isAuthenticated, isJobseeker, notificationsPage]);
+  }, [isAuthenticated, isJobseeker, notificationsPage, notificationReadFilter]);
 
   useEffect(() => {
     fetchUnreadNotificationsCount();
   }, [fetchUnreadNotificationsCount, pathname]);
 
   useEffect(() => {
+    fetchUnreadMessagesCount();
+  }, [fetchUnreadMessagesCount, pathname]);
+
+  useEffect(() => {
     if (!isAuthenticated || !isJobseeker) return;
     const intervalId = setInterval(fetchUnreadNotificationsCount, 30000);
     return () => clearInterval(intervalId);
   }, [fetchUnreadNotificationsCount, isAuthenticated, isJobseeker]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const intervalId = setInterval(fetchUnreadMessagesCount, 30000);
+    return () => clearInterval(intervalId);
+  }, [fetchUnreadMessagesCount, isAuthenticated]);
 
   useEffect(() => {
     if (!notificationDrawerOpen) return;
@@ -123,6 +155,7 @@ export function Navbar({ role }) {
   ]);
 
   const openNotificationDrawer = () => {
+    setNotificationReadFilter("false");
     setNotificationDrawerOpen(true);
     setNotificationsPage(1);
   };
@@ -399,7 +432,7 @@ export function Navbar({ role }) {
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Notifications</h2>
                 <p className="text-xs text-gray-500">
-                  {notificationsCount} total · {unreadNotificationsCount} unread
+                  Showing {notificationsCount} {notificationReadFilter === "true" ? "read" : "unread"} notification{notificationsCount === 1 ? "" : "s"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -423,6 +456,37 @@ export function Navbar({ role }) {
               </div>
             </div>
 
+            <div className="px-4 py-3 border-b">
+              <div className="inline-flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => {
+                    setNotificationReadFilter("false");
+                    setNotificationsPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-sm rounded-md transition ${
+                    notificationReadFilter === "false"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Unread
+                </button>
+                <button
+                  onClick={() => {
+                    setNotificationReadFilter("true");
+                    setNotificationsPage(1);
+                  }}
+                  className={`px-3 py-1.5 text-sm rounded-md transition ${
+                    notificationReadFilter === "true"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Read
+                </button>
+              </div>
+            </div>
+
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {notifications.map((notification) => (
                 <div
@@ -432,7 +496,6 @@ export function Navbar({ role }) {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    {console.log("Notification:", notification)}
                     <div className="min-w-0" onClick={() => redirectNotification(notification)}>
                       <p className="text-sm font-semibold text-gray-900">
                         {notification.title || "Notification"}

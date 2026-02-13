@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" style="margin:0; padding:0;">
+  <head>
+    <meta charset="UTF-8" />
+    <title>New Matching Job Alert</title>
+  </head>
+  <body style="padding:0; margin:0; background:#f0f2f5; font-family:'Segoe UI', Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5; padding:40px 0;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0"
+            style="background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 8px 18px rgba(0,0,0,0.15);">
+
+            <tr>
+              <td style="background:linear-gradient(135deg, #1d4ed8, #2563eb); padding:40px 20px; text-align:center; color:white;">
+                <h1 style="margin:0; font-size:28px; font-weight:700;">Talento</h1>
+                <p style="margin-top:10px; font-size:16px; opacity:0.95;">New Job Match for You</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:40px; color:#333;">
+                <h2 style="margin:0; font-size:22px; font-weight:600;">A role matching your profile is live</h2>
+
+                <p style="margin:20px 0; font-size:16px; line-height:1.6;">
+                  We found a job that aligns with your profile.
+                </p>
+
+                <p style="font-size:16px; line-height:1.8; margin:0;">
+                  <strong>Job:</strong> {{ job_title }}<br />
+                  <strong>Match:</strong> {{ match_percent }}%
+                </p>
+
+                <div style="text-align:center; margin:40px 0;">
+                  <a href="{{ job_url }}"
+                    style="background:linear-gradient(135deg, #1d4ed8, #2563eb); padding:14px 32px; color:#fff; text-decoration:none; font-size:16px; font-weight:600; border-radius:6px; display:inline-block;">
+                    View Job
+                  </a>
+                </div>
+
+                <p style="font-size:14px; color:#555;">
+                  You are receiving this email because job alerts are enabled on your Talento account.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="background:#f5f7fa; padding:20px; text-align:center; color:#888; font-size:12px;">
+                © {{ year }} Talento. All rights reserved.<br />
+                Connecting talent with opportunity.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

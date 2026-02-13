@@ -144,7 +144,11 @@ export default function JobDetailPage() {
               openJobs={3}
             />
 
-            <SimilarJobs jobId={job.id} />
+            <SimilarJobs
+              jobId={job.id}
+              recruiterId={job.recruiter_id}
+              companyName={job.company_name}
+            />
           </aside>
         </div>
       </div>

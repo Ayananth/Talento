@@ -1,0 +1,14 @@
+Talento - New Matching Job Alert
+
+Hi,
+
+We found a job that matches your profile.
+
+Job: {{ job_title }}
+Match: {{ match_percent }}%
+View job: {{ job_url }}
+
+Best of luck!
+
+- Talento Team
+© {{ year }} Talento

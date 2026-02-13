@@ -6,9 +6,11 @@ import Pagination from "@/components/common/Pagination";
 import { PAGE_SIZE } from "@/constants/constants";
 import {
   getAdminNotifications,
+  getAdminUnreadNotificationsCount,
   markAllAdminNotificationsRead,
   updateAdminNotificationReadStatus,
 } from "@/apis/admin/notifications";
+import { useAdminUnread } from "@/context/AdminUnreadContext";
 
 const READ_FILTERS = [
   { value: "", label: "All" },
@@ -18,13 +20,16 @@ const READ_FILTERS = [
 
 const TYPE_FILTERS = [
   { value: "", label: "All Types" },
-  { value: "JobApplication", label: "Job Application" },
-  { value: "StatusChange", label: "Status Change" },
-  { value: "NewMessage", label: "New Message" },
+  { value: "RecruiterActions", label: "Recruiter Actions" },
+  { value: "NewSubscriber", label: "New Subscriber" },
+  { value: "UserRegistration", label: "User Registration" },
+  { value: "JobMatchSent", label: "Job Match Sent" },
+  { value: "JobPosted", label: "Job Posted" },
   { value: "Other", label: "Other" },
 ];
 
 export default function AdminNotificationsPage() {
+  const { setUnreadNotificationsCount } = useAdminUnread();
   const [notifications, setNotifications] = useState([]);
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -42,21 +47,25 @@ export default function AdminNotificationsPage() {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getAdminNotifications({
-        page,
-        ordering,
-        isRead: isReadFilter,
-        type: typeFilter,
-      });
+      const [data, unreadCount] = await Promise.all([
+        getAdminNotifications({
+          page,
+          ordering,
+          isRead: isReadFilter,
+          type: typeFilter,
+        }),
+        getAdminUnreadNotificationsCount(),
+      ]);
 
       setNotifications(data.results || []);
       setCount(data.count || 0);
+      setUnreadNotificationsCount(unreadCount);
     } catch (error) {
       console.error("Failed to load admin notifications", error);
     } finally {
       setLoading(false);
     }
-  }, [page, ordering, isReadFilter, typeFilter]);
+  }, [page, ordering, isReadFilter, typeFilter, setUnreadNotificationsCount]);
 
   useEffect(() => {
     fetchNotifications();
@@ -103,7 +112,7 @@ export default function AdminNotificationsPage() {
       if (notification.type === "NewSubscriber") {
         navigate("/admin/transactions/" + notification.related_id);
       }
-      if (notification.type === "UserRegistraion") {
+      if (notification.type === "UserRegistration") {
         navigate("/admin/users/" + notification.related_id);
       }
     };
@@ -208,8 +217,7 @@ export default function AdminNotificationsPage() {
                 : "border-blue-200 bg-gradient-to-r from-blue-50/60 to-white"
             }`}
           >
-            {console.log("Notification:", notification)}
-            <div className="flex items-start gap-3" onClick={() => redirectNotification(notification)}>
+            <div className="flex items-start gap-3">
               <div className="mt-1">
                 <span
                   className={`block w-2.5 h-2.5 rounded-full ${
@@ -220,17 +228,19 @@ export default function AdminNotificationsPage() {
 
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                  <h2 className="text-sm md:text-base font-semibold text-gray-900">
-                    {notification.title || "Notification"}
-                  </h2>
-                  <time className="text-xs text-gray-500 shrink-0">
-                    {formatDateTime(notification.created_at)}
-                  </time>
-                </div>
-
-                <p className="text-sm text-gray-700 mt-2 leading-relaxed">
-                  {notification.message || "No message"}
-                </p>
+                  <div onClick={() => redirectNotification(notification)}>
+                    <h2 className="text-sm md:text-base font-semibold text-gray-900">
+                      {notification.title || "Notification"}
+                    </h2>
+                    <time className="text-xs text-gray-500 shrink-0">
+                      {formatDateTime(notification.created_at)}
+                    </time>
+                                    </div>
+                    
+                                    <p className="text-sm text-gray-700 mt-2 leading-relaxed">
+                    {notification.message || "No message"}
+                                    </p>
+                  </div>
 
                 <div className="flex items-center justify-between mt-4">
                   <span

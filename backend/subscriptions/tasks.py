@@ -5,6 +5,7 @@ from django.db import transaction
 
 from subscriptions.models import UserSubscription
 from notifications.services import bulk_create_notifications
+from notifications.choices import TypeChoices, RoleChoices
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ def expire_subscriptions(self):
             "user_role": sub.user.role,
             "title": "Subscription Expired",
             "message": "Your subscription has expired. Renew to continue premium access.",
-            "type": "subscription_expired",
+            "type": TypeChoices.SUBSCRIPTION_END,
             "related_id": sub.id,
         }
         for sub in subscriptions

@@ -283,7 +283,7 @@ export default function CreateJobForm() {
           <div>
             <label className="label">Application Deadline</label>
             <input
-              type="datetime-local"
+              type="date"
               name="application_deadline"
               className="input"
               onChange={handleChange}

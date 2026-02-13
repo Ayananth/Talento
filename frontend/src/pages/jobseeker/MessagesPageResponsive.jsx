@@ -11,7 +11,7 @@ import { fetchConversationMessages } from "../../apis/common/fetchConversationMe
  import { getAccessToken } from "../../auth/context/authUtils";
  import useChatSocket from "../../hooks/useChatSocket";
  import { startConversation } from "../../apis/common/startConversation";
- import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
  import useUnreadSocket from "../../hooks/useUnreadSocket";
 import { useUnread } from "@/context/UnreadContext";
 
@@ -40,6 +40,7 @@ const MessagesPageResponsive = () => {
   const currentUserId = Number(user?.user_id);
 
 const accessToken = useMemo(() => getAccessToken(), []);
+const navigate = useNavigate();
 
 const handleWsMessage = useCallback((msg) => {
   setMessages((prev) => [
@@ -67,15 +68,14 @@ const handleReadAck = useCallback((messageId) => {
 
 
 const { connected, sendMessage, sendRead } = useChatSocket({
-conversationId: activeConversationId,
+  conversationId: activeConversationId,
   token: accessToken,
   onMessage: handleWsMessage,
   onReadAck: handleReadAck,
 });
 
-useUnreadSocket({
-  token: accessToken,
-  onUnread: (event) => {
+const handleUnreadEvent = useCallback(
+  (event) => {
     const convoId = Number(event.conversation_id);
 
     // If open chat → ignore (already seen)
@@ -92,8 +92,14 @@ useUnreadSocket({
       )
     );
 
-  setTotalUnread(prev => prev + 1);
+    setTotalUnread((prev) => prev + 1);
   },
+  [activeConversationId, setTotalUnread]
+);
+
+useUnreadSocket({
+  token: accessToken,
+  onUnread: handleUnreadEvent,
 });
 
 
@@ -103,32 +109,34 @@ useUnreadSocket({
   const sendingDisabled = hasConversation && !connected;
 
 
-
-
-
 const location = useLocation();
 useEffect(() => {
-  console.log("Location state on mount:", location.state);
-  if (location.state?.openConversationId) {
-    const convo = conversations.find(
-      (c) => c.id === location.state.openConversationId
-    );
+  const targetConversationId = Number(location.state?.openConversationId);
+  if (!targetConversationId) return;
+  if (activeConversationId === targetConversationId) return;
 
-    console.log("Auto-opening conversation from state:", convo);
+  const convo = conversations.find((c) => Number(c.id) === targetConversationId);
+  if (!convo) return;
 
-    if (convo) {
-      handleSelectChat(convo);
-      setShowChatList(false);
-    }
-  }
-}, [location.state, conversations]);
+  handleSelectChat(convo);
+  setShowChatList(false);
+  navigate(location.pathname, { replace: true, state: {} });
+}, [
+  location.pathname,
+  location.state?.openConversationId,
+  conversations,
+  activeConversationId,
+  navigate,
+]);
 
 useEffect(() => {
-  if (location.state?.draftChat) {
-    setSelectedChat(location.state.draftChat);
-    setShowChatList(false);
-  }
-}, []);
+  if (!location.state?.draftChat) return;
+  if (selectedChat?.id) return;
+
+  setSelectedChat(location.state.draftChat);
+  setShowChatList(false);
+  navigate(location.pathname, { replace: true, state: {} });
+}, [location.pathname, location.state?.draftChat, selectedChat?.id, navigate]);
 
 
 

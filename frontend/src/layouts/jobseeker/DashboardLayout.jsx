@@ -1,12 +1,10 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { Navbar } from "../../components/common/Navbar";
 import ProfileHeader from '@/components/jobseeker/ProfileHeader'
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/components/jobseeker/Sidebar"
-import { useLocation } from 'react-router-dom'
 import { useSearchParams } from "react-router-dom";
 import Toast from "../../components/common/Toast";
-import { getSubscriptionStatus } from "../../apis/common/subscriptions/subscriptions";
 import UpgradeBanner from "../../components/jobseeker/UpgradeBanner";
 import useAuth from "../../auth/context/useAuth";
 
@@ -16,9 +14,7 @@ const DashboardLayout = () => {
 
   const [toastMessage, setToastMessage] = useState(null);
 
-  const {subscription} = useAuth();
-
-
+  const { subscription } = useAuth();
 
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
@@ -27,10 +23,10 @@ const DashboardLayout = () => {
       newParams.delete("payment");
       setSearchParams(newParams, { replace: true });
     }
-  }, []);
+  }, [searchParams, setSearchParams]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-[#f8fbff] to-slate-100">
       <Navbar />
 
       {toastMessage && (
@@ -39,42 +35,33 @@ const DashboardLayout = () => {
           onClose={() => setToastMessage(null)}
         />
       )}
-      
-      {/* Main Content Container */}
+
       <div className="pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-{/* Profile Header Section */}
-          <div className="mb-12 animate-fade-in">
-  <ProfileHeader subscription={subscription} />
-</div>
+          <div className="mb-8 rounded-3xl border border-slate-200/80 bg-white/95 p-2 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)] backdrop-blur">
+            <ProfileHeader subscription={subscription} />
+          </div>
 
+          {!subscription?.is_active && (
+            <div className="mb-6">
+              <UpgradeBanner />
+            </div>
+          )}
 
-    {/* 🚀 Upgrade Banner */}
-    {!subscription?.is_active && (
-      <UpgradeBanner />
-    )}
-
-
-
-
-          {/* Main Dashboard Layout */}
           <div className="flex flex-col lg:flex-row gap-8">
-            
-            {/* Sidebar Navigation */}
             <aside className="w-full lg:w-64 flex-shrink-0">
-              <div className="lg:sticky lg:top-24">
-                <Sidebar subscription={subscription} />
+              <div className="lg:sticky lg:top-24 space-y-4">
+
+                
+              <Sidebar subscription={subscription} />
               </div>
             </aside>
 
-            {/* Main Content Area */}
             <main className="flex-1 min-w-0">
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8 lg:p-10">
+              <section className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)]">
                 <Outlet />
-              </div>
+              </section>
             </main>
-
           </div>
         </div>
       </div>

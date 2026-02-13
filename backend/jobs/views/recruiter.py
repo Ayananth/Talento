@@ -33,6 +33,7 @@ from jobs.serializers import (
     RecruiterJobListSerializer,
     RecruiterJobSerializer,
 )
+from subscriptions.models import UserSubscription
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ logger = logging.getLogger(__name__)
 class RecruiterJobCreateView(CreateAPIView):
     serializer_class = RecruiterJobSerializer
     permission_classes = [IsAuthenticated, IsRecruiter]
+    NON_SUBSCRIBED_ACTIVE_JOB_LIMIT = 3
 
     def perform_create(self, serializer):
         recruiter_profile = self.request.user.recruiter_profile
@@ -54,19 +56,52 @@ class RecruiterJobCreateView(CreateAPIView):
                 "Job posting disabled for recruiter",
                 extra={"recruiter_id": self.request.user.id},
             )
-            return Response(
+            raise ValidationError(
                 {
                     "code": "JOB_POSTING_DISABLED",
-                    "detail": "Job posting has been disabled by admin."
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+                    "detail": "Job posting has been disabled by admin.",
+                }
             )
+
+        has_active_subscription = UserSubscription.objects.filter(
+            user=self.request.user,
+            status="active",
+            end_date__gt=timezone.now(),
+            plan__plan_type="recruiter",
+        ).exists()
+
+        if not has_active_subscription:
+            active_jobs_count = Job.objects.filter(
+                recruiter=recruiter_profile,
+                is_active=True,
+                status=Job.Status.PUBLISHED,
+            ).count()
+
+            if active_jobs_count >= self.NON_SUBSCRIBED_ACTIVE_JOB_LIMIT:
+                logger.warning(
+                    "Non-subscribed recruiter reached active job limit",
+                    extra={
+                        "recruiter_id": self.request.user.id,
+                        "active_jobs_count": active_jobs_count,
+                    },
+                )
+                raise ValidationError(
+                    {
+                        "code": "ACTIVE_JOB_LIMIT_REACHED",
+                        "detail": (
+                            "An active recruiter subscription is required to "
+                            "post more than 3 active jobs."
+                        ),
+                    }
+                )
+
+        job_expiry_days = 45 if has_active_subscription else 15
 
         serializer.save(
             recruiter=self.request.user.recruiter_profile,
             status=Job.Status.PUBLISHED,
             published_at=timezone.now(),
-            expires_at=timezone.now() + timedelta(days=90),
+            expires_at=timezone.now() + timedelta(days=job_expiry_days),
             is_active=True,
         )
 

@@ -21,8 +21,9 @@ const READ_FILTERS = [
 const TYPE_FILTERS = [
   { value: "", label: "All Types" },
   { value: "JobApplication", label: "Job Application" },
-  { value: "StatusChange", label: "Status Change" },
-  { value: "NewMessage", label: "New Message" },
+  { value: "AdminActions", label: "Admin Actions" },
+  { value: "JobExpired", label: "Job Expired" },
+  { value: "SubscriptionEnd", label: "Subscription End" },
   { value: "Other", label: "Other" },
 ];
 
@@ -122,7 +123,7 @@ const RecruiterNotificaionsListPage = () => {
       if (notification.type === "JobApplication") {
         navigate("/recruiter/applications/" + notification.related_id);
       }
-      if (notification.type === "AdminAction") {
+      if (notification.type === "AdminActions" || notification.type === "AdminAction") {
         navigate("/recruiter/profile/");
       }
       if (notification.type === "JobExpired") {
@@ -236,7 +237,7 @@ const RecruiterNotificaionsListPage = () => {
                   : "border-blue-200 bg-gradient-to-r from-blue-50/60 to-white"
               }`}
             >
-              <div className="flex items-start gap-3" onClick={() => redirectNotification(notification)}>
+              <div className="flex items-start gap-3" >
                 <div className="mt-1">
                   <span
                     className={`block w-2.5 h-2.5 rounded-full ${
@@ -246,18 +247,19 @@ const RecruiterNotificaionsListPage = () => {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                    <h2 className="text-sm md:text-base font-semibold text-gray-900">
-                      {notification.title || "Notification"}
-                    </h2>
-                    <time className="text-xs text-gray-500 shrink-0">
-                      {formatDateTime(notification.created_at)}
-                    </time>
+                  <div onClick={() => redirectNotification(notification)}>
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                      <h2 className="text-sm md:text-base font-semibold text-gray-900">
+                        {notification.title || "Notification"}
+                      </h2>
+                      <time className="text-xs text-gray-500 shrink-0">
+                        {formatDateTime(notification.created_at)}
+                      </time>
+                    </div>
+                    <p className="text-sm text-gray-700 mt-2 leading-relaxed">
+                      {notification.message || "No message"}
+                    </p>
                   </div>
-
-                  <p className="text-sm text-gray-700 mt-2 leading-relaxed">
-                    {notification.message || "No message"}
-                  </p>
 
                   <div className="flex items-center justify-between mt-4">
                     <span

@@ -1,5 +1,6 @@
 from celery import shared_task
 from django.db import transaction
+from django.utils import timezone
 import time
 import logging
 import os
@@ -10,6 +11,7 @@ from embeddings.models import JobEmbedding, ResumeEmbedding
 from embeddings.services import generate_embedding, build_job_text
 from embeddings.resume_parser import extract_text_from_pdf, parse_resume_with_ai, build_candidate_text
 from embeddings.usecases import notify_job_match_sent
+from subscriptions.models import UserSubscription
 
 logger = logging.getLogger(__name__)
 
@@ -208,30 +210,26 @@ MAX_RESULTS = 50
 
 
 from django.conf import settings
-from django.core.mail import send_mail
+from notifications.emails.service import send_email_from_payload
 
 
 def send_job_match_email(email, job, similarity):
 
     job_url = f"{settings.FRONTEND_URL}/jobs/{job.id}"
+    match_percent = round(similarity * 100, 1)
 
-    subject = f"New job matching your profile: {job.title}"
-
-    message = (
-        f"Hi,\n\n"
-        f"We found a job that matches your profile ({round(similarity*100,1)}% match).\n\n"
-        f"Job: {job.title}\n"
-        f"View here: {job_url}\n\n"
-        f"Best of luck!\n"
-        f"Talento Team"
-    )
-
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email="noreply@talento.ai",
-        recipient_list=[email],
-        fail_silently=False,
+    send_email_from_payload(
+        {
+            "to": email,
+            "subject": f"New job matching your profile: {job.title}",
+            "template": "matching_job_alert",
+            "context": {
+                "job_title": job.title,
+                "match_percent": match_percent,
+                "job_url": job_url,
+                "year": timezone.now().year,
+            },
+        }
     )
 
 
@@ -253,9 +251,18 @@ def notify_matching_candidates_task(self, job_id):
         logger.warning(f"Job embedding missing | job_id={job_id}")
         raise Exception("Job embedding not ready")
 
+    active_subscriber_ids = UserSubscription.objects.filter(
+        status="active",
+        end_date__gt=timezone.now(),
+        plan__plan_type="jobseeker",
+    ).values_list("user_id", flat=True)
+
     matches = (
         ResumeEmbedding.objects
-        .filter(resume__is_default=True)
+        .filter(
+            resume__is_default=True,
+            resume__profile__user_id__in=active_subscriber_ids,
+        )
         .annotate(
             distance=CosineDistance("embedding", job_vector)
         )

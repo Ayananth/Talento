@@ -1,20 +1,10 @@
 from django.db import models
 from django.conf import settings
+from .choices import TypeChoices, RoleChoices
 
 
 
 class Notification(models.Model):
-
-    class TypeChoices(models.TextChoices):
-        JOB_APPLICATION = "JobApplication", "Job Application"
-        STATUS_CHANGE = "StatusChange", "Status Change"
-        NEW_MESSAGE = "NewMessage", "New Message"
-        OTHER = "Other", "Other"
-
-    class RoleChoices(models.TextChoices):
-        JOBSEEKER = "jobseeker", "Job Seeker"
-        RECRUITER = "recruiter", "Recruiter"
-        ADMIN = "admin", "Admin"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

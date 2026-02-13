@@ -1,5 +1,6 @@
 from authentication.services import get_admin_users
 from notifications.services import bulk_create_notifications
+from notifications.choices import TypeChoices, RoleChoices
 
 
 def notify_admins_new_subscription(subscription):
@@ -11,13 +12,13 @@ def notify_admins_new_subscription(subscription):
     data_list = [
         {
             "user": admin,
-            "user_role": "admin",
+            "user_role": RoleChoices.ADMIN,
             "title": "New Subscriber",
             "message": (
                 f"{user.email or user.username} "
                 f"subscribed to {plan.name}"
             ),
-            "type": "SubscriptionCreated",
+            "type": TypeChoices.NEW_SUBSCRIBER,
             "related_id": subscription.id,
         }
         for admin in admins

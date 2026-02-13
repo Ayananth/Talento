@@ -21,12 +21,11 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
       <div className="hidden md:flex items-center space-x-6">
 
         {/* Notification Icon */}
-        <button className="relative hover:text-blue-600 transition">
+        {/* <button className="relative hover:text-blue-600 transition">
           <Bell size={22} />
 
-          {/* Red Notification Dot */}
           <span className="absolute top-0 right-0 bg-red-500 h-2 w-2 rounded-full"></span>
-        </button>
+        </button> */}
 
         {/* Logout */}
         <button
