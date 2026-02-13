@@ -560,7 +560,7 @@ export default function ResumeUploadCard() {
               <h3 className="text-lg font-semibold text-slate-900">Parsed Details</h3>
             </div>
             <p className="text-sm text-slate-500 mt-1">
-              Review parsed details and edit if needed.
+              Please review the parsed details from your resume. Keep this section updated with your latest information to get the best job matches and recommendations. You can edit any field before confirming.
             </p>
             {reviewWarning && (
               <div className="mt-4 bg-amber-50 text-amber-800 border border-amber-200 px-3 py-2 rounded-lg">
