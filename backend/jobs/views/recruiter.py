@@ -95,11 +95,13 @@ class RecruiterJobCreateView(CreateAPIView):
                     }
                 )
 
+        job_expiry_days = 45 if has_active_subscription else 15
+
         serializer.save(
             recruiter=self.request.user.recruiter_profile,
             status=Job.Status.PUBLISHED,
             published_at=timezone.now(),
-            expires_at=timezone.now() + timedelta(days=90),
+            expires_at=timezone.now() + timedelta(days=job_expiry_days),
             is_active=True,
         )
 
