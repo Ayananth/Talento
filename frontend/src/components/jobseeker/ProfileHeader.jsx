@@ -8,7 +8,8 @@ import {
   Clock,
   Edit3,
   AlertCircle,
-  Crown
+  Crown,
+  Loader2
 } from "lucide-react";
 import ProfileEditModal from "./ProfileEditModal";
 
@@ -248,6 +249,12 @@ export default function ProfileHeader({subscription}) {
                     />
                   </label>
                 </div>
+                {uploading && (
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 sm:hidden">
+                    <Loader2 size={12} className="animate-spin" />
+                    Uploading photo...
+                  </div>
+                )}
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-3">
@@ -267,9 +274,15 @@ export default function ProfileHeader({subscription}) {
                   <p className="mt-2 text-base font-medium text-slate-700 sm:text-lg">
                     {getVal(profile.headline, "Add your professional headline")}
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">
+                  {/* <p className="mt-1 text-sm text-slate-500">
                     Currently at {getVal(exp.company, "Add your company")}
-                  </p>
+                  </p> */}
+                  {uploading && (
+                    <div className="mt-2 hidden items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 sm:inline-flex">
+                      <Loader2 size={12} className="animate-spin" />
+                      Uploading profile image...
+                    </div>
+                  )}
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <InfoChip
