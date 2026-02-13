@@ -79,13 +79,28 @@ class JobSeekerEducation(models.Model):
 
 
 class JobSeekerResume(models.Model):
+
+    class Status(models.TextChoices):
+        UPLOADED = "UPLOADED"
+        PARSING = "PARSING"
+        PARSED = "PARSED"
+        CONFIRMED = "CONFIRMED"
+        FAILED = "FAILED"
+
+
+
     profile = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE, related_name="resumes")
 
     title = models.CharField(max_length=255)
     file = CloudinaryField(resource_type='image', folder="talento-dev/resumes/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
-
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.UPLOADED
+    )
     parsed_data = models.JSONField(blank=True, null=True)
+    parsing_error = models.TextField(blank=True, null=True)
     is_default = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
 
