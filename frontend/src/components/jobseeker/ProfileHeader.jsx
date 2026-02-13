@@ -215,9 +215,9 @@ export default function ProfileHeader({subscription}) {
 
       <div className="relative">
         <div className="h-20 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500" />
-        <div className="absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.35),transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.35),transparent_55%)]" />
 
-        <div className="px-6 pb-6 sm:px-8 sm:pb-8">
+        <div className="relative z-10 px-6 pb-6 sm:px-8 sm:pb-8">
           <div className="-mt-12 grid gap-8 lg:grid-cols-[1fr_280px]">
             <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.6)]">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
