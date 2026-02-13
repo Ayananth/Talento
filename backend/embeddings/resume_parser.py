@@ -41,7 +41,8 @@ Extract the following in valid JSON:
   "skills": ["list", "of", "technical", "skills"],
   "experience_summary": "2–3 sentence professional summary",
   "education": "highest relevant education",
-  "experience_level": "fresher | mid | senior"
+  "experience_level": "fresher | mid | senior",
+  "projects_summary": "brief summary of key projects (if any)"
 }}
 
 Rules:
