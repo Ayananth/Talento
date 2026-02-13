@@ -112,6 +112,7 @@ def build_candidate_text(parsed: dict) -> str:
     experience = parsed.get("experience_summary") or ""
     education = parsed.get("education") or ""
     level = parsed.get("experience_level") or ""
+    projects = parsed.get("projects_summary") or ""
 
     skills_text = ", ".join(skills)
 
