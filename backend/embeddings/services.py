@@ -69,7 +69,6 @@ Description: {job.description}
 CANDIDATE:
 Role: {resume_data["role"]}
 Skills: {resume_data["skills"]}
-Experience Level: {resume_data["experience_level"]}
 Summary: {resume_data["experience_summary"]}
 
 Return ONLY valid JSON:

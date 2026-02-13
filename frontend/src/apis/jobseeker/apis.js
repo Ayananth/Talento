@@ -93,6 +93,7 @@ export const applyToJob = async ({
   currentSalary,
   expectedSalary,
   noticePeriod,
+  parsedDataSnapshot,
 }) => {
   const formData = new FormData();
 
@@ -123,6 +124,10 @@ export const applyToJob = async ({
 
   if (noticePeriod) {
     formData.append("notice_period", noticePeriod);
+  }
+
+  if (parsedDataSnapshot) {
+    formData.append("parsed_data_snapshot", JSON.stringify(parsedDataSnapshot));
   }
 
   const res = await api.post("/v1/applications/apply/", formData, {
