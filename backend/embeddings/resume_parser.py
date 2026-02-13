@@ -120,4 +120,7 @@ def build_candidate_text(parsed: dict) -> str:
     Experience Level: {level}
     Skills: {skills_text}
     Professional Experience: {experience}
+    Education: {education}
+    Projects: {projects}
+    Desired Role: {role}
     """.strip()
