@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import useAuth from "@/auth/context/useAuth";
 import { useUnread } from "@/context/UnreadContext";
+import { fetchConversations } from "@/apis/common/fetchConversations";
 import {
   getJobseekerNotifications,
   getJobseekerUnreadNotificationsCount,
@@ -37,6 +38,7 @@ export function Navbar({ role }) {
 
   const {
     totalUnread,
+    setTotalUnread,
     unreadNotificationsCount,
     setUnreadNotificationsCount,
   } = useUnread();
@@ -73,6 +75,24 @@ export function Navbar({ role }) {
     }
   }, [isAuthenticated, isJobseeker, setUnreadNotificationsCount]);
 
+  const fetchUnreadMessagesCount = useCallback(async () => {
+    if (!isAuthenticated) {
+      setTotalUnread(0);
+      return;
+    }
+
+    try {
+      const conversations = await fetchConversations();
+      const unreadTotal = conversations.reduce(
+        (sum, conversation) => sum + (conversation?.unread_count ?? 0),
+        0
+      );
+      setTotalUnread(unreadTotal);
+    } catch (error) {
+      console.error("Failed to fetch unread messages count", error);
+    }
+  }, [isAuthenticated, setTotalUnread]);
+
   const fetchNotifications = useCallback(async (page = notificationsPage) => {
     if (!isAuthenticated || !isJobseeker) return;
 
@@ -98,10 +118,20 @@ export function Navbar({ role }) {
   }, [fetchUnreadNotificationsCount, pathname]);
 
   useEffect(() => {
+    fetchUnreadMessagesCount();
+  }, [fetchUnreadMessagesCount, pathname]);
+
+  useEffect(() => {
     if (!isAuthenticated || !isJobseeker) return;
     const intervalId = setInterval(fetchUnreadNotificationsCount, 30000);
     return () => clearInterval(intervalId);
   }, [fetchUnreadNotificationsCount, isAuthenticated, isJobseeker]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const intervalId = setInterval(fetchUnreadMessagesCount, 30000);
+    return () => clearInterval(intervalId);
+  }, [fetchUnreadMessagesCount, isAuthenticated]);
 
   useEffect(() => {
     if (!notificationDrawerOpen) return;

@@ -2,12 +2,18 @@ import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUnread } from "@/context/UnreadContext";
 import { getRecruiterUnreadNotificationsCount } from "@/apis/recruiter/apis";
+import { fetchConversations } from "@/apis/common/fetchConversations";
 
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { totalUnread, unreadNotificationsCount, setUnreadNotificationsCount } = useUnread();
+  const {
+    totalUnread,
+    setTotalUnread,
+    unreadNotificationsCount,
+    setUnreadNotificationsCount,
+  } = useUnread();
 
   useEffect(() => {
     let isMounted = true;
@@ -31,6 +37,34 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       clearInterval(intervalId);
     };
   }, [location.pathname, setUnreadNotificationsCount]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const refreshUnreadMessages = async () => {
+      try {
+        const conversations = await fetchConversations();
+        const unreadTotal = conversations.reduce(
+          (sum, conversation) => sum + (conversation?.unread_count ?? 0),
+          0
+        );
+
+        if (isMounted) {
+          setTotalUnread(unreadTotal);
+        }
+      } catch (error) {
+        console.error("Failed to fetch recruiter unread messages count", error);
+      }
+    };
+
+    refreshUnreadMessages();
+    const intervalId = setInterval(refreshUnreadMessages, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [location.pathname, setTotalUnread]);
 
 
   const menuItems = [
