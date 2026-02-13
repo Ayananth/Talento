@@ -210,30 +210,26 @@ MAX_RESULTS = 50
 
 
 from django.conf import settings
-from django.core.mail import send_mail
+from notifications.emails.service import send_email_from_payload
 
 
 def send_job_match_email(email, job, similarity):
 
     job_url = f"{settings.FRONTEND_URL}/jobs/{job.id}"
+    match_percent = round(similarity * 100, 1)
 
-    subject = f"New job matching your profile: {job.title}"
-
-    message = (
-        f"Hi,\n\n"
-        f"We found a job that matches your profile ({round(similarity*100,1)}% match).\n\n"
-        f"Job: {job.title}\n"
-        f"View here: {job_url}\n\n"
-        f"Best of luck!\n"
-        f"Talento Team"
-    )
-
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email="noreply@talento.ai",
-        recipient_list=[email],
-        fail_silently=False,
+    send_email_from_payload(
+        {
+            "to": email,
+            "subject": f"New job matching your profile: {job.title}",
+            "template": "matching_job_alert",
+            "context": {
+                "job_title": job.title,
+                "match_percent": match_percent,
+                "job_url": job_url,
+                "year": timezone.now().year,
+            },
+        }
     )
 
 
@@ -255,9 +251,18 @@ def notify_matching_candidates_task(self, job_id):
         logger.warning(f"Job embedding missing | job_id={job_id}")
         raise Exception("Job embedding not ready")
 
+    active_subscriber_ids = UserSubscription.objects.filter(
+        status="active",
+        end_date__gt=timezone.now(),
+        plan__plan_type="jobseeker",
+    ).values_list("user_id", flat=True)
+
     matches = (
         ResumeEmbedding.objects
-        .filter(resume__is_default=True)
+        .filter(
+            resume__is_default=True,
+            resume__profile__user_id__in=active_subscriber_ids,
+        )
         .annotate(
             distance=CosineDistance("embedding", job_vector)
         )
@@ -266,20 +271,7 @@ def notify_matching_candidates_task(self, job_id):
 
     logger.info(f"{matches=}")
 
-    candidate_user_ids = list(
-        matches.values_list("resume__profile__user_id", flat=True).distinct()
-    )
-    active_subscriber_ids = set(
-        UserSubscription.objects.filter(
-            user_id__in=candidate_user_ids,
-            status="active",
-            end_date__gt=timezone.now(),
-            plan__plan_type="jobseeker",
-        ).values_list("user_id", flat=True)
-    )
-
     notified = 0
-    skipped_no_subscription = 0
 
     for emb in matches:
         similarity = 1 - emb.distance
@@ -292,10 +284,6 @@ def notify_matching_candidates_task(self, job_id):
         profile = emb.resume.profile
         user = profile.user
 
-        if user.id not in active_subscriber_ids:
-            skipped_no_subscription += 1
-            continue
-
         logger.info(f"{user.email, similarity}")
 
         send_job_match_email(user.email, job, similarity)
@@ -304,7 +292,5 @@ def notify_matching_candidates_task(self, job_id):
         notified += 1
 
     logger.info(
-        "Job notifications sent | "
-        f"job_id={job_id} | count={notified} | "
-        f"skipped_no_subscription={skipped_no_subscription}"
+        f"Job notifications sent | job_id={job_id} | count={notified}"
     )
