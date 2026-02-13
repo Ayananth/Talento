@@ -7,21 +7,17 @@ export default function useChatSocket({
   onReadAck
 }) {
   const socketRef = useRef(null);
+  const onMessageRef = useRef(onMessage);
+  const onReadAckRef = useRef(onReadAck);
   const [connected, setConnected] = useState(false);
 
-
-useEffect(() => {
-  console.log("WS effect run", conversationId);
-  return () => {
-    console.log("WS cleanup", conversationId);
-  };
-}, [conversationId]);
-
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onReadAckRef.current = onReadAck;
+  }, [onMessage, onReadAck]);
 
 useEffect(() => {
   if (!conversationId || !token) return;
-
-  console.log("Opening WS for", conversationId);
 
   const wsUrl = `ws://localhost:8002/ws/chat/${conversationId}/?token=${token}`;
   const socket = new WebSocket(wsUrl);
@@ -31,20 +27,18 @@ useEffect(() => {
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    if (data.type === "message") onMessage(data);
-    if (data.type === "read_ack") onReadAck?.(data.message_id);
+    if (data.type === "message") onMessageRef.current?.(data);
+    if (data.type === "read_ack") onReadAckRef.current?.(data.message_id);
   };
 
   socket.onclose = () => {
-    console.log("WS closed");
     setConnected(false);
   };
 
   return () => {
-    console.log("Cleaning WS", conversationId);
     socket.close();
   };
-}, [conversationId, token, onMessage, onReadAck]);
+}, [conversationId, token]);
 
 
   const sendMessage = (content) => {
@@ -70,8 +64,6 @@ useEffect(() => {
       })
     );
   };
-
-  console.log("WS connected state:", connected);
 
   return {
     connected,
