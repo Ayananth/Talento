@@ -74,6 +74,7 @@ export default function ResumeUploadCard() {
   const [reviewResumeId, setReviewResumeId] = useState(null);
   const [reviewForm, setReviewForm] = useState(EMPTY_REVIEW_FORM);
   const [confirming, setConfirming] = useState(false);
+  const [saveNotice, setSaveNotice] = useState("");
 
   const pollingIntervalRef = useRef(null);
   const pollingResumeIdRef = useRef(null);
@@ -207,6 +208,14 @@ export default function ResumeUploadCard() {
   }, [error, success]);
 
   useEffect(() => {
+    if (!saveNotice) return;
+    const timeoutId = setTimeout(() => {
+      setSaveNotice("");
+    }, 2500);
+    return () => clearTimeout(timeoutId);
+  }, [saveNotice]);
+
+  useEffect(() => {
     if (!defaultResume) {
       stopPolling();
       return;
@@ -237,6 +246,7 @@ export default function ResumeUploadCard() {
   }, []);
 
   const handleReviewFormChange = (field, value) => {
+    setSaveNotice("");
     setReviewForm((prev) => ({
       ...prev,
       [field]: value,
@@ -249,10 +259,12 @@ export default function ResumeUploadCard() {
     setReviewResumeId(null);
     setReviewForm(EMPTY_REVIEW_FORM);
     setConfirming(false);
+    setSaveNotice("");
   };
 
   const handleConfirmParsedResume = async () => {
     if (!reviewResumeId) return;
+    const wasAlreadyConfirmed = isAlreadyConfirmed;
     setConfirming(true);
 
     try {
@@ -276,6 +288,11 @@ export default function ResumeUploadCard() {
       setSuccess("Resume confirmed successfully!");
       setIsReviewPanelOpen(true);
       setReviewWarning("");
+      setSaveNotice(
+        wasAlreadyConfirmed
+          ? "Changes updated successfully."
+          : "Details confirmed successfully."
+      );
     } catch (err) {
       console.error("confirm failed", err);
       setError("Failed to confirm parsed details.");
@@ -656,6 +673,11 @@ export default function ResumeUploadCard() {
                   : "Confirm"}
             </button>
           </div>
+          {saveNotice && (
+            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              {saveNotice}
+            </div>
+          )}
         </div>
       )}
     </>
