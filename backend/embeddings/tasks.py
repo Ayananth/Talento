@@ -177,6 +177,71 @@ def generate_resume_embedding_task(self, resume_id):
         raise
 
 
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=30,
+    retry_kwargs={"max_retries": 3},
+)
+def generate_resume_embedding_task_after_confirmation(self, resume_id):
+    start_time = time.time()
+    attempt = self.request.retries + 1
+
+    logger.info(
+        f"[START] Resume embedding | resume_id={resume_id} | attempt={attempt}"
+    )
+
+    try:
+        resume = JobSeekerResume.objects.get(id=resume_id)
+
+        if resume.status != JobSeekerResume.Status.CONFIRMED:
+            logger.warning(
+                f"[SKIP] Resume not confirmed | resume_id={resume_id}"
+            )
+            return
+
+        parsed = resume.parsed_data or {}
+
+        text = build_candidate_text(parsed)
+
+        logger.info(f"Generating embedding | resume_id={resume_id}")
+
+        vector = generate_embedding(text)
+
+        with transaction.atomic():
+            ResumeEmbedding.objects.update_or_create(
+                resume=resume,
+                defaults={
+                    "embedding": vector,
+                    "source_text": text,
+                },
+            )
+
+        duration = round(time.time() - start_time, 2)
+
+        logger.info(
+            f"[SUCCESS] Resume embedding completed | resume_id={resume_id} | "
+            f"attempt={attempt} | duration={duration}s"
+        )
+
+    except JobSeekerResume.DoesNotExist:
+        logger.warning(
+            f"[SKIP] Resume deleted before embedding | resume_id={resume_id}"
+        )
+        return
+
+    except Exception as e:
+        duration = round(time.time() - start_time, 2)
+
+        logger.error(
+            f"[FAILED] Resume embedding | resume_id={resume_id} | "
+            f"attempt={attempt} | duration={duration}s | error={str(e)}"
+        )
+
+        raise
+
+
+
     
 from applications.models import JobApplication
 from pgvector.django import CosineDistance

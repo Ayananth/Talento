@@ -8,6 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from django.db import transaction
+
+
 from core.permissions import IsJobseeker
 
 from .models import (
@@ -29,6 +32,8 @@ from .serializers import (
     JobSeekerResumeSerializer,
     JobSeekerSkillSerializer,
 )
+
+from embeddings.tasks import generate_resume_embedding_task_after_confirmation
 
 logger = logging.getLogger(__name__)
 
@@ -649,7 +654,10 @@ class ConfirmResumeAPIView(APIView):
         try:
             resume = JobSeekerResume.objects.get(id=pk, profile=profile)
         except JobSeekerResume.DoesNotExist:
-            return Response({"error": "Resume not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Resume not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         if not resume.is_default:
             return Response(
@@ -670,23 +678,32 @@ class ConfirmResumeAPIView(APIView):
         else:
             skills = []
 
-        resume.parsed_data = {
+        parsed_data = {
             "role": role,
             "skills": skills,
             "education": education,
             "projects_summary": projects_summary,
             "experience_summary": experience_summary,
         }
-        resume.status = JobSeekerResume.Status.CONFIRMED
-        resume.parsing_error = ""
-        resume.save(update_fields=["parsed_data", "status", "parsing_error"])
+
+        with transaction.atomic():
+            resume.parsed_data = parsed_data
+            resume.status = JobSeekerResume.Status.CONFIRMED
+            resume.parsing_error = ""
+            resume.save(update_fields=["parsed_data", "status", "parsing_error"])
+
+        generate_resume_embedding_task_after_confirmation.delay(resume.id)
 
         logger.info(
-            "Resume confirmed by user",
+            "Resume confirmed and embedding task triggered",
             extra={"user_id": request.user.id, "resume_id": resume.id},
         )
 
-        serializer = JobSeekerResumeSerializer(resume, context={"profile": profile})
+        serializer = JobSeekerResumeSerializer(
+            resume,
+            context={"profile": profile},
+        )
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
