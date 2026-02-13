@@ -10,6 +10,60 @@ export const AuthProvider = ({ children }) => {
   const refreshTimer = useRef(null);
   const [subscription, setSubscription] = useState(null);
 
+  const normalizeAuthError = (err, fallbackMessage) => {
+    const error = {
+      message: fallbackMessage,
+      fields: {},
+    };
+
+    const status = err?.response?.status;
+    const data = err?.response?.data;
+
+    const normalizeText = (value) => {
+      if (!value) return "";
+      if (Array.isArray(value)) return String(value[0] ?? "").trim();
+      return String(value).trim();
+    };
+
+    if (data) {
+      if (typeof data === "string") {
+        const clean = data.trim();
+        if (clean && !/^\d{3}$/.test(clean)) {
+          error.message = clean;
+        }
+      } else if (typeof data === "object") {
+        Object.keys(data).forEach((key) => {
+          const value = data[key];
+          if (Array.isArray(value) || typeof value === "string") {
+            if (!["detail", "message", "error", "status", "code", "non_field_errors"].includes(key)) {
+              error.fields[key] = normalizeText(value);
+            }
+          }
+        });
+
+        const detail =
+          normalizeText(data.detail) ||
+          normalizeText(data.message) ||
+          normalizeText(data.error) ||
+          normalizeText(data.non_field_errors);
+
+        if (detail && !/^\d{3}$/.test(detail)) {
+          error.message = detail;
+        }
+      }
+    } else if (err?.request) {
+      error.message = "Server not reachable. Please try again later.";
+    }
+
+    if (error.message === fallbackMessage && status) {
+      if (status === 400) error.message = "Invalid request. Please check your details and try again.";
+      if (status === 401) error.message = "Invalid email or password.";
+      if (status === 403) error.message = "Your account is not allowed to sign in right now.";
+      if (status >= 500) error.message = "Server error. Please try again in a few minutes.";
+    }
+
+    return error;
+  };
 
 
   // On app start: check if an access token exists and set user if valid
@@ -70,17 +124,21 @@ const refreshAccessToken = async () => {
 
   // --- LOGIN (role optional, default = jobseeker) ---
 const login = async ({ email, password, role = "jobseeker" }) => {
-  const res = await api.post("/v1/auth/signin", { email, password, role }, { withCredentials: true });
+  try {
+    const res = await api.post("/v1/auth/signin", { email, password, role }, { withCredentials: true });
 
-  const { access } = res.data;
+    const { access } = res.data;
 
-  saveTokens({ access });
+    saveTokens({ access });
 
-  const decoded = decodeToken(access);
-  setUser(decoded);
+    const decoded = decodeToken(access);
+    setUser(decoded);
 
-  scheduleAutoRefresh(access);
-  await fetchSubscription();
+    scheduleAutoRefresh(access);
+    await fetchSubscription();
+  } catch (err) {
+    throw normalizeAuthError(err, "Login failed. Please check your credentials and try again.");
+  }
 };
 
 
@@ -100,31 +158,7 @@ const register = async (payload) => {
     const res = await api.post("/v1/auth/sign_up", payload);
     return res;
   } catch (err) {
-    let error = {
-      message: "Signup failed. Please try again.",
-      fields: {},
-    };
-
-    if (err.response?.data) {
-      const data = err.response.data;
-
-      if (typeof data === "object") {
-        Object.keys(data).forEach((key) => {
-          if (Array.isArray(data[key])) {
-            error.fields[key] = data[key][0];
-          }
-        });
-      }
-
-      if (data.detail) error.message = data.detail;
-      else if (data.message) error.message = data.message;
-      else if (data.error) error.message = data.error;  
-    } 
-    else if (err.request) {
-      error.message = "Server not reachable. Please try again later.";
-    }
-
-    throw error;
+    throw normalizeAuthError(err, "Signup failed. Please try again.");
   }
 };
 

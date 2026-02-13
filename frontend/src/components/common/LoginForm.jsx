@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAsyncError, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useAuth from '../../auth/context/useAuth'
 import { Eye, EyeOff } from "lucide-react";
 // import GoogleLoginButton from "./GoogleLoginButton";
@@ -15,6 +15,12 @@ export default function     LoginForm({role, redirectAfterLogin}) {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+const resolveAuthMessage = (err, fallback) => {
+  const msg = typeof err?.message === "string" ? err.message.trim() : "";
+  if (msg && !/^\d{3}$/.test(msg)) return msg;
+  return fallback;
+};
 
 useEffect(() => {
   if (!loginError) return;
@@ -40,7 +46,7 @@ useEffect(() => {
     if (!password.trim()) {
       newErrors.password = "Password is required";
     }
-    else if (password.length < 3) {
+    else if (password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
     setErrors(newErrors);
@@ -60,7 +66,7 @@ const handleSubmit = async (e) => {
     await login({ email, password, role });
     navigate(redirectAfterLogin);
   } catch (err) {
-    setLoginError(err.message);
+    setLoginError(resolveAuthMessage(err, "Login failed. Please check your credentials and try again."));
   } finally {
     setLoading(false);
   }
@@ -109,7 +115,7 @@ const handleSubmit = async (e) => {
           <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
         {/* <GoogleLoginButton role={"jobseeker"} /> */}
-          {role !== "admin" && <GoogleLoginButton role={role} setLoginError={setLoginError} />}
+          {role !== "admin" && <GoogleLoginButton role={role} setAuthError={setLoginError} />}
 
 
         </button>

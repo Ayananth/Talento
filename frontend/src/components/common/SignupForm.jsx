@@ -12,6 +12,12 @@ const SignupForm = ({role}) => {
   const [fieldErrors, setFieldErrors] = useState({});     // For per-field errors
   const [loading, setLoading] = useState(false);          // Disable button + spinner
 
+const resolveAuthMessage = (err, fallback) => {
+  const msg = typeof err?.message === "string" ? err.message.trim() : "";
+  if (msg && !/^\d{3}$/.test(msg)) return msg;
+  return fallback;
+};
+
 useEffect(() => {
   if (!error) return;
 
@@ -61,7 +67,7 @@ const handleSubmit = async (e) => {
     if (err.fields && Object.keys(err.fields).length > 0) {
       setFieldErrors(err.fields);
     } else {
-      setError(err.message);
+      setError(resolveAuthMessage(err, "Signup failed. Please try again."));
     }
   } finally {
     setLoading(false);
@@ -90,7 +96,7 @@ const handleSubmit = async (e) => {
           <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
         {/* <GoogleLoginButton role={"jobseeker"} /> */}
-          {role !== "admin" && <GoogleLoginButton role={role} />}
+          {role !== "admin" && <GoogleLoginButton role={role} setAuthError={setError} />}
 
 
         </button>
