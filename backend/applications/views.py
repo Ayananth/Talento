@@ -314,6 +314,7 @@ class ApplicationtDetailView(APIView):
                 "job__recruiter",
                 "applicant",
                 "applicant__user",
+                "applied_resume",
             ).get(
                 id=application_id,
                 job__recruiter=request.user.recruiter_profile
