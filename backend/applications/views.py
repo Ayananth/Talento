@@ -152,8 +152,8 @@ class ApplyJobView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        except Exception:
-            logger.exception("Resume handling failed")
+        except Exception as exception:
+            logger.exception(f"Resume handling failed, {exception=}")
             return Response(
                 {"detail": "Failed to process resume"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

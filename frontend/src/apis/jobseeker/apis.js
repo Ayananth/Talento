@@ -63,6 +63,11 @@ export const getMyResumes = async () => {
   return res.data;
 };
 
+export const getMyProfile = async () => {
+  const res = await api.get("/v1/profile/me/");
+  return res.data;
+};
+
 export const uploadResume = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
