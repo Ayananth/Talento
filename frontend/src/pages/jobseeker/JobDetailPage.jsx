@@ -35,6 +35,8 @@ export default function JobDetailPage() {
      Fetch job detail
   ---------------------------------- */
   useEffect(() => {
+    let isActive = true;
+
     // Scroll to top when job changes
     window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -45,59 +47,80 @@ export default function JobDetailPage() {
 
         const res = await getJobDetail(id);
 
+        if (!isActive) return;
+
         setJob(res);
         setHasAppliedLocal(res.has_applied);
         setMatchPercent(null);
         setInsight(null);
         setInsightLocked(false);
-        setInsightLoading(true);
+        setLoading(false);
 
         const currentUserId = Number(user?.user_id ?? user?.id);
         const currentJobId = Number(id);
 
         if (Number.isFinite(currentUserId) && Number.isFinite(currentJobId)) {
-          try {
-            const similarity = await getJobResumeSimilarity({
-              userId: currentUserId,
-              jobId: currentJobId,
-            });
-            setMatchPercent(similarity?.match_percent ?? null);
-          } catch (similarityErr) {
-            setMatchPercent(null);
-            if (similarityErr?.response?.status !== 404) {
-              console.error("Failed to fetch job match score", similarityErr);
-            }
-          }
+          setInsightLoading(true);
 
-          try {
-            const insightRes = await getJobResumeInsight(currentJobId);
-            const isLocked = Boolean(insightRes?.locked);
-            setInsightLocked(isLocked);
-            setInsight(isLocked ? null : (insightRes?.insight ?? null));
-          } catch (insightErr) {
-            setInsight(null);
-            if (insightErr?.response?.status === 403) {
-              setInsightLocked(true);
-            } else if (insightErr?.response?.status !== 404) {
-              console.error("Failed to fetch AI insight", insightErr);
-            }
-          } finally {
-            setInsightLoading(false);
-          }
+          // Fetch score in background
+          getJobResumeSimilarity({
+            userId: currentUserId,
+            jobId: currentJobId,
+          })
+            .then((similarity) => {
+              if (!isActive) return;
+              setMatchPercent(similarity?.match_percent ?? null);
+            })
+            .catch((similarityErr) => {
+              if (!isActive) return;
+              setMatchPercent(null);
+              if (similarityErr?.response?.status !== 404) {
+                console.error("Failed to fetch job match score", similarityErr);
+              }
+            });
+
+          // Fetch insight in background
+          getJobResumeInsight(currentJobId)
+            .then((insightRes) => {
+              if (!isActive) return;
+              const isLocked = Boolean(insightRes?.locked);
+              setInsightLocked(isLocked);
+              setInsight(isLocked ? null : (insightRes?.insight ?? null));
+            })
+            .catch((insightErr) => {
+              if (!isActive) return;
+              setInsight(null);
+              if (insightErr?.response?.status === 403) {
+                setInsightLocked(true);
+              } else if (insightErr?.response?.status !== 404) {
+                console.error("Failed to fetch AI insight", insightErr);
+              }
+            })
+            .finally(() => {
+              if (!isActive) return;
+              setInsightLoading(false);
+            });
         } else {
           setInsightLoading(false);
         }
 
-              } catch (err) {
+      } catch (err) {
+        if (!isActive) return;
         console.error("Failed to fetch job detail", err);
         setError(true);
         setJob(null);
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
     fetchJob();
+
+    return () => {
+      isActive = false;
+    };
   }, [id, hasAppliedLocal, user?.id, user?.user_id]);
 
   /* ----------------------------------
