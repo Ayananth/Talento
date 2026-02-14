@@ -8,16 +8,19 @@ import SimilarJobs from "../../components/jobseeker/jobs/jobdetails/SimilarJobs"
 import JobDescription from "../../components/jobseeker/jobs/jobdetails/JobDescription";
 import JobActions from "../../components/jobseeker/jobs/jobdetails/JobActions";
 
-import { getJobDetail } from "@/apis/jobseeker/apis";
+import { getJobDetail, getJobResumeSimilarity } from "@/apis/jobseeker/apis";
 import { getCloudinaryUrl } from "@/utils/common/getCloudinaryUrl";
+import useAuth from "@/auth/context/useAuth";
 
 export default function JobDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [hasAppliedLocal, setHasAppliedLocal] = useState(job?.has_applied || false);
+  const [matchPercent, setMatchPercent] = useState(null);
 
 
   /* ----------------------------------
@@ -34,9 +37,27 @@ export default function JobDetailPage() {
 
         const res = await getJobDetail(id);
 
-
         setJob(res);
         setHasAppliedLocal(res.has_applied);
+        setMatchPercent(null);
+
+        const currentUserId = Number(user?.user_id ?? user?.id);
+        const currentJobId = Number(id);
+
+        if (Number.isFinite(currentUserId) && Number.isFinite(currentJobId)) {
+          try {
+            const similarity = await getJobResumeSimilarity({
+              userId: currentUserId,
+              jobId: currentJobId,
+            });
+            setMatchPercent(similarity?.match_percent ?? null);
+          } catch (similarityErr) {
+            setMatchPercent(null);
+            if (similarityErr?.response?.status !== 404) {
+              console.error("Failed to fetch job match score", similarityErr);
+            }
+          }
+        }
 
               } catch (err) {
         console.error("Failed to fetch job detail", err);
@@ -48,7 +69,7 @@ export default function JobDetailPage() {
     };
 
     fetchJob();
-  }, [id, hasAppliedLocal]);
+  }, [id, hasAppliedLocal, user?.id, user?.user_id]);
 
   /* ----------------------------------
      States
@@ -80,6 +101,7 @@ export default function JobDetailPage() {
           <main className="lg:col-span-8 space-y-8">
             <JobHeader
               title={job.title}
+              matchPercent={matchPercent}
               companyName={job.company_name}
               logo={job.logo ? getCloudinaryUrl(job.logo) : null}
               jobType={job.job_type}

@@ -7,13 +7,15 @@ from django.contrib.postgres.search import (
 )
 from django.db.models import (
     BooleanField,
+    Count,
     Exists,
     F,
+    FloatField,
     OuterRef,
     Q,
     Value,
-    Count, F
 )
+from django.db.models import ExpressionWrapper
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from rest_framework.response import Response
@@ -40,6 +42,8 @@ from jobs.serializers import (
 from core.permissions import IsJobseeker
 from django.db import IntegrityError
 from recruiter.models import RecruiterProfile
+from embeddings.models import JobEmbedding, ResumeEmbedding
+from pgvector.django import CosineDistance
 
 logger = logging.getLogger(__name__)
 
@@ -276,3 +280,57 @@ class LandingPageStatsView(APIView):
         serializer = TopRecruiterStatsSerializer(top_recruiters, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class JobResumeSimilarityView(APIView):
+
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        job_id = request.data.get("job_id")
+
+        if not user_id or not job_id:
+            return Response(
+                {"detail": "Both user_id and job_id are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            job_embedding = JobEmbedding.objects.get(job_id=job_id)
+        except JobEmbedding.DoesNotExist:
+            return Response(
+                {"detail": "Job embedding not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        resume_embedding = (
+            ResumeEmbedding.objects.filter(
+                resume__profile__user_id=user_id,
+                resume__is_default=True,
+                resume__is_deleted=False,
+            )
+            .annotate(
+                similarity=ExpressionWrapper(
+                    1 - CosineDistance("embedding", job_embedding.embedding),
+                    output_field=FloatField(),
+                )
+            )
+            .first()
+        )
+
+        if not resume_embedding:
+            return Response(
+                {"detail": "Default resume embedding not found for this user."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        similarity = float(resume_embedding.similarity)
+
+        return Response(
+            {
+                "user_id": int(user_id),
+                "job_id": int(job_id),
+                "cosine_similarity": round(similarity, 6),
+                "match_percent": round(similarity * 100, 2),
+            },
+            status=status.HTTP_200_OK,
+        )

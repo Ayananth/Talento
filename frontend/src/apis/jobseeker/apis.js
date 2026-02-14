@@ -54,6 +54,14 @@ export const getJobDetail = async (id) => {
   return res.data;
 };
 
+export const getJobResumeSimilarity = async ({ userId, jobId }) => {
+  const res = await api.post("/v1/jobs/jobs/public/similarity/", {
+    user_id: Number(userId),
+    job_id: Number(jobId),
+  });
+  return res.data;
+};
+
 
 
 

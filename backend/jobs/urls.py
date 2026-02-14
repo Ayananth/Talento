@@ -6,7 +6,15 @@ from jobs.views.recruiter import (
     RecruiterJobUpdateView,
     RecruiterJobDeleteView,
 )
-from jobs.views.public import PublicJobListView, PublicJobDetailView, PublicSavedJobsListView, SaveJobView, UnsaveJobView, LandingPageStatsView
+from jobs.views.public import (
+    PublicJobListView,
+    PublicJobDetailView,
+    PublicSavedJobsListView,
+    SaveJobView,
+    UnsaveJobView,
+    LandingPageStatsView,
+    JobResumeSimilarityView,
+)
 # from jobs.views.jobseeker import JobApplyView
 
 app_name = "jobs"
@@ -77,6 +85,12 @@ urlpatterns = [
         "jobs/public/saved/",
         PublicSavedJobsListView.as_view(),
         name='public-saved-job-list'
+    ),
+
+    path(
+        "jobs/public/similarity/",
+        JobResumeSimilarityView.as_view(),
+        name="job-resume-similarity",
     ),
 
     path("<int:job_id>/save/", SaveJobView.as_view(), name="save-job"),
