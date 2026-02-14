@@ -266,7 +266,7 @@ class LandingPageStatsView(APIView):
 
     def get(self, request):
         top_recruiters = (
-            RecruiterProfile.objects
+            RecruiterProfile.objects.exclude(status="pending")
             .annotate(job_count=Count("jobs"))
             .values(
                 "id",
