@@ -62,6 +62,11 @@ export const getJobResumeSimilarity = async ({ userId, jobId }) => {
   return res.data;
 };
 
+export const getJobResumeInsight = async (jobId) => {
+  const res = await api.get(`/v1/jobs/jobs/public/${Number(jobId)}/insight/`);
+  return res.data;
+};
+
 
 
 

@@ -7,8 +7,13 @@ import CompanyInfoCard from "../../components/jobseeker/jobs/jobdetails/CompanyI
 import SimilarJobs from "../../components/jobseeker/jobs/jobdetails/SimilarJobs";
 import JobDescription from "../../components/jobseeker/jobs/jobdetails/JobDescription";
 import JobActions from "../../components/jobseeker/jobs/jobdetails/JobActions";
+import AIInsightCard from "../../components/jobseeker/jobs/jobdetails/AIInsightCard";
 
-import { getJobDetail, getJobResumeSimilarity } from "@/apis/jobseeker/apis";
+import {
+  getJobDetail,
+  getJobResumeSimilarity,
+  getJobResumeInsight,
+} from "@/apis/jobseeker/apis";
 import { getCloudinaryUrl } from "@/utils/common/getCloudinaryUrl";
 import useAuth from "@/auth/context/useAuth";
 
@@ -21,6 +26,9 @@ export default function JobDetailPage() {
   const [error, setError] = useState(false);
   const [hasAppliedLocal, setHasAppliedLocal] = useState(job?.has_applied || false);
   const [matchPercent, setMatchPercent] = useState(null);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [insightLocked, setInsightLocked] = useState(false);
+  const [insight, setInsight] = useState(null);
 
 
   /* ----------------------------------
@@ -40,6 +48,9 @@ export default function JobDetailPage() {
         setJob(res);
         setHasAppliedLocal(res.has_applied);
         setMatchPercent(null);
+        setInsight(null);
+        setInsightLocked(false);
+        setInsightLoading(true);
 
         const currentUserId = Number(user?.user_id ?? user?.id);
         const currentJobId = Number(id);
@@ -57,6 +68,24 @@ export default function JobDetailPage() {
               console.error("Failed to fetch job match score", similarityErr);
             }
           }
+
+          try {
+            const insightRes = await getJobResumeInsight(currentJobId);
+            const isLocked = Boolean(insightRes?.locked);
+            setInsightLocked(isLocked);
+            setInsight(isLocked ? null : (insightRes?.insight ?? null));
+          } catch (insightErr) {
+            setInsight(null);
+            if (insightErr?.response?.status === 403) {
+              setInsightLocked(true);
+            } else if (insightErr?.response?.status !== 404) {
+              console.error("Failed to fetch AI insight", insightErr);
+            }
+          } finally {
+            setInsightLoading(false);
+          }
+        } else {
+          setInsightLoading(false);
         }
 
               } catch (err) {
@@ -126,6 +155,12 @@ export default function JobDetailPage() {
               locationCity={job.location_city}
               locationState={job.location_state}
               locationCountry={job.location_country}
+            />
+
+            <AIInsightCard
+              isPremiumLocked={insightLocked}
+              loading={insightLoading}
+              insight={insight}
             />
 
             <JobDescription
