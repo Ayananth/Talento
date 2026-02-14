@@ -293,7 +293,7 @@ def compute_job_match_task(self, application_id):
 
 
 
-MATCH_THRESHOLD = 0.55
+MATCH_THRESHOLD = 0.65
 MAX_RESULTS = 50   
 
 
