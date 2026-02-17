@@ -31,7 +31,14 @@ def build_job_text(job):
     Job Title: {job.title}
     Skills: {skills}
     Description: {job.description}
-    """
+    Experience Level: {job.experience_level}
+    Requirements: {job.requirements}
+    Responsibilities: {job.responsibilities}
+    Education Requirement: {job.education_requirement}
+
+    """.strip()
+
+
 
 
 import json
@@ -65,12 +72,19 @@ Title: {job.title}
 Skills: {[s.name for s in job.skills.all()]}
 Experience Level: {job.experience_level}
 Description: {job.description}
+Requirements: {job.requirements}
+Responsibilities: {job.responsibilities}
+Education Requirement: {job.education_requirement}
 
 CANDIDATE:
-Role: {resume_data["role"]}
-Skills: {resume_data["skills"]}
-Experience Level: {resume_data["experience_level"]}
-Summary: {resume_data["experience_summary"]}
+Role: {resume_data.get("role", "")}
+Skills: {resume_data.get("skills", [])}
+Experience Level: {resume_data.get("experience_level", "")}
+Summary: {resume_data.get("experience_summary", "")}
+Projects: {resume_data.get("projects_summary", "")}
+Education: {resume_data.get("education", "")}
+
+
 
 Return ONLY valid JSON:
 {{

@@ -73,6 +73,11 @@ class JobApplication(models.Model):
         blank=True
     )
     current_role = models.CharField(max_length=100, blank=True)
+    parsed_data_snapshot = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Editable parsed resume data snapshot submitted at application time"
+    )
 
     applied_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

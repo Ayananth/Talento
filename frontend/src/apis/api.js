@@ -24,15 +24,21 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;
+    const detail = String(error.response?.data?.detail || "").toLowerCase();
 
-    // BLOCKED / FORBIDDEN → FORCE LOGOUT
+    // FORBIDDEN: only force logout for blocked-account responses.
+    // Other 403 cases (e.g., premium-only endpoint) should be handled by screens.
     if (status === 403) {
-      clearTokens();
+      const isBlockedError = detail.includes("blocked");
 
-      //  avoid infinite loop
-      if (!originalRequest._forcedLogout) {
-        originalRequest._forcedLogout = true;
-        window.location.href = "/login";
+      if (isBlockedError) {
+        clearTokens();
+
+        // avoid infinite loop
+        if (!originalRequest._forcedLogout) {
+          originalRequest._forcedLogout = true;
+          window.location.href = "/login";
+        }
       }
 
       return Promise.reject(error);

@@ -54,12 +54,30 @@ export const getJobDetail = async (id) => {
   return res.data;
 };
 
+export const getJobResumeSimilarity = async ({ userId, jobId }) => {
+  const res = await api.post("/v1/jobs/jobs/public/similarity/", {
+    user_id: Number(userId),
+    job_id: Number(jobId),
+  });
+  return res.data;
+};
+
+export const getJobResumeInsight = async (jobId) => {
+  const res = await api.get(`/v1/jobs/jobs/public/${Number(jobId)}/insight/`);
+  return res.data;
+};
+
 
 
 
 
 export const getMyResumes = async () => {
   const res = await api.get("/v1/profile/me/resumes/");
+  return res.data;
+};
+
+export const getMyProfile = async () => {
+  const res = await api.get("/v1/profile/me/");
   return res.data;
 };
 
@@ -88,6 +106,7 @@ export const applyToJob = async ({
   currentSalary,
   expectedSalary,
   noticePeriod,
+  parsedDataSnapshot,
 }) => {
   const formData = new FormData();
 
@@ -118,6 +137,10 @@ export const applyToJob = async ({
 
   if (noticePeriod) {
     formData.append("notice_period", noticePeriod);
+  }
+
+  if (parsedDataSnapshot) {
+    formData.append("parsed_data_snapshot", JSON.stringify(parsedDataSnapshot));
   }
 
   const res = await api.post("/v1/applications/apply/", formData, {

@@ -87,7 +87,6 @@ def download_resume_to_temp(resume):
 
     return tmp.name
 
-
 @shared_task(
     bind=True,
     autoretry_for=(Exception,),
@@ -105,6 +104,11 @@ def generate_resume_embedding_task(self, resume_id):
     try:
         resume = JobSeekerResume.objects.get(id=resume_id)
 
+        if resume.status != JobSeekerResume.Status.PARSING:
+            resume.status = JobSeekerResume.Status.PARSING
+            resume.parsing_error = None
+            resume.save(update_fields=["status", "parsing_error"])
+
         temp_path = download_resume_to_temp(resume)
 
         try:
@@ -115,7 +119,11 @@ def generate_resume_embedding_task(self, resume_id):
             parsed = parse_resume_with_ai(raw_text)
 
             resume.parsed_data = parsed
-            resume.save(update_fields=["parsed_data"])
+            resume.status = JobSeekerResume.Status.PARSED
+            resume.parsing_error = None
+            resume.save(update_fields=["parsed_data", "status", "parsing_error"])
+
+            logger.info(f"{parsed=}")
 
             text = build_candidate_text(parsed)
 
@@ -136,8 +144,9 @@ def generate_resume_embedding_task(self, resume_id):
             )
 
         finally:
-            os.remove(temp_path)
-            logger.info(f"Temp file cleaned | {temp_path}")
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                logger.info(f"Temp file cleaned | {temp_path}")
 
     except JobSeekerResume.DoesNotExist:
         logger.warning(
@@ -152,7 +161,86 @@ def generate_resume_embedding_task(self, resume_id):
             f"[FAILED] Resume embedding | resume_id={resume_id} | "
             f"attempt={attempt} | duration={duration}s | error={str(e)}"
         )
+
+        # -------------------------------
+        #If Final Retry Failed → Mark FAILED
+        # -------------------------------
+        if self.request.retries >= self.max_retries:
+            try:
+                resume = JobSeekerResume.objects.get(id=resume_id)
+                resume.status = JobSeekerResume.Status.FAILED
+                resume.parsing_error = str(e)
+                resume.save(update_fields=["status", "parsing_error"])
+            except Exception:
+                pass
+
         raise
+
+
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=30,
+    retry_kwargs={"max_retries": 3},
+)
+def generate_resume_embedding_task_after_confirmation(self, resume_id):
+    start_time = time.time()
+    attempt = self.request.retries + 1
+
+    logger.info(
+        f"[START] Resume embedding | resume_id={resume_id} | attempt={attempt}"
+    )
+
+    try:
+        resume = JobSeekerResume.objects.get(id=resume_id)
+
+        if resume.status != JobSeekerResume.Status.CONFIRMED:
+            logger.warning(
+                f"[SKIP] Resume not confirmed | resume_id={resume_id}"
+            )
+            return
+
+        parsed = resume.parsed_data or {}
+
+        text = build_candidate_text(parsed)
+
+        logger.info(f"Generating embedding | resume_id={resume_id}")
+
+        vector = generate_embedding(text)
+
+        with transaction.atomic():
+            ResumeEmbedding.objects.update_or_create(
+                resume=resume,
+                defaults={
+                    "embedding": vector,
+                    "source_text": text,
+                },
+            )
+
+        duration = round(time.time() - start_time, 2)
+
+        logger.info(
+            f"[SUCCESS] Resume embedding completed | resume_id={resume_id} | "
+            f"attempt={attempt} | duration={duration}s"
+        )
+
+    except JobSeekerResume.DoesNotExist:
+        logger.warning(
+            f"[SKIP] Resume deleted before embedding | resume_id={resume_id}"
+        )
+        return
+
+    except Exception as e:
+        duration = round(time.time() - start_time, 2)
+
+        logger.error(
+            f"[FAILED] Resume embedding | resume_id={resume_id} | "
+            f"attempt={attempt} | duration={duration}s | error={str(e)}"
+        )
+
+        raise
+
+
 
     
 from applications.models import JobApplication
@@ -205,7 +293,7 @@ def compute_job_match_task(self, application_id):
 
 
 
-MATCH_THRESHOLD = 0.55
+MATCH_THRESHOLD = 0.65
 MAX_RESULTS = 50   
 
 

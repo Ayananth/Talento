@@ -106,6 +106,8 @@ class JobSeekerResumeSerializer(serializers.ModelSerializer):
             "parsed_data",
             "is_default",
             "is_deleted",
+            "status",
+            "parsing_error",
         ]
 
     def create(self, validated_data):

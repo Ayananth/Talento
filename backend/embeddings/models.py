@@ -28,3 +28,29 @@ class ResumeEmbedding(models.Model):
         indexes = [
             models.Index(fields=["resume"]),
         ]
+
+
+class JobResumeInsight(models.Model):
+    job = models.ForeignKey(
+        Job,
+        on_delete=models.CASCADE,
+        related_name="resume_insights",
+    )
+    resume = models.ForeignKey(
+        JobSeekerResume,
+        on_delete=models.CASCADE,
+        related_name="job_insights",
+    )
+
+    strengths = models.JSONField()
+    gaps = models.JSONField()
+    summary = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("job", "resume")
+        indexes = [
+            models.Index(fields=["job", "resume"]),
+        ]

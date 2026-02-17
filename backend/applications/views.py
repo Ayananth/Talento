@@ -1,4 +1,5 @@
 import logging
+import json
 
 import cloudinary.uploader as uploader
 
@@ -152,16 +153,30 @@ class ApplyJobView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        except Exception:
-            logger.exception("Resume handling failed")
+        except Exception as exception:
+            logger.exception(f"Resume handling failed, {exception=}")
             return Response(
                 {"detail": "Failed to process resume"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+        parsed_snapshot = request.data.get("parsed_data_snapshot")
+        if isinstance(parsed_snapshot, str) and parsed_snapshot.strip():
+            try:
+                parsed_snapshot = json.loads(parsed_snapshot)
+            except json.JSONDecodeError:
+                parsed_snapshot = None
+
+        if not isinstance(parsed_snapshot, dict):
+            parsed_snapshot = None
+
+        request_data = request.data.copy()
+        if "parsed_data_snapshot" in request_data:
+            request_data.pop("parsed_data_snapshot")
+
         # Create application
         serializer = ApplyJobSerializer(
-            data=request.data,
+            data=request_data,
             context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
@@ -170,6 +185,7 @@ class ApplyJobView(APIView):
             applicant=profile,
             applied_resume=applied_resume,
             resume=uploaded_asset["public_id"] if uploaded_asset else None,
+            parsed_data_snapshot=parsed_snapshot,
         )
 
         logger.info(
@@ -298,6 +314,7 @@ class ApplicationtDetailView(APIView):
                 "job__recruiter",
                 "applicant",
                 "applicant__user",
+                "applied_resume",
             ).get(
                 id=application_id,
                 job__recruiter=request.user.recruiter_profile
