@@ -15,50 +15,70 @@ import AdminUsersPage from "../../pages/admin/users/AdminUsersPage";
 import AdminUserDetailPage from "../../pages/admin/users/AdminUserDetailPage";
 import AdminJobsPage from "../../pages/admin/jobs/AdminJobsPage";
 import AdminJobDetailPage from "../../pages/admin/jobs/AdminJobDetailPage";
+import AdminTransactionsListPage from "../../pages/admin/transactions/AdminTransactionsListPage";
+import AdminNotificationsPage from "@/pages/admin/AdminNotificationsPage";
+import AdminTicketsPage from "@/pages/admin/tickets/AdminTicketsPage";
+import AdminTicketDetailPage from "@/pages/admin/tickets/AdminTicketDetailPage";
+import { AdminProvider } from "../../context/AdminContext";
+import { AdminUnreadProvider } from "../../context/AdminUnreadContext";
 
 const adminRoutes = [
   {
     path: "/admin",
     element: (
-
       <RequireAuth>
-        <AdminLayout />
-    //  </RequireAuth>
-
+        <AdminProvider>
+          <AdminUnreadProvider>
+            <AdminLayout />
+          </AdminUnreadProvider>
+        </AdminProvider>
+      </RequireAuth>
     ),
     children: [
       {
         element: <RoleRoute allowedRoles={["admin"]} />,
         children: [
-          { index:true , element: <Dashboard /> },
+          { index: true, element: <Dashboard /> },
           { path: "recruiters", element: <RecruiterListPage /> },
           { path: "recruiter/changes", element: <AdminReviewCompanyPage /> },
           { path: "recruiter/approvals", element: <PendingApprovalsPage /> },
           { path: "recruiter/approvals/:id", element: <AdminApprovePage /> },
 
+          { path: "transactions", element: <AdminTransactionsListPage /> },
+          { path: "notifications", element: <AdminNotificationsPage /> },
+          { path: "tickets", element: <AdminTicketsPage /> },
 
           { path: "users", element: <AdminUsersPage /> },
 
           {
-            path: "users/:id",element: <AdminUserDetailPage />,
+            path: "users/:id",
+            element: <AdminUserDetailPage />,
           },
           {
-            path: "jobs/",element: <AdminJobsPage />,
+            path: "jobs/",
+            element: <AdminJobsPage />,
           },
           {
             path: "/admin/jobs/:id",
             element: <AdminJobDetailPage />,
-          }
-
-        ]
-      }
-    ]
+          },
+          {
+            path: "/admin/tickets/:id",
+            element: <AdminTicketDetailPage />,
+          },
+        ],
+      },
+    ],
   },
 
-    { path: "/admin/login", element: <AdminLoginPage role="admin" /> },
-
+  {
+    path: "/admin/login",
+    element: (
+      <RedirectIfAuth>
+        <AdminLoginPage role="admin" />
+      </RedirectIfAuth>
+    ),
+  },
 ];
-
-
 
 export default adminRoutes;

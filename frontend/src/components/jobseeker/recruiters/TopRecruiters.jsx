@@ -1,65 +1,44 @@
 import { motion } from "framer-motion";
 import RecruiterCard from "./RecruiterCard";
-
-const RECRUITERS = [
-  {
-    name: "LinkedIn",
-    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-    reviews: 68,
-    location: "New York, US",
-    openJobs: 25,
-  },
-  {
-    name: "Adobe",
-    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-    reviews: 42,
-    location: "New York, US",
-    openJobs: 17,
-  },
-  {
-    name: "Dailymotion",
-    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-    reviews: 46,
-    location: "New York, US",
-    openJobs: 65,
-  },
-  {
-    name: "NewSum",
-    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-    reviews: 68,
-    location: "New York, US",
-    openJobs: 25,
-  },
-  {
-    name: "PowerHome",
-    logo: "https://img.freepik.com/premium-vector/square-linkedin-logo-isolated-white-background_469489-892.jpg?semt=ais_hybrid&w=740&q=80",
-    reviews: 87,
-    location: "New York, US",
-    openJobs: 34,
-  },
-];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
-};
+import api from "../../../apis/api"
+import { useEffect, useState } from "react";
 
 export default function TopRecruiters() {
+
+
+  const [recruiters, setRecruiters] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(()=>{
+
+    const fetchStats = async ()=> {
+      try {
+        setLoading(true);
+        setError("");
+        const res = await api.get("/v1/jobs/public/stats");
+        setRecruiters(res.data || []);
+      } catch (err) {
+        console.error("Failed to load recruiter stats", err);
+        setError("Unable to load recruiters right now.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStats();
+
+
+
+  }, [])
+
+
+
+
+
+
+
+
   return (
     <section className="py-20 bg-gradient-to-b from-white to-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,19 +59,36 @@ export default function TopRecruiters() {
         </motion.div>
 
         {/* Grid */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={containerVariants}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"
-        >
-          {RECRUITERS.map((recruiter, index) => (
-            <motion.div key={index} variants={itemVariants}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          {loading && (
+            <p className="text-sm text-slate-500 col-span-full text-center">
+              Loading top recruiters...
+            </p>
+          )}
+
+          {!loading && error && (
+            <p className="text-sm text-rose-500 col-span-full text-center">
+              {error}
+            </p>
+          )}
+
+          {!loading && !error && recruiters.length === 0 && (
+            <p className="text-sm text-slate-500 col-span-full text-center">
+              No recruiters available right now.
+            </p>
+          )}
+
+          {recruiters.map((recruiter, index) => (
+            <motion.div
+              key={recruiter.id ?? index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: index * 0.05 }}
+            >
               <RecruiterCard recruiter={recruiter} />
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

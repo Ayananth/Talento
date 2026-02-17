@@ -1,31 +1,54 @@
 export default function JobDescription({
   description,
+  responsibilities,
+  requirements,
+  educationRequirement,
   skills = [],
 }) {
+  const blocks = [
+    {
+      title: "Job Description",
+      content: description,
+      empty: "No job description provided.",
+    },
+    {
+      title: "Responsibilities",
+      content: responsibilities,
+      empty: "No responsibilities listed.",
+    },
+    {
+      title: "Requirements",
+      content: requirements,
+      empty: "No requirements listed.",
+    },
+    {
+      title: "Education Requirement",
+      content: educationRequirement,
+      empty: "No education requirement listed.",
+    },
+  ];
+
   return (
-    <div className="border border-slate-200 rounded-2xl p-6 bg-white space-y-8">
-
-      {/* DESCRIPTION */}
-      <section>
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">
-          Job Description
-        </h2>
-
-        {description ? (
-          <p className="text-slate-600 leading-relaxed whitespace-pre-line">
-            {description}
-          </p>
-        ) : (
-          <p className="text-slate-400 text-sm">
-            No job description provided.
-          </p>
-        )}
-      </section>
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-8 shadow-sm">
+      {blocks.map((block) => (
+        <section key={block.title}>
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">
+            {block.title}
+          </h2>
+          {block.content ? (
+            <p className="whitespace-pre-line leading-relaxed text-slate-600">
+              {block.content}
+            </p>
+          ) : (
+            <p className="text-sm text-slate-400">{block.empty}</p>
+          )}
+        </section>
+      ))}
 
       {/* SKILLS */}
       {skills.length > 0 && (
         <section>
-          <h3 className="text-md font-semibold text-slate-900 mb-4">
+          <h3 className="mb-4 text-md font-semibold text-slate-900">
             Required Skills
           </h3>
 
@@ -33,7 +56,7 @@ export default function JobDescription({
             {skills.map((skill, index) => (
               <span
                 key={index}
-                className="px-3 py-1 text-sm rounded-md bg-slate-100 text-slate-700 capitalize"
+                className="rounded-md bg-blue-50 px-3 py-1 text-sm capitalize text-blue-800"
               >
                 {skill}
               </span>

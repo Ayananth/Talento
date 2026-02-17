@@ -48,6 +48,8 @@ const RecruiterApplicationsListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
+  const [ordering, setOrdering] = useState("");
+
 
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -79,6 +81,7 @@ const RecruiterApplicationsListPage = () => {
       const [applications, stats] = await Promise.all([
         getRecruiterApplications({
           page,
+          ordering, 
           search: searchTerm,
           status: statusFilter,
           job: positionFilter,
@@ -115,7 +118,7 @@ const RecruiterApplicationsListPage = () => {
 
   useEffect(() => {
     fetchApplications();
-  }, [page, searchTerm, statusFilter, positionFilter]);
+  }, [page, searchTerm, statusFilter, positionFilter, ordering]);
 
   /* -------------------------
      FILTER OPTIONS
@@ -215,20 +218,41 @@ const RecruiterApplicationsListPage = () => {
                   "Candidate",
                   "Position",
                   "Location",
-                  "Experience",
+                  "Score",
                   "Applied Date",
                   "Status",
                   "Actions",
                 ].map((h) => (
                   <th
                     key={h}
-                    className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase"
+                    className={`px-6 py-4 text-left text-xs font-medium uppercase ${
+                      h === "Score"
+                        ? "text-gray-500 cursor-pointer select-none"
+                        : "text-gray-500"
+                    }`}
+                    onClick={() => {
+                      if (h !== "Score") return;
+
+                      setPage(1);
+                      setOrdering((prev) =>
+                        prev === "match_score" ? "-match_score" : "match_score"
+                      );
+                    }}
                   >
-                    {h}
+                    {h === "Score" ? (
+                      <div className="flex items-center gap-1">
+                        Score
+                        {ordering === "match_score" && "↑"}
+                        {ordering === "-match_score" && "↓"}
+                      </div>
+                    ) : (
+                      h
+                    )}
                   </th>
                 ))}
               </tr>
             </thead>
+
 
             <tbody className="divide-y">
               {candidates.map((c) => (

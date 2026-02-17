@@ -8,14 +8,59 @@ from django.utils import timezone
 
 from rest_framework import serializers
 from django.utils import timezone
-from jobs.models.job import Job
+from jobs.models.job import Job, SavedJob
 from jobs.models.skill import JobSkill
 
 from datetime import timedelta
+from cloudinary.utils import cloudinary_url
 
 
 
 
+
+
+class TopRecruiterStatsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    company_name = serializers.CharField(allow_null=True)
+    location = serializers.CharField(allow_null=True)
+    job_count = serializers.IntegerField()
+    logo = serializers.SerializerMethodField()
+
+    def get_logo(self, obj):
+        logo = obj.get("logo")
+        if not logo:
+            return None
+        try:
+            return logo.url
+        except Exception:
+            return None
+
+
+
+def _validate_experience_and_deadline(serializer, data):
+    experience = data.get("experience")
+    application_deadline = data.get("application_deadline")
+
+    if experience is not None and experience < 0:
+        raise serializers.ValidationError(
+            {"experience": "Experience cannot be negative."}
+        )
+
+    if application_deadline is not None:
+        posted_at = data.get("published_at")
+        if posted_at is None and serializer.instance is not None:
+            posted_at = serializer.instance.published_at
+        if posted_at is None:
+            posted_at = timezone.now()
+
+        if application_deadline < posted_at:
+            raise serializers.ValidationError(
+                {
+                    "application_deadline": (
+                        "Application deadline cannot be before the posted date."
+                    )
+                }
+            )
 
 
 class RecruiterJobSerializer(serializers.ModelSerializer):
@@ -31,8 +76,12 @@ class RecruiterJobSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "responsibilities",
+            "requirements",
+            "education_requirement",
             "job_type",
             "work_mode",
+            "experience",
             "experience_level",
             "location_city",
             "location_state",
@@ -43,6 +92,7 @@ class RecruiterJobSerializer(serializers.ModelSerializer):
             "salary_hidden",
             "openings",
             "skills",
+            "application_deadline",
             "expires_at",
         ]
 
@@ -53,6 +103,8 @@ class RecruiterJobSerializer(serializers.ModelSerializer):
         salary_min = data.get("salary_min")
         salary_max = data.get("salary_max")
         expires_at = data.get("expires_at")
+
+        _validate_experience_and_deadline(self, data)
 
         if salary_min and salary_max and salary_min > salary_max:
             raise serializers.ValidationError(
@@ -72,7 +124,6 @@ class RecruiterJobSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         skills_data = validated_data.pop("skills", [])
 
-        # 👇 IMPORTANT: NO recruiter, status, published_at here
         job = Job.objects.create(**validated_data)
 
         self._save_skills(job, skills_data)
@@ -118,8 +169,12 @@ class RecruiterJobDetailSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "responsibilities",
+            "requirements",
+            "education_requirement",
             "job_type",
             "work_mode",
+            "experience",
             "experience_level",
             "location_city",
             "location_state",
@@ -133,6 +188,7 @@ class RecruiterJobDetailSerializer(serializers.ModelSerializer):
             "status",
             "is_active",
             "published_at",
+            "application_deadline",
             "expires_at",
             "created_at",
             "view_count",
@@ -156,8 +212,12 @@ class JobCreateSerializer(serializers.ModelSerializer):
         fields = [
             "title",
             "description",
+            "responsibilities",
+            "requirements",
+            "education_requirement",
             "job_type",
             "work_mode",
+            "experience",
             "experience_level",
             "location_city",
             "location_state",
@@ -168,12 +228,15 @@ class JobCreateSerializer(serializers.ModelSerializer):
             "salary_hidden",
             "openings",
             "skills",
+            "application_deadline",
             "expires_at",
         ]
 
     def validate(self, data):
         salary_min = data.get("salary_min")
         salary_max = data.get("salary_max")
+
+        _validate_experience_and_deadline(self, data)
 
         if salary_min and salary_max and salary_min > salary_max:
             raise serializers.ValidationError(
@@ -225,6 +288,10 @@ class RecruiterJobListSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "status",
+            "responsibilities",
+            "requirements",
+            "education_requirement",
+            "experience",
             "job_type",
             "work_mode",
             "experience_level",
@@ -232,6 +299,7 @@ class RecruiterJobListSerializer(serializers.ModelSerializer):
             "location_country",
             "created_at",
             "published_at",
+            "application_deadline",
             "expires_at",
             "view_count",
             "is_active",
@@ -264,15 +332,19 @@ class JobCloseSerializer(serializers.ModelSerializer):
 
 class PublicJobListSerializer(serializers.ModelSerializer):
     logo = serializers.SerializerMethodField()
-    company_name = serializers.CharField(source = 'recruiter.recruiter_profile.company_name')
+    company_name = serializers.CharField(source = 'recruiter.company_name')
     has_applied = serializers.BooleanField(read_only=True)
     class Meta:
         model = Job
         fields = [
             "id",
             "title",
+            "responsibilities",
+            "requirements",
+            "education_requirement",
             "job_type",
             "work_mode",
+            "experience",
             "experience_level",
             "location_city",
             "location_country",
@@ -280,6 +352,7 @@ class PublicJobListSerializer(serializers.ModelSerializer):
             "salary_max",
             "salary_currency",
             "published_at",
+            "application_deadline",
             "logo",
             'company_name',
             "has_applied",
@@ -288,20 +361,25 @@ class PublicJobListSerializer(serializers.ModelSerializer):
         ]
 
     def get_logo(self, obj):
-        recruiter_profile = getattr(obj.recruiter, "recruiter_profile", None)
-        if recruiter_profile and recruiter_profile.logo:
-            return recruiter_profile.logo.url
+        recruiter = getattr(obj, "recruiter", None)
+        if recruiter and recruiter.logo:
+            try:
+                return recruiter.logo.url
+            except Exception:
+                return None
         return None
+
 
 
 class PublicJobDetailSerializer(serializers.ModelSerializer):
     skills = serializers.SerializerMethodField()
     logo = serializers.SerializerMethodField()
-    company_name = serializers.CharField(source = 'recruiter.recruiter_profile.company_name')
-    company_about = serializers.CharField(source = 'recruiter.recruiter_profile.about_company')
-    company_size = serializers.CharField(source = 'recruiter.recruiter_profile.company_size')
-    company_website = serializers.URLField(source = 'recruiter.recruiter_profile.website')
+    company_name = serializers.CharField(source = 'recruiter.company_name')
+    company_about = serializers.CharField(source = 'recruiter.about_company')
+    company_size = serializers.CharField(source = 'recruiter.company_size')
+    company_website = serializers.URLField(source = 'recruiter.website')
     has_applied = serializers.BooleanField(read_only=True)
+    is_saved = serializers.BooleanField(read_only=True)
 
 
     class Meta:
@@ -310,8 +388,12 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "responsibilities",
+            "requirements",
+            "education_requirement",
             "job_type",
             "work_mode",
+            "experience",
             "experience_level",
             "location_city",
             "location_state",
@@ -320,6 +402,7 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
             "salary_max",
             "salary_currency",
             "published_at",
+            "application_deadline",
             "skills",
             "logo",
             "company_name",
@@ -327,7 +410,8 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
             "company_size",
             "company_website",
             "has_applied",
-            "recruiter_id"
+            "recruiter_id",
+            "is_saved",
 
         ]
 
@@ -340,6 +424,30 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
 
     def get_skills(self, obj):
         return [skill.name for skill in obj.skills.all()]
+
+class SavedJobListSerializer(serializers.ModelSerializer):
+    job = PublicJobListSerializer(read_only=True)
+
+    class Meta:
+        model = SavedJob
+        fields = [
+            "id",
+            "created_at",
+            "job",
+        ]
+
+
+
+class SavedJobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedJob
+        fields = ["id", "job", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+    def validate_job(self, job):
+        if not job.is_active or job.status != "published":
+            raise serializers.ValidationError("This job cannot be saved.")
+        return job
 
 
 

@@ -208,7 +208,7 @@ class JobApplicationListSerializer(serializers.ModelSerializer):
 
     def get_company_name(self, obj):
         recruiter = obj.job.recruiter
-        return getattr(recruiter.recruiter_profile, "company_name", None)
+        return getattr(recruiter, "company_name", None)
 
     def get_salary(self, obj):
         job = obj.job
@@ -284,7 +284,8 @@ class RecruiterApplicationListSerializer(serializers.ModelSerializer):
             "phone",
             "location",
             "experience_years",
-            "skills"
+            "skills",
+            "match_score"
         ]
 
     def get_resume_url(self, obj):
@@ -342,7 +343,7 @@ class RecruiterApplicationDetailSerializer(serializers.ModelSerializer):
         required=False
     )
 
-    # --- Skills still come from profile ---
+    # --- Skills sourced from the applied resume parsed_data ---
     skills = serializers.SerializerMethodField()
 
     class Meta:
@@ -376,18 +377,19 @@ class RecruiterApplicationDetailSerializer(serializers.ModelSerializer):
             # extras
             "skills",
             "recruiter_notes",
+
+            "match_score"
         ]
 
     def get_resume_url(self, obj):
         return obj.resume.url if obj.resume else None
 
     def get_skills(self, obj):
-        """
-        Skills still belong to JobSeekerProfile
-        """
-        return list(
-            obj.applicant.skills.values_list("skill_name", flat=True)
-        )
+        parsed_data = getattr(obj.applied_resume, "parsed_data", None) or {}
+        skills = parsed_data.get("skills", [])
+        if not isinstance(skills, list):
+            return []
+        return [str(skill).strip() for skill in skills if str(skill).strip()]
 
 
 class UpdateApplicationStatusSerializer(serializers.ModelSerializer):
@@ -405,5 +407,3 @@ class UpdateApplicationStatusSerializer(serializers.ModelSerializer):
             "status",
             "recruiter_notes",
         ]
-
-

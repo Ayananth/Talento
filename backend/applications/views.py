@@ -1,4 +1,5 @@
 import logging
+import json
 
 import cloudinary.uploader as uploader
 
@@ -13,7 +14,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from applications.models import JobApplication
+from applications.models import JobApplication, ApplicationInsight
 from core.permissions import IsJobseeker, IsRecruiter
 from profiles.models import JobSeekerResume
 
@@ -31,6 +32,67 @@ from .serializers import (
 logger = logging.getLogger(__name__)
 
 
+from embeddings.services import generate_application_insight
+
+
+class ApplicationInsightAPIView(APIView):
+
+    def get(self, request, application_id):
+
+        try:
+            application = JobApplication.objects.select_related(
+                "job", "applicant"
+            ).get(id=application_id)
+        except JobApplication.DoesNotExist:
+            return Response(
+                {"error": "Application not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if hasattr(application, "insight"):
+            insight = application.insight
+            return Response({
+                "strengths": insight.strengths,
+                "gaps": insight.gaps,
+                "summary": insight.summary,
+            })
+
+        resume = application.applied_resume
+
+        if not resume:
+            return Response({"error": "No resume linked to application"}, status=400)
+
+        embedding = resume.embedding
+
+        if not embedding or not embedding.source_text:
+            return Response({"error": "Resume not processed yet"}, status=400)
+
+        parsed_data = resume.parsed_data  
+
+        result = generate_application_insight(
+            application.job,
+            parsed_data
+        )
+
+        logger.info(f"{result=}")
+
+        insight, _ = ApplicationInsight.objects.update_or_create(
+            application=application,
+            defaults={
+                "strengths": result.get("strengths", ""),
+                "gaps": result.get("gaps", ""),
+                "summary": result.get("summary", ""),
+            }
+        )
+
+
+        return Response({
+            "strengths": insight.strengths,
+            "gaps": insight.gaps,
+            "summary": insight.summary,
+        })
+
+
 class ApplyJobView(APIView):
     permission_classes = [IsJobseeker]
     parser_classes = [MultiPartParser, FormParser]
@@ -41,66 +103,96 @@ class ApplyJobView(APIView):
             extra={"jobseeker_id": request.user.id},
         )
 
+        profile = request.user.jobseeker_profile
+
         resume_file = request.FILES.get("resume")
         resume_id = request.data.get("resume_id")
 
+        applied_resume = None
         uploaded_asset = None
 
         try:
+            #  User selected existing resume
             if resume_id:
-                resume = JobSeekerResume.objects.get(
+                applied_resume = JobSeekerResume.objects.get(
                     id=resume_id,
-                    profile=request.user.jobseeker_profile
+                    profile=profile
                 )
 
+                # Optional snapshot copy (your existing behavior)
                 uploaded_asset = uploader.upload(
-                    resume.file.url,
+                    applied_resume.file.url,
                     resource_type="image",
                     folder="talento-dev/resumes/applications"
                 )
 
+            # User uploaded new resume
             elif resume_file:
+                # Create resume entry first (this triggers parsing + embedding via Celery)
+                applied_resume = JobSeekerResume.objects.create(
+                    profile=profile,
+                    title=resume_file.name,
+                    file=resume_file,
+                )
+
                 uploaded_asset = uploader.upload(
                     resume_file,
                     resource_type="image",
                     folder="talento-dev/resumes/applications"
                 )
+
             else:
-                logger.warning(
-                    "Resume missing in job application",
-                    extra={"jobseeker_id": request.user.id},
-                )
                 return Response(
                     {"resume": ["Resume is required."]},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-        except Exception:
-            logger.exception(
-                "Resume upload failed",
-                extra={"jobseeker_id": request.user.id},
-            )
+        except JobSeekerResume.DoesNotExist:
             return Response(
-                {"detail": "Failed to upload resume"},
+                {"resume": ["Invalid resume selected"]},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except Exception as exception:
+            logger.exception(f"Resume handling failed, {exception=}")
+            return Response(
+                {"detail": "Failed to process resume"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+        parsed_snapshot = request.data.get("parsed_data_snapshot")
+        if isinstance(parsed_snapshot, str) and parsed_snapshot.strip():
+            try:
+                parsed_snapshot = json.loads(parsed_snapshot)
+            except json.JSONDecodeError:
+                parsed_snapshot = None
+
+        if not isinstance(parsed_snapshot, dict):
+            parsed_snapshot = None
+
+        request_data = request.data.copy()
+        if "parsed_data_snapshot" in request_data:
+            request_data.pop("parsed_data_snapshot")
+
+        # Create application
         serializer = ApplyJobSerializer(
-            data=request.data,
+            data=request_data,
             context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
 
         application = serializer.save(
-            applicant=request.user.jobseeker_profile,
-            resume=uploaded_asset["public_id"]
+            applicant=profile,
+            applied_resume=applied_resume,
+            resume=uploaded_asset["public_id"] if uploaded_asset else None,
+            parsed_data_snapshot=parsed_snapshot,
         )
 
         logger.info(
             "Job application created",
             extra={
                 "application_id": application.id,
-                "jobseeker_id": request.user.id,
+                "resume_id": applied_resume.id,
             },
         )
 
@@ -108,6 +200,7 @@ class ApplyJobView(APIView):
             JobApplicationSerializer(application).data,
             status=status.HTTP_201_CREATED
         )
+
 class MyApplicationsView(ListAPIView):
     permission_classes = [IsJobseeker]
     serializer_class = JobApplicationListSerializer
@@ -138,9 +231,9 @@ class MyApplicationsView(ListAPIView):
             .select_related(
                 "job",
                 "job__recruiter",
-                "job__recruiter__recruiter_profile",
             )
         )
+
 class JobApplicationsForRecruiterView(ListAPIView):
     permission_classes = [IsRecruiter]
     serializer_class = RecruiterApplicationListSerializer
@@ -157,6 +250,7 @@ class JobApplicationsForRecruiterView(ListAPIView):
         "applied_at",
         "updated_at",
         "status",
+        "match_score"
     ]
     ordering = ["-applied_at"]
 
@@ -168,12 +262,11 @@ class JobApplicationsForRecruiterView(ListAPIView):
 
         return (
             JobApplication.objects.filter(
-                job__recruiter=self.request.user
+                job__recruiter=self.request.user.recruiter_profile
             )
             .select_related(
                 "job",
                 "job__recruiter",
-                "job__recruiter__recruiter_profile",
                 "applicant",
                 "applicant__user",
             )
@@ -188,7 +281,7 @@ class RecruiterApplicationStatsView(APIView):
         )
 
         base_qs = JobApplication.objects.filter(
-            job__recruiter=request.user,
+            job__recruiter=request.user.recruiter_profile,
             job__is_active=True,
         ).filter(
             Q(job__expires_at__isnull=True) |
@@ -219,12 +312,12 @@ class ApplicationtDetailView(APIView):
             application = JobApplication.objects.select_related(
                 "job",
                 "job__recruiter",
-                "job__recruiter__recruiter_profile",
                 "applicant",
                 "applicant__user",
+                "applied_resume",
             ).get(
                 id=application_id,
-                job__recruiter=request.user
+                job__recruiter=request.user.recruiter_profile
             )
         except JobApplication.DoesNotExist:
             logger.warning(
@@ -253,7 +346,7 @@ class UpdateApplicationStatusView(APIView):
         try:
             application = JobApplication.objects.get(
                 id=application_id,
-                job__recruiter=request.user
+                job__recruiter=request.user.recruiter_profile
             )
         except JobApplication.DoesNotExist:
             logger.warning(

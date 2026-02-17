@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.contrib.postgres.indexes import GistIndex
+from recruiter.models import RecruiterProfile
 
 
 User = settings.AUTH_USER_MODEL
@@ -34,7 +35,7 @@ class Job(models.Model):
 
     #Ownership
     recruiter = models.ForeignKey(
-        User,
+        RecruiterProfile,
         on_delete=models.CASCADE,
         related_name="jobs"
     )
@@ -42,6 +43,10 @@ class Job(models.Model):
     # Basic Info
     title = models.CharField(max_length=255)
     description = models.TextField()
+    responsibilities = models.TextField(blank=True, null=True)
+    requirements = models.TextField(blank=True, null=True)
+    education_requirement = models.TextField(blank=True, null=True)
+    application_deadline = models.DateTimeField(blank=True, null=True)
 
     #Job Details
     job_type = models.CharField(
@@ -58,6 +63,9 @@ class Job(models.Model):
         max_length=20,
         choices=ExperienceLevel.choices
     )
+    experience = models.PositiveIntegerField(blank=True, null=True, help_text="Experience in years")
+
+
 
     #  Location
     location_city = models.CharField(max_length=100, blank=True, null=True)
@@ -118,3 +126,27 @@ class Job(models.Model):
 
     def __str__(self):
         return self.title
+
+
+
+class SavedJob(models.Model):
+    job = models.ForeignKey("Job", related_name="saved_jobs", on_delete=models.CASCADE )
+    user = models.ForeignKey(User, related_name="saved_jobs" ,on_delete=models.CASCADE, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["job"]),
+            models.Index(fields=["user", "job"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["job", "user"],
+                name="unique_active_saved_job_per_user"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} : {self.job}"

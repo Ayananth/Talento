@@ -5,6 +5,7 @@ export const getJobs = async ({
   ordering = "-published_at",
   search = "",
   location = "",
+  recruiterId = "",
   pageSize = "12",
   filters = {},
 } = {}) => {
@@ -14,25 +15,26 @@ export const getJobs = async ({
       ...(ordering && { ordering }),
       ...(search && { search }),
       ...(location && { location_city: location }),
+      ...(recruiterId && { recruiter_id: recruiterId }),
       ...(pageSize && {page_size: pageSize}),
 
-      ...(filters&& filters.workMode&&filters.workMode.length && {
+      ...(filters?.workMode?.length && {
         work_mode: filters.workMode.join(","),
       }),
 
-      ...(filters.jobType.length && {
+      ...(filters?.jobType?.length && {
         job_type: filters.jobType.join(","),
       }),
-      ...(filters.experience.length && {
+      ...(filters?.experience?.length && {
         experience_level: filters.experience.join(","),
       }),
-      ...(filters.postedWithin && {
+      ...(filters?.postedWithin && {
         posted_within: filters.postedWithin,
       }),
-      ...(filters.salaryMin && {
+      ...(filters?.salaryMin && {
         salary_min: filters.salaryMin,
       }),
-      ...(filters.salaryMax && {
+      ...(filters?.salaryMax && {
         salary_max: filters.salaryMax,
       }),
 
@@ -52,12 +54,30 @@ export const getJobDetail = async (id) => {
   return res.data;
 };
 
+export const getJobResumeSimilarity = async ({ userId, jobId }) => {
+  const res = await api.post("/v1/jobs/jobs/public/similarity/", {
+    user_id: Number(userId),
+    job_id: Number(jobId),
+  });
+  return res.data;
+};
+
+export const getJobResumeInsight = async (jobId) => {
+  const res = await api.get(`/v1/jobs/jobs/public/${Number(jobId)}/insight/`);
+  return res.data;
+};
+
 
 
 
 
 export const getMyResumes = async () => {
   const res = await api.get("/v1/profile/me/resumes/");
+  return res.data;
+};
+
+export const getMyProfile = async () => {
+  const res = await api.get("/v1/profile/me/");
   return res.data;
 };
 
@@ -86,6 +106,7 @@ export const applyToJob = async ({
   currentSalary,
   expectedSalary,
   noticePeriod,
+  parsedDataSnapshot,
 }) => {
   const formData = new FormData();
 
@@ -118,6 +139,10 @@ export const applyToJob = async ({
     formData.append("notice_period", noticePeriod);
   }
 
+  if (parsedDataSnapshot) {
+    formData.append("parsed_data_snapshot", JSON.stringify(parsedDataSnapshot));
+  }
+
   const res = await api.post("/v1/applications/apply/", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -146,3 +171,59 @@ export const getMyApplications = async ({
   return res.data;
 };
 
+
+export const getSavedJobs = async ({
+  page = 1,
+  ordering = "-created_at",
+}) => {
+  const res = await api.get("v1/jobs/jobs/public/saved/", {
+    params: {
+      page,
+      ordering,
+    },
+  });
+  return res.data;
+};
+
+export const getJobseekerNotifications = async ({
+  page = 1,
+  ordering = "-created_at",
+  isRead = "",
+} = {}) => {
+  const res = await api.get("/v1/notifications/", {
+    params: {
+      page,
+      ...(ordering && { ordering }),
+      ...(isRead !== "" && { is_read: isRead }),
+    },
+  });
+
+  return res.data;
+};
+
+export const updateJobseekerNotificationReadStatus = async (
+  notificationId,
+  isRead
+) => {
+  const res = await api.patch(
+    `/v1/notifications/${notificationId}/read-status/`,
+    { is_read: isRead }
+  );
+  return res.data;
+};
+
+export const getJobseekerUnreadNotificationsCount = async () => {
+  const res = await api.get("/v1/notifications/", {
+    params: {
+      page: 1,
+      is_read: false,
+    },
+  });
+
+  return res.data?.count ?? 0;
+};
+
+export const markAllJobseekerNotificationsRead = async () => {
+  const res = await api.patch("/v1/notifications/mark-all-read/");
+  return res.data;
+};

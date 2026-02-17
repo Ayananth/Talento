@@ -46,22 +46,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'authentication',
+    'authentication.apps.AuthenticationConfig',
     'profiles.apps.ProfilesConfig',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     "cloudinary",
     "cloudinary_storage",
-    "recruiter",
+    "recruiter.apps.RecruiterConfig",
     "django_filters",
     # "admin",
-    "jobs",
+    "jobs.apps.JobsConfig",
     "applications",
     "chat",
     "channels",
-    "subscriptions",
+    "subscriptions.apps.SubscriptionsConfig",
     "django_celery_beat",
-    "notifications"
+    "notifications.apps.NotificationsConfig",
+    "support.apps.SupportConfig",
+    "dashboard",
+    "pgvector.django",
+    "embeddings.apps.EmbeddingsConfig",
 ]
 
 MIDDLEWARE = [
@@ -161,6 +165,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -11,7 +11,9 @@ import { fetchConversationMessages } from "../../apis/common/fetchConversationMe
  import { getAccessToken } from "../../auth/context/authUtils";
  import useChatSocket from "../../hooks/useChatSocket";
  import { startConversation } from "../../apis/common/startConversation";
- import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+ import useUnreadSocket from "../../hooks/useUnreadSocket";
+import { useUnread } from "@/context/UnreadContext";
 
 
 const MessagesPageResponsive = () => {
@@ -31,10 +33,14 @@ const MessagesPageResponsive = () => {
 
 
   const { user } = useAuth();
+
+  const { setTotalUnread } = useUnread();
+
   // console.log("User in MessagesPageResponsive:", user);
   const currentUserId = Number(user?.user_id);
 
 const accessToken = useMemo(() => getAccessToken(), []);
+const navigate = useNavigate();
 
 const handleWsMessage = useCallback((msg) => {
   setMessages((prev) => [
@@ -62,11 +68,40 @@ const handleReadAck = useCallback((messageId) => {
 
 
 const { connected, sendMessage, sendRead } = useChatSocket({
-conversationId: activeConversationId,
+  conversationId: activeConversationId,
   token: accessToken,
   onMessage: handleWsMessage,
   onReadAck: handleReadAck,
 });
+
+const handleUnreadEvent = useCallback(
+  (event) => {
+    const convoId = Number(event.conversation_id);
+
+    // If open chat → ignore (already seen)
+    if (convoId === activeConversationId) return;
+
+    setConversations((prev) =>
+      prev.map((chat) =>
+        chat.id === convoId
+          ? {
+              ...chat,
+              unread_count: (chat.unread_count ?? 0) + 1,
+            }
+          : chat
+      )
+    );
+
+    setTotalUnread((prev) => prev + 1);
+  },
+  [activeConversationId, setTotalUnread]
+);
+
+useUnreadSocket({
+  token: accessToken,
+  onUnread: handleUnreadEvent,
+});
+
 
 
 
@@ -74,32 +109,34 @@ conversationId: activeConversationId,
   const sendingDisabled = hasConversation && !connected;
 
 
-
-
-
 const location = useLocation();
 useEffect(() => {
-  console.log("Location state on mount:", location.state);
-  if (location.state?.openConversationId) {
-    const convo = conversations.find(
-      (c) => c.id === location.state.openConversationId
-    );
+  const targetConversationId = Number(location.state?.openConversationId);
+  if (!targetConversationId) return;
+  if (activeConversationId === targetConversationId) return;
 
-    console.log("Auto-opening conversation from state:", convo);
+  const convo = conversations.find((c) => Number(c.id) === targetConversationId);
+  if (!convo) return;
 
-    if (convo) {
-      handleSelectChat(convo);
-      setShowChatList(false);
-    }
-  }
-}, [location.state, conversations]);
+  handleSelectChat(convo);
+  setShowChatList(false);
+  navigate(location.pathname, { replace: true, state: {} });
+}, [
+  location.pathname,
+  location.state?.openConversationId,
+  conversations,
+  activeConversationId,
+  navigate,
+]);
 
 useEffect(() => {
-  if (location.state?.draftChat) {
-    setSelectedChat(location.state.draftChat);
-    setShowChatList(false);
-  }
-}, []);
+  if (!location.state?.draftChat) return;
+  if (selectedChat?.id) return;
+
+  setSelectedChat(location.state.draftChat);
+  setShowChatList(false);
+  navigate(location.pathname, { replace: true, state: {} });
+}, [location.pathname, location.state?.draftChat, selectedChat?.id, navigate]);
 
 
 
@@ -190,7 +227,7 @@ const handleSendMessage = async (payload) => {
           timestamp: c.last_message_time
             ? new Date(c.last_message_time).toLocaleString()
             : "",
-          unread_count: 0,
+          unread_count: c.unread_count,
           isBlocked: false,
           companyName: null,
           companyLogo: c.other_user?.img ?? null,
@@ -198,6 +235,12 @@ const handleSendMessage = async (payload) => {
 
         if (isMounted) {
           setConversations(normalized);
+          const initialTotal = normalized.reduce(
+            (sum, c) => sum + (c.unread_count ?? 0),
+            0
+          );
+
+          setTotalUnread(initialTotal);
         }
       } catch (error) {
         console.error("Failed to load conversations", error);
@@ -224,6 +267,14 @@ const handleSelectChat = async (chat) => {
   setShowChatList(false);
   setMessages([]);
   setMessagesLoading(true);
+  setTotalUnread(prev => prev - (chat.unread_count ?? 0));
+  setConversations(prev =>
+    prev.map(c =>
+      c.id === chat.id
+        ? { ...c, unread_count: 0 }
+        : c
+    )
+  );
 
   try {
     const data = await fetchConversationMessages(chat.id);

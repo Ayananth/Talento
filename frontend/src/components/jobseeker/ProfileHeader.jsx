@@ -147,6 +147,22 @@ export default function ProfileHeader({subscription}) {
   const user = data.user || {};
   const profile = data.profile || {};
   const exp = data.experience?.[0] || {};
+  const completionFields = [
+    profile.fullname,
+    profile.headline,
+    // exp.company,
+    profile.address,
+    profile.experience_years,
+    profile.current_salary,
+    profile.notice_period,
+    profile.phone_number,
+    user.email,
+    profile.profile_image,
+  ];
+  const completedCount = completionFields.filter(
+    (field) => field !== null && field !== undefined && String(field).trim() !== ""
+  ).length;
+  const completionPercent = Math.round((completedCount / completionFields.length) * 100);
 
   const initialData = {
     fullname: profile.fullname,
@@ -166,7 +182,7 @@ export default function ProfileHeader({subscription}) {
 
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div className="w-full overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-[0_20px_45px_-30px_rgba(15,23,42,0.5)]">
       <ProfileEditModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
@@ -197,87 +213,122 @@ export default function ProfileHeader({subscription}) {
         </div>
       )}
 
-      <div className="p-8 sm:p-10">
-        <div className="flex flex-col lg:flex-row justify-between gap-10">
-          {/* LEFT SECTION */}
-          <div className="flex gap-8 w-full lg:w-2/3">
-            {/* PROFILE IMAGE */}
-            <div className="relative flex-shrink-0" style={{ width: 140, height: 140 }}>
-              <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center w-full h-full shadow-md">
-                {uploading ? (
-                  <AvatarPlaceholder size={140} />
-                ) : !imageError && (preview || profile?.profile_image) ? (
-                  <img
-                    src={preview || `${baseUrl}${profile.profile_image}`}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                    onError={() => setImageError(true)}
-                  />
-                ) : (
-                  <AvatarPlaceholder size={140} />
-                )}
+      <div className="relative">
+        <div className="h-20 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.35),transparent_55%)]" />
+
+        <div className="relative z-10 px-6 pb-6 sm:px-8 sm:pb-8">
+          <div className="-mt-12 grid gap-8 lg:grid-cols-[1fr_280px]">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.6)]">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+                <div className="relative flex-shrink-0" style={{ width: 122, height: 122 }}>
+                  <div className="h-full w-full overflow-hidden rounded-2xl border-4 border-white bg-gradient-to-br from-slate-100 to-slate-200 shadow-md ring-1 ring-slate-200">
+                    {uploading ? (
+                      <AvatarPlaceholder size={122} />
+                    ) : !imageError && (preview || profile?.profile_image) ? (
+                      <img
+                        src={preview || `${baseUrl}${profile.profile_image}`}
+                        alt="Profile"
+                        className="h-full w-full object-cover"
+                        onError={() => setImageError(true)}
+                      />
+                    ) : (
+                      <AvatarPlaceholder size={122} />
+                    )}
+                  </div>
+
+                  <label className="absolute -bottom-1 -right-1 inline-flex cursor-pointer items-center justify-center rounded-full border-2 border-white bg-blue-600 p-2 text-white shadow-md transition-all duration-200 hover:scale-105 hover:bg-blue-700">
+                    <Edit3 size={14} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                  </label>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h1 className="truncate text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                      {getVal(profile.fullname, "User")}
+                    </h1>
+                    <button
+                      onClick={() => setShowModal(true)}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                      title="Edit profile"
+                    >
+                      <Edit3 size={14} />
+                      Edit Profile
+                    </button>
+                  </div>
+
+                  <p className="mt-2 text-base font-medium text-slate-700 sm:text-lg">
+                    {getVal(profile.headline, "Add your professional headline")}
+                  </p>
+                  {/* <p className="mt-1 text-sm text-slate-500">
+                    Currently at {getVal(exp.company, "Add your company")}
+                  </p> */}
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <InfoChip
+                      icon={<MapPin size={14} />}
+                      text={getVal(profile.address, "Add location")}
+                    />
+                    <InfoChip
+                      icon={<Briefcase size={14} />}
+                      text={
+                        profile.experience_years
+                          ? `${profile.experience_years} years experience`
+                          : "Add experience"
+                      }
+                    />
+                    <InfoChip
+                      icon={<Clock size={14} />}
+                      text={getVal(profile.notice_period, "Add notice period")}
+                    />
+                    {subscription?.is_active && (
+                      <div className="inline-flex items-center gap-1.5 rounded-full border border-yellow-300 bg-yellow-50 px-3 py-1 text-xs font-semibold text-yellow-800">
+                        <Crown size={13} className="text-yellow-600" />
+                        Pro until {formatExpiry(subscription.end_date)}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <label className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 shadow-lg rounded-full p-2.5 text-white cursor-pointer transition-all duration-200 transform hover:scale-110">
-                <Edit3 size={16} />
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <InfoItem icon={<Mail size={16} />} label="Email" text={getVal(user.email, "Add email")} />
+                <InfoItem icon={<Phone size={16} />} label="Phone" text={getVal(profile.phone_number, "Add phone")} />
+                <InfoItem icon={<Briefcase size={16} />} label="Current Salary" text={getVal(profile.current_salary, "Add salary")} />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-blue-100 bg-gradient-to-b from-blue-50 via-white to-white p-5 shadow-[0_20px_35px_-30px_rgba(37,99,235,0.6)]">
+              <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+                Profile completeness
+              </p>
+              <div className="mt-2 flex items-end justify-between">
+                <p className="text-3xl font-bold text-slate-900">{completionPercent}%</p>
+                <p className="text-xs text-slate-500">
+                  {completedCount}/{completionFields.length} fields complete
+                </p>
+              </div>
+
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
+                  style={{ width: `${completionPercent}%` }}
                 />
-              </label>
-            </div>
-
-            {/* USER INFO */}
-            <div className="flex flex-col justify-center w-full">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-slate-900">
-                  {getVal(profile.fullname, "User")}
-                </h1>
-                <button 
-                  onClick={() => setShowModal(true)}
-                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
-                  title="Edit profile"
-                >
-                  {/* 👑 PRO STATUS */}
-                  <Edit3 size={18} className="text-slate-500 hover:text-blue-600" />
-                </button>
-{subscription?.is_active && (
-  <div className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-full bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm font-semibold w-fit">
-    <Crown size={14} className="text-yellow-500" />
-    Pro Member · Valid till {formatExpiry(subscription.end_date)}
-  </div>
-)}
               </div>
 
-              <p className="text-lg text-slate-600 font-medium mb-1">
-                {getVal(profile.headline, "Add your professional headline")}
+              <p className="mt-4 text-sm text-slate-600">
+                {completionPercent >= 80
+                  ? "Great profile quality. Keep it updated weekly."
+                  : "Complete missing details to improve recruiter visibility."}
               </p>
-
-              <p className="text-sm text-slate-500 mb-4">
-                {getVal(exp.company, "Add your company")}
-              </p>
-
-              <div className="h-px bg-slate-200 my-4" />
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-                <InfoItem icon={<MapPin size={16} />} text={getVal(profile.address, "Location")} />
-                <InfoItem icon={<Briefcase size={16} />} text={profile.experience_years ? `${profile.experience_years} Years` : "Experience"} />
-                <InfoItem icon={<Briefcase size={16} />} text={getVal(profile.current_salary, "Salary")} />
-                <InfoItem icon={<Phone size={16} />} text={getVal(profile.phone_number, "Phone")} />
-                <InfoItem icon={<Mail size={16} />} text={getVal(user.email, "Email")} />
-                <InfoItem icon={<Clock size={16} />} text={getVal(profile.notice_period, "Notice Period")} />
-              </div>
             </div>
-          </div>
-
-          {/* RIGHT SECTION - STATS */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-8 flex flex-col justify-center gap-8 w-full lg:w-1/3">
-            <StatBox number="0" label="Search Appearances" />
-            <div className="h-px bg-blue-200" />
-            <StatBox number="0" label="Recruiter Actions" />
           </div>
         </div>
       </div>
@@ -287,20 +338,23 @@ export default function ProfileHeader({subscription}) {
 
 // ------------------------ SMALL COMPONENTS ------------------------
 
-function InfoItem({ icon, text }) {
+function InfoItem({ icon, label, text }) {
   return (
-    <div className="flex gap-2 items-start">
-      {icon}
-      <span>{text}</span>
+    <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+      <div className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+        <span className="text-slate-400">{icon}</span>
+        <span>{label}</span>
+      </div>
+      <p className="truncate text-sm font-medium text-slate-700">{text}</p>
     </div>
   );
 }
 
-function StatBox({ number, label }) {
+function InfoChip({ icon, text }) {
   return (
-    <div className="text-center">
-      <p className="text-2xl font-bold">{number}</p>
-      <p className="text-sm text-gray-600">{label}</p>
+    <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700">
+      <span className="text-slate-500">{icon}</span>
+      <span>{text}</span>
     </div>
   );
 }

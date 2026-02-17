@@ -4,6 +4,7 @@ import {
   Briefcase,
   Bookmark,
   MessageSquare,
+  LifeBuoy,
   Settings,
   LogOut,
   Sparkles,
@@ -16,26 +17,27 @@ import { useNavigate } from "react-router-dom";
 const baseMenuItems = [
   { name: "My Profile", icon: <User size={18} />, path: "/profile" },
   { name: "Applied Jobs", icon: <Briefcase size={18} />, path: "/profile/applied-jobs" },
-  { name: "Shortlisted Jobs", icon: <Bookmark size={18} />, path: "/shortlisted" },
+  { name: "Saved Jobs", icon: <Bookmark size={18} />, path: "/profile/saved-jobs" },
+  { name: "Support", icon: <LifeBuoy size={18} />, path: "/profile/support" },
   { name: "Messages", icon: <MessageSquare size={18} />, path: "/messages" },
-  { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
+  // { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
   // { name: "Logout", icon: <LogOut size={18} />, path: "/logout" },
 ];
 
 const premiumMenuItems = [
-  {
-    name: "AI Job Matches",
-    icon: <Sparkles size={18} />,
-    path: "/profile/ai-jobs",
-    isPremium: true,
-  },
-  {
-    name: "Resume Analyzer",
-    icon: <FileText size={18} />,
-    path: "/profile/resume-analyzer",
-    isPremium: true,
-  },
-];;
+  // {
+  //   name: "AI Job Matches",
+  //   icon: <Sparkles size={18} />,
+  //   path: "/profile/ai-jobs",
+  //   isPremium: true,
+  // },
+  // {
+  //   name: "Resume Analyzer",
+  //   icon: <FileText size={18} />,
+  //   path: "/profile/resume-analyzer",
+  //   isPremium: true,
+  // },
+];
 
 export default function Sidebar({subscription}) {
   const navigate = useNavigate();

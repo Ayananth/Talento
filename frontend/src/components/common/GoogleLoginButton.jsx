@@ -9,10 +9,15 @@ import useAuth from "../../auth/context/useAuth";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-export default function GoogleLoginButton({role, setLoginError}) {
+export default function GoogleLoginButton({role, setAuthError}) {
     const { googleLogin } = useAuth();
     const navigate = useNavigate()
 
+const normalizeMessage = (raw, fallback) => {
+  const msg = typeof raw === "string" ? raw.trim() : "";
+  if (!msg || /^\d{3}$/.test(msg)) return fallback;
+  return msg;
+};
 
 const handleSuccess = async (credentialResponse) => {
   const id_token = credentialResponse.credential;
@@ -43,23 +48,27 @@ const handleSuccess = async (credentialResponse) => {
       const data = err.response.data;
 
       if (typeof data === "string") {
-        message = data;
+        message = normalizeMessage(data, message);
       } else if (data.detail) {
-        message = data.detail;
+        message = normalizeMessage(data.detail, message);
       } else if (data.message) {
-        message = data.message;
+        message = normalizeMessage(data.message, message);
       }
     } else if (err.request) {
       message = "Server not reachable. Please try again later.";
     }
-    setLoginError(message)
+    if (typeof setAuthError === "function") {
+      setAuthError(message);
+    }
     // throw new Error(message);
   }
 };
 
 
   const handleError = () => {
-    console.error("Google login failed");
+    if (typeof setAuthError === "function") {
+      setAuthError("Google login failed. Please try again.");
+    }
   };
 
   return (

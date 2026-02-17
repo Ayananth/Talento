@@ -25,6 +25,7 @@ from django.db import transaction
 from notifications.events import NotificationEvent
 from notifications.service import notify_admin
 from notifications.tasks import notify_admin_task, notify_recruiter_task
+from .usecases import notify_admins_recruiter_pending_review
 
 
 logger = logging.getLogger(__name__)
@@ -70,12 +71,17 @@ class RecruiterProfileDraftCreateView(generics.GenericAPIView):
         profile_id = profile.id
 
         if profile.is_first_submission():
-            transaction.on_commit(
-                lambda pid=profile_id: notify_admin_task.delay(
-                    event=NotificationEvent.RECRUITER_APPROVAL_REQUESTED,
-                    payload={"recruiter_profile_id": pid}
+            try:
+
+                notify_admins_recruiter_pending_review(profile)
+                transaction.on_commit(
+                    lambda pid=profile_id: notify_admin_task.delay(
+                        event=NotificationEvent.RECRUITER_APPROVAL_REQUESTED,
+                        payload={"recruiter_profile_id": pid}
+                    )
                 )
-            )
+            except Exception: 
+                logger.exception( "Failed to notify admins about recruiter pending review. recruiter_profile_id=%s", profile_id ) 
 
 
 
@@ -204,7 +210,7 @@ class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
         profile.draft_logo = None
         profile.draft_business_registration_doc = None
 
-        profile.status = "published"
+        profile.status = "approved"
         profile.rejection_reason = ""
         profile.verified_at = timezone.now()
         profile.save()
@@ -226,7 +232,7 @@ class AdminApproveRecruiterProfileView(generics.UpdateAPIView):
 
         return Response(
             {
-                "detail": "Recruiter profile approved and published successfully.",
+                "detail": "Recruiter profile approved successfully.",
                 "status": profile.status,
                 "published_data": {
                     "company_name": profile.company_name,

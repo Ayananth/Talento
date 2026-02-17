@@ -18,6 +18,10 @@ import os
 from django.contrib import admin
 from django.urls import path, include
 
+
+from django.conf import settings
+from django.conf.urls.static import static
+
 ADMIN_PATH = os.getenv("ADMIN_PATH",  "admin/")
 
 urlpatterns = [
@@ -25,11 +29,20 @@ urlpatterns = [
     path("v1/auth/", include("authentication.urls", namespace="authentication")),
     path("v1/profile/", include("profiles.urls", namespace="profile")),
     path("v1/recruiter/", include("recruiter.urls", namespace="recruiter")),
-    path("v1/admin/", include("admin.urls", namespace="custom_admin")),
+    path("v1/admin/", include("dashboard.urls", namespace="custom_admin")),
     path("v1/jobs/", include("jobs.urls", namespace="jobs")),
     path("v1/applications/", include("applications.urls", namespace="applications")),
     path("v1/chat/", include("chat.urls", namespace="chat")),
     path("v1/subscriptions/", include("subscriptions.urls", namespace="subscriptions")),
+    path("v1/vector/", include("embeddings.urls", namespace="embeddings")),
+    path("v1/notifications/", include("notifications.urls", namespace="notifications")),
+    path("v1/support/", include("support.urls", namespace="support")),
 
 
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.STATIC_URL,
+        document_root=settings.STATIC_ROOT,
+    )

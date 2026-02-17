@@ -1,6 +1,6 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
-from profiles.models import JobSeekerProfile
+from profiles.models import JobSeekerProfile, JobSeekerResume
 
 class JobApplication(models.Model):
 
@@ -30,6 +30,13 @@ class JobApplication(models.Model):
         folder="talento/resumes/applications",
         null=True,
         blank=True
+    )
+
+    applied_resume = models.ForeignKey(
+        JobSeekerResume,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="applications"
     )
 
     cover_letter = models.TextField(blank=True)
@@ -66,9 +73,21 @@ class JobApplication(models.Model):
         blank=True
     )
     current_role = models.CharField(max_length=100, blank=True)
+    parsed_data_snapshot = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Editable parsed resume data snapshot submitted at application time"
+    )
 
     applied_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    match_score = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="AI similarity score between resume and job (0-100)"
+    )
+
 
     class Meta:
         unique_together = ("job", "applicant")
@@ -76,3 +95,26 @@ class JobApplication(models.Model):
 
     def __str__(self):
         return f"{self.applicant.user.email} → {self.job.title}"
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._previous_status = self.status
+
+
+
+
+class ApplicationInsight(models.Model):
+    application = models.OneToOneField(
+        JobApplication,
+        on_delete=models.CASCADE,
+        related_name="insight"
+    )
+
+    strengths = models.JSONField()
+    gaps = models.JSONField()
+    summary = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Insight for application {self.application.id}"

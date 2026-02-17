@@ -106,8 +106,21 @@ class JobSeekerResumeSerializer(serializers.ModelSerializer):
             "parsed_data",
             "is_default",
             "is_deleted",
+            "status",
+            "parsing_error",
         ]
 
+    def create(self, validated_data):
+        profile = self.context["profile"]
+
+        # Force correct profile (ignore client input if any)
+        validated_data["profile"] = profile
+
+        # Auto set default resume if first one
+        has_resume = JobSeekerResume.objects.filter(profile=profile).exists()
+        validated_data["is_default"] = not has_resume
+
+        return JobSeekerResume.objects.create(**validated_data)
 
 
 

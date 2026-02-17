@@ -17,6 +17,7 @@ class RecruiterJobFilter(filters.FilterSet):
 
 
 class PublicJobFilter(filters.FilterSet):
+    recruiter_id = filters.NumberFilter(field_name="recruiter_id")
 
     job_type = filters.CharFilter(field_name="job_type", lookup_expr="iexact")
     work_mode = filters.CharFilter(field_name="work_mode", lookup_expr="iexact")
@@ -61,6 +62,7 @@ class PublicJobFilter(filters.FilterSet):
     class Meta:
         model = Job
         fields = [
+            "recruiter_id",
             "job_type",
             "work_mode",
             "experience_level",

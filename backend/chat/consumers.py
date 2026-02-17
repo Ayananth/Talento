@@ -18,6 +18,12 @@ logger = logging.getLogger(__name__)
 from django.db import transaction
 
 @database_sync_to_async
+def get_conversation_participants(conversation_id):
+    convo = Conversation.objects.get(id=conversation_id)
+    return convo.jobseeker_id, convo.recruiter_id
+
+
+@database_sync_to_async
 def mark_message_as_read(message_id, user, conversation_id):
     logger.info(f"Marking message: {message_id, user.id, conversation_id}")
 
@@ -185,6 +191,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "created_at": localtime(message.created_at).isoformat(),
                     "is_read": False,
                 },
+            },
+        )
+
+        # -------------------------
+        # SEND UNREAD EVENT TO OTHER USER
+        # -------------------------
+
+        jobseeker_id, recruiter_id = await get_conversation_participants(
+            self.conversation_id
+        )
+
+        # determine who receives unread notification
+        recipient_id = (
+            recruiter_id if self.user.id == jobseeker_id else jobseeker_id
+        )
+
+        await self.channel_layer.group_send(
+            f"user_{recipient_id}",
+            {
+                "type": "unread_event",
+                "conversation_id": self.conversation_id,
+                "message_id": message.id,
+                "sender_id": self.user.id,
+                "created_at": message.created_at.isoformat(),
             },
         )
 

@@ -1,9 +1,71 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useUnread } from "@/context/UnreadContext";
+import { getRecruiterUnreadNotificationsCount } from "@/apis/recruiter/apis";
+import { fetchConversations } from "@/apis/common/fetchConversations";
+
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const {
+    totalUnread,
+    setTotalUnread,
+    unreadNotificationsCount,
+    setUnreadNotificationsCount,
+  } = useUnread();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const refreshUnreadNotifications = async () => {
+      try {
+        const count = await getRecruiterUnreadNotificationsCount();
+        if (isMounted) {
+          setUnreadNotificationsCount(count);
+        }
+      } catch (error) {
+        console.error("Failed to fetch unread notifications count", error);
+      }
+    };
+
+    refreshUnreadNotifications();
+    const intervalId = setInterval(refreshUnreadNotifications, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [location.pathname, setUnreadNotificationsCount]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const refreshUnreadMessages = async () => {
+      try {
+        const conversations = await fetchConversations();
+        const unreadTotal = conversations.reduce(
+          (sum, conversation) => sum + (conversation?.unread_count ?? 0),
+          0
+        );
+
+        if (isMounted) {
+          setTotalUnread(unreadTotal);
+        }
+      } catch (error) {
+        console.error("Failed to fetch recruiter unread messages count", error);
+      }
+    };
+
+    refreshUnreadMessages();
+    const intervalId = setInterval(refreshUnreadMessages, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [location.pathname, setTotalUnread]);
+
 
   const menuItems = [
     { name: "Dashboard", path: "/recruiter/dashboard" },
@@ -11,9 +73,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Messages", path: "/recruiter/messages" },
     { name: "Jobs", path: "/recruiter/jobs" },
     { name: "Applications", path: "/recruiter/applications" },
-    { name: "Shortlisted", path: "/recruiter/shortlisted" },
-    { name: "Settings", path: "/recruiter/settings" },
-    { name: "Logout", path: "/logout" },
+    { name: "Support Tickets", path: "/recruiter/tickets" },
+    { name: "Notifications", path: "/recruiter/notifications" },
+    // { name: "Settings", path: "/recruiter/settings" },
+    // { name: "Logout", path: "/logout" },
   ];
 
   return (
@@ -23,28 +86,46 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     >
       <h2 className="text-xl font-semibold text-gray-700 mb-4">Menu</h2>
 
-      <ul className="space-y-3">
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+    <ul className="space-y-3">
+      {menuItems.map((item) => {
+        const isActive =
+          location.pathname === item.path ||
+          location.pathname.startsWith(`${item.path}/`);
+        const isMessages = item.name === "Messages";
+        const isNotifications = item.name === "Notifications";
 
-          return (
-            <li key={item.path}>
-              <button
-                onClick={() => navigate(item.path)}
-                className={`w-full text-left block px-4 py-2 rounded-lg font-medium transition
-                  ${
-                    isActive
-                      ? "bg-blue-600 text-white shadow"
-                      : "text-gray-700 hover:bg-blue-100"
-                  }
-                `}
-              >
-                {item.name}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+        return (
+          <li key={item.path}>
+            <button
+              onClick={() => navigate(item.path)}
+              className={`w-full text-left flex items-center justify-between px-4 py-2 rounded-lg font-medium transition
+                ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow"
+                    : "text-gray-700 hover:bg-blue-100"
+                }
+              `}
+            >
+              <span>{item.name}</span>
+
+              {/* 🔔 Unread badge */}
+              {isMessages && totalUnread > 0 && (
+                <span className="bg-red-600 text-white text-xs font-semibold rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-1">
+                  {totalUnread > 99 ? "99+" : totalUnread}
+                </span>
+              )}
+
+              {isNotifications && unreadNotificationsCount > 0 && (
+                <span className="bg-red-600 text-white text-xs font-semibold rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-1">
+                  {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                </span>
+              )}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+
     </aside>
   );
 };

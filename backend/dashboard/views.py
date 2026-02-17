@@ -1,0 +1,397 @@
+import logging
+
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, status
+from rest_framework.filters import OrderingFilter
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
+
+from authentication.models import UserModel
+from core.permissions import IsAdmin
+from jobs.models.job import Job
+from jobs.pagination import RecruiterJobPagination
+from recruiter.models import RecruiterProfile
+
+from .filters import AdminJobFilter
+from .serializers import (
+    AdminJobDetailSerializer,
+    AdminJobListSerializer,
+    AdminJobUnpublishSerializer,
+    TransactionListSerializer
+)
+from .services import get_admin_stats_overview, get_top_candidates, get_top_recruiters, get_monthly_revenue_split, get_revenue_summary, get_recruiter_pending_counts
+from django.utils.timezone import now
+
+
+logger = logging.getLogger(__name__)
+
+from subscriptions.models import UserSubscription
+from .filters import TransactionFilter
+from django.db.models import Sum, Count
+
+import csv
+from django.http import HttpResponse
+
+
+class TransactionExportCSVAPIView(APIView):
+    permission_classes = [IsAdmin]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TransactionFilter
+
+    def get_queryset(self):
+        return (
+            UserSubscription.objects
+            .select_related("user", "plan")
+            .exclude(status="pending")
+        )
+
+    def get(self, request):
+        queryset = self.filterset_class(
+            request.GET,
+            queryset=self.get_queryset()
+        ).qs
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            'attachment; filename="transactions.csv"'
+        )
+
+        writer = csv.writer(response)
+
+        writer.writerow([
+            "Transaction ID",
+            "User Name",
+            "Email",
+            "User Type",
+            "Plan",
+            "Amount",
+            "Duration (Months)",
+            "Status",
+            "Created At",
+        ])
+
+        for obj in queryset:
+            if obj.plan.plan_type == "jobseeker":
+                user_name = getattr(obj.user.jobseeker_profile, "fullname", "")
+            else:
+                user_name = getattr(obj.user.recruiter_profile, "company_name", "")
+
+            writer.writerow([
+                obj.razorpay_payment_id,
+                user_name,
+                obj.user.email,
+                obj.plan.plan_type,
+                obj.plan.name,
+                obj.plan.price,
+                obj.plan.duration_months,
+                obj.status,
+                obj.created_at.strftime("%Y-%m-%d %H:%M"),
+            ])
+
+        return response
+
+class TransactionListAPIView(ListAPIView):
+    serializer_class = TransactionListSerializer
+    permission_classes = [IsAdmin]
+
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+    ]
+    filterset_class = TransactionFilter
+
+    ordering_fields = [
+        "created_at",
+        "plan__price",
+        "status"
+    ]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        return (
+            UserSubscription.objects
+            .select_related("user", "plan")
+            .exclude(status="pending")
+        )
+
+
+class TransactionRevenueSummaryAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get_queryset(self):
+        return (
+            UserSubscription.objects
+            .select_related("plan")
+            .exclude(status="pending")
+        )
+
+    def get(self, request):
+        filterset = TransactionFilter(
+            request.GET,
+            queryset=self.get_queryset(),
+        )
+
+        if not filterset.is_valid():
+            return Response(
+                filterset.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        qs = filterset.qs.exclude(status="failed")
+
+        jobseeker_revenue = (
+            qs.filter(plan__plan_type="jobseeker")
+            .aggregate(total=Sum("plan__price"))["total"] or 0
+        )
+        recruiter_revenue = (
+            qs.filter(plan__plan_type="recruiter")
+            .aggregate(total=Sum("plan__price"))["total"] or 0
+        )
+
+        return Response(
+            {
+                "jobseeker_revenue": jobseeker_revenue,
+                "recruiter_revenue": recruiter_revenue,
+                "total_revenue": jobseeker_revenue + recruiter_revenue,
+            }
+        )
+
+
+class AdminToggleBlockUserView(APIView):
+    """
+    PATCH /api/admin/users/<id>/block/
+    Body: { "block": true | false }
+    """
+
+    permission_classes = [IsAdmin]
+
+    def patch(self, request, pk):
+        logger.info("Admin block/unblock request", extra={"user_id": pk})
+
+        try:
+            user = UserModel.objects.get(pk=pk)
+        except UserModel.DoesNotExist:
+            logger.warning("User not found while blocking", extra={"user_id": pk})
+            return Response(
+                {"detail": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        block = request.data.get("block")
+
+        if block is None:
+            logger.warning(
+                "`block` field missing in request",
+                extra={"user_id": pk}
+            )
+            return Response(
+                {"detail": "`block` field is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if user.role == "admin":
+            logger.warning(
+                "Attempt to block admin user",
+                extra={"user_id": user.id}
+            )
+            return Response(
+                {"detail": "Admin users cannot be blocked"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        user.is_blocked = bool(block)
+        user.save(update_fields=["is_blocked"])
+
+        logger.info(
+            "User block status updated",
+            extra={
+                "user_id": user.id,
+                "is_blocked": user.is_blocked,
+            },
+        )
+
+        return Response(
+            {
+                "detail": "User blocked" if block else "User unblocked",
+                "user_id": user.id,
+                "is_blocked": user.is_blocked,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminJobListView(generics.ListAPIView):
+    serializer_class = AdminJobListSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
+    pagination_class = RecruiterJobPagination
+    queryset = Job.objects.all()
+
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+    ]
+
+    filterset_class = AdminJobFilter
+
+    ordering_fields = [
+        "created_at",
+        "published_at",
+        "expires_at",
+        "status",
+        "recruiter__recruiter_profile__company_name",
+        "recruiter__email",
+    ]
+    ordering = ["-created_at"]
+
+    def list(self, request, *args, **kwargs):
+        logger.info(
+            "Admin job list requested",
+            extra={"admin_id": request.user.id},
+        )
+        return super().list(request, *args, **kwargs)
+
+
+class AdminJobDetailView(generics.RetrieveAPIView):
+    """
+    GET /api/admin/jobs/<id>/
+    """
+
+    serializer_class = AdminJobDetailSerializer
+    permission_classes = [IsAdmin]
+    queryset = Job.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        logger.info(
+            "Admin job detail viewed",
+            extra={
+                "job_id": kwargs.get("pk"),
+                "admin_id": request.user.id,
+            },
+        )
+        return super().retrieve(request, *args, **kwargs)
+
+
+class AdminRecruiterJobPostingView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def patch(self, request, pk):
+        logger.info(
+            "Admin recruiter posting permission update",
+            extra={"recruiter_id": pk},
+        )
+
+        recruiter = get_object_or_404(RecruiterProfile, pk=pk)
+        can_post = request.data.get("can_post_jobs")
+
+        if can_post is None:
+            logger.warning(
+                "can_post_jobs missing in request",
+                extra={"recruiter_id": pk},
+            )
+            return Response(
+                {"detail": "can_post_jobs is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        recruiter.can_post_jobs = can_post
+        recruiter.save(update_fields=["can_post_jobs"])
+
+        logger.info(
+            "Recruiter posting permission updated",
+            extra={
+                "recruiter_id": recruiter.id,
+                "can_post_jobs": recruiter.can_post_jobs,
+            },
+        )
+
+        return Response(
+            {
+                "id": recruiter.id,
+                "can_post_jobs": recruiter.can_post_jobs,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminJobUnpublishView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def patch(self, request, pk):
+        logger.info(
+            "Admin job unpublish requested",
+            extra={
+                "job_id": pk,
+                "admin_id": request.user.id,
+            },
+        )
+
+        job = get_object_or_404(Job, pk=pk)
+
+        serializer = AdminJobUnpublishSerializer(instance=job, data={})
+        serializer.is_valid(raise_exception=True)
+
+        job.status = Job.Status.BLOCKED
+        job.is_active = False
+        job.save(update_fields=["status", "is_active", "updated_at"])
+
+        logger.info(
+            "Admin job unpublished",
+            extra={
+                "job_id": job.id,
+                "status": job.status,
+                "is_active": job.is_active,
+            },
+        )
+
+        return Response(
+            {
+                "id": job.id,
+                "status": job.status,
+                "is_active": job.is_active,
+                "detail": "Job unpublished successfully.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+
+class AdminDashboardView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        print(get_admin_stats_overview())
+        logger.info(get_top_candidates())
+        logger.info(get_top_recruiters())
+        logger.info(f"{get_monthly_revenue_split()}")
+
+        
+        # today = now().date()
+        year = now().year
+
+        return Response({
+            "metrics": {
+                **get_admin_stats_overview(),
+            },
+            "jobseekers": get_top_candidates(),
+            "recruiters": get_top_recruiters(),
+            "revenue": get_monthly_revenue_split(),
+            "meta": {
+                "year":year ,
+                "currency": "INR"
+            },
+            "revenue_summary": get_revenue_summary(),
+            # "notifications": get_admin_notifications(),
+            # "quick_actions": get_quick_actions_data()
+        })
+    
+
+class AdminPendingCountsAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        return Response({
+            "pending": get_recruiter_pending_counts()
+        })

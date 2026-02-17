@@ -7,23 +7,36 @@ import CompanyInfoCard from "../../components/jobseeker/jobs/jobdetails/CompanyI
 import SimilarJobs from "../../components/jobseeker/jobs/jobdetails/SimilarJobs";
 import JobDescription from "../../components/jobseeker/jobs/jobdetails/JobDescription";
 import JobActions from "../../components/jobseeker/jobs/jobdetails/JobActions";
+import AIInsightCard from "../../components/jobseeker/jobs/jobdetails/AIInsightCard";
 
-import { getJobDetail } from "@/apis/jobseeker/apis";
+import {
+  getJobDetail,
+  getJobResumeSimilarity,
+  getJobResumeInsight,
+} from "@/apis/jobseeker/apis";
 import { getCloudinaryUrl } from "@/utils/common/getCloudinaryUrl";
+import useAuth from "@/auth/context/useAuth";
 
 export default function JobDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [hasAppliedLocal, setHasAppliedLocal] = useState(job?.has_applied || false);
+  const [matchPercent, setMatchPercent] = useState(null);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [insightLocked, setInsightLocked] = useState(false);
+  const [insight, setInsight] = useState(null);
 
 
   /* ----------------------------------
      Fetch job detail
   ---------------------------------- */
   useEffect(() => {
+    let isActive = true;
+
     // Scroll to top when job changes
     window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -34,21 +47,81 @@ export default function JobDetailPage() {
 
         const res = await getJobDetail(id);
 
+        if (!isActive) return;
 
         setJob(res);
         setHasAppliedLocal(res.has_applied);
+        setMatchPercent(null);
+        setInsight(null);
+        setInsightLocked(false);
+        setLoading(false);
 
-              } catch (err) {
+        const currentUserId = Number(user?.user_id ?? user?.id);
+        const currentJobId = Number(id);
+
+        if (Number.isFinite(currentUserId) && Number.isFinite(currentJobId)) {
+          setInsightLoading(true);
+
+          // Fetch score in background
+          getJobResumeSimilarity({
+            userId: currentUserId,
+            jobId: currentJobId,
+          })
+            .then((similarity) => {
+              if (!isActive) return;
+              setMatchPercent(similarity?.match_percent ?? null);
+            })
+            .catch((similarityErr) => {
+              if (!isActive) return;
+              setMatchPercent(null);
+              if (similarityErr?.response?.status !== 404) {
+                console.error("Failed to fetch job match score", similarityErr);
+              }
+            });
+
+          // Fetch insight in background
+          getJobResumeInsight(currentJobId)
+            .then((insightRes) => {
+              if (!isActive) return;
+              const isLocked = Boolean(insightRes?.locked);
+              setInsightLocked(isLocked);
+              setInsight(isLocked ? null : (insightRes?.insight ?? null));
+            })
+            .catch((insightErr) => {
+              if (!isActive) return;
+              setInsight(null);
+              if (insightErr?.response?.status === 403) {
+                setInsightLocked(true);
+              } else if (insightErr?.response?.status !== 404) {
+                console.error("Failed to fetch AI insight", insightErr);
+              }
+            })
+            .finally(() => {
+              if (!isActive) return;
+              setInsightLoading(false);
+            });
+        } else {
+          setInsightLoading(false);
+        }
+
+      } catch (err) {
+        if (!isActive) return;
         console.error("Failed to fetch job detail", err);
         setError(true);
         setJob(null);
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
     fetchJob();
-  }, [id, hasAppliedLocal]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [id, hasAppliedLocal, user?.id, user?.user_id]);
 
   /* ----------------------------------
      States
@@ -73,13 +146,14 @@ export default function JobDetailPage() {
      Render
   ---------------------------------- */
   return (
-    <section className="bg-white py-10">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="bg-gradient-to-b from-slate-50 via-white to-blue-50 py-8 md:py-10">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT */}
           <main className="lg:col-span-8 space-y-8">
             <JobHeader
               title={job.title}
+              matchPercent={matchPercent}
               companyName={job.company_name}
               logo={job.logo ? getCloudinaryUrl(job.logo) : null}
               jobType={job.job_type}
@@ -95,17 +169,28 @@ export default function JobDetailPage() {
               jobType={job.job_type}
               workMode={job.work_mode}
               experienceLevel={job.experience_level}
+              experience={job.experience}
               salaryMin={job.salary_min}
               salaryMax={job.salary_max}
               salaryCurrency={job.salary_currency}
               publishedAt={job.published_at}
+              applicationDeadline={job.application_deadline}
               locationCity={job.location_city}
               locationState={job.location_state}
               locationCountry={job.location_country}
             />
 
+            <AIInsightCard
+              isPremiumLocked={insightLocked}
+              loading={insightLoading}
+              insight={insight}
+            />
+
             <JobDescription
               description={job.description}
+              responsibilities={job.responsibilities}
+              requirements={job.requirements}
+              educationRequirement={job.education_requirement}
               skills={job.skills}
             />
 
@@ -114,14 +199,14 @@ export default function JobDetailPage() {
               isActive={true}
               status="published"
               hasApplied={job.has_applied}
-              isSaved={false}
+              isSaved={job.is_saved}
               hasAppliedLocal={hasAppliedLocal}
               setHasAppliedLocal={setHasAppliedLocal}
             />
           </main>
 
           {/* RIGHT */}
-          <aside className="lg:col-span-4 space-y-8">
+          <aside className="space-y-8 lg:col-span-4 lg:sticky lg:top-20 self-start">
             <CompanyInfoCard
               companyName={job.company_name}
               companyAbout={job.company_about}
@@ -139,7 +224,11 @@ export default function JobDetailPage() {
               openJobs={3}
             />
 
-            <SimilarJobs jobId={job.id} />
+            <SimilarJobs
+              jobId={job.id}
+              recruiterId={job.recruiter_id}
+              companyName={job.company_name}
+            />
           </aside>
         </div>
       </div>

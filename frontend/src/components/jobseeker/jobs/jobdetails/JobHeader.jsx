@@ -17,6 +17,7 @@ const timeAgo = (date) => {
 
 export default function JobHeader({
   title,
+  matchPercent,
   companyName,
   logo,
   jobType,
@@ -74,7 +75,11 @@ async function handleMessageRecruiter() {
   // const res = await api.get("v1/chat/conversation/", {
   //   params: { job_id: job.id, other_user_id: job.recruiter_id },
   // });
+
+  console.log("fetching conversatioN", job)
   const res = await fetchConversation(job.id, job.recruiter_id);
+  console.log("done fetching conversatioN")
+
 
   const conversation = res.data.conversation;
   console.log(conversation)
@@ -125,9 +130,16 @@ async function handleMessageRecruiter() {
           {/* TEXT */}
           <div>
             {/* TITLE */}
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
-              {title}
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
+                {title}
+              </h1>
+              {matchPercent !== null && matchPercent !== undefined && (
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-200">
+                  {Number(matchPercent).toFixed(2)}% Match
+                </span>
+              )}
+            </div>
 
             {/* COMPANY */}
             <p className="mt-1 text-sm font-medium text-slate-600">

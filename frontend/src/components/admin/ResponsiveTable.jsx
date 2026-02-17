@@ -99,7 +99,7 @@ export default function ResponsiveTable({
               const isDesc = ordering === `-${col.key}`;
 
               return (
-                <p key={col.key} className="text-sm text-gray-700 mb-2">
+                <div key={col.key} className="text-sm text-gray-700 mb-2">
                   <span className="font-semibold">{col.label}: </span>
 
                   {/* If sortable, allow clicking on label */}
@@ -117,7 +117,7 @@ export default function ResponsiveTable({
                       {col.render ? col.render(row, index) : row[col.key]}
                     </span>
                   )}
-                </p>
+                </div>
               );
             })}
 

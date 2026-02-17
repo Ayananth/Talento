@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAdmin } from "../../context/AdminContext";
 
 import {
   getAdminRecruiterProfile,
@@ -36,6 +37,9 @@ export default function AdminReviewCompanyPage() {
 
   const [rejectReason, setRejectReason] = useState("");
   const [modalError, setModalError] = useState("");
+
+const { pending, fetchPendingCounts } = useAdmin();
+  
 
   /* ----------------------------------------
      Fetch profile
@@ -108,6 +112,7 @@ export default function AdminReviewCompanyPage() {
     setSubmitting(true);
     try {
       await approveRecruiterProfile(data.id);
+      await fetchPendingCounts();
       navigate("/admin/recruiter/approvals", {
         state: {
           toast: {
@@ -133,6 +138,7 @@ export default function AdminReviewCompanyPage() {
     setSubmitting(true);
     try {
       await rejectRecruiterProfile(data.id, rejectReason);
+      await fetchPendingCounts();
       navigate("/admin/recruiter/approvals", {
         state: {
           toast: {

@@ -22,16 +22,21 @@ import jobseekerRoutes from "./jobseeker.routes";
 import commonRoutes from "./common.routes.jsx";
 import adminRoutes from "./admin.routes"
 import recruiterRoutes from "./recruiter.routes.jsx";
+import ErrorPage from "../../pages/common/ErrorPage.jsx";
 
 
 const router = createBrowserRouter([
-  ...authRoutes,
-  ...jobseekerRoutes,
-  ...commonRoutes,
-  ...adminRoutes,
-  ...recruiterRoutes
-
-
+  {
+    path: "/",
+    errorElement: <ErrorPage />,
+    children: [
+      ...authRoutes,
+      ...jobseekerRoutes,
+      ...commonRoutes,
+      ...adminRoutes,
+      ...recruiterRoutes,
+    ],
+  },
 ]);
 
 export default router;

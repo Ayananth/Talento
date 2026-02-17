@@ -31,10 +31,21 @@ export default function EducationModal({
     setDateError("");
   }, [initialData]);
 
-    useEffect(() => {
-    const today = new Date().setHours(0, 0, 0, 0);
-    const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
-    const end = endDate ? new Date(endDate).setHours(0, 0, 0, 0) : null;
+  useEffect(() => {
+    const parseDateOnly = (value) => {
+      if (!value) return null;
+      const parsed = new Date(value);
+      const time = parsed.getTime();
+      if (Number.isNaN(time)) return null;
+      parsed.setHours(0, 0, 0, 0);
+      return parsed.getTime();
+    };
+
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    const today = todayDate.getTime();
+    const start = parseDateOnly(startDate);
+    const end = parseDateOnly(endDate);
 
     // RESET error
     setDateError("");
@@ -45,8 +56,9 @@ export default function EducationModal({
         return;
     }
 
-    if (start === end) {
-        setDateError("Dates can not be same");
+    // Only compare equality when both dates are provided
+    if (start && end && start === end) {
+        setDateError("Dates cannot be the same.");
         return;
     }
 

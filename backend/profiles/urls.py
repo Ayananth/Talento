@@ -24,5 +24,8 @@ urlpatterns = [
 
     path("me/resumes/", views.JobSeekerResumeView.as_view()),
     path("me/resumes/<int:pk>/", views.JobSeekerResumeView.as_view()),
-]
+    path("me/resumes/<int:pk>/confirm/", views.ConfirmResumeAPIView.as_view()),
+    path("me/resumes/<int:resume_id>/set-default/", views.SetDefaultResumeAPIView.as_view()),
 
+
+]
