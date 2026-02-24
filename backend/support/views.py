@@ -1,5 +1,7 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -27,6 +29,10 @@ class SupportTicketViewSet(
     permission_classes = [IsAuthenticated, IsNotBlocked, IsTicketOwnerOrAdmin]
     queryset = SupportTicket.objects.select_related("user").prefetch_related("messages__author")
     http_method_names = ["get", "post", "patch", "head", "options"]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ["status"]
+    ordering_fields = ["id", "subject", "status", "created_at", "updated_at"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = self.request.user

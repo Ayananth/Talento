@@ -1,6 +1,6 @@
 import ResponsiveTable from "@/components/recruiter/ResponsiveTable";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getRecruiterJobs, deleteJob } from "@/apis/recruiter/apis";
 import ConfirmModal from "../common/ConfirmModal";
 import Toast from "@/components/common/Toast";
@@ -21,6 +21,7 @@ export default function RecruiterJobsListPage() {
 
   const [statusFilter, setStatusFilter] = useState("");
 
+  const location = useLocation();
   const navigate = useNavigate();
   const totalPages = Math.ceil(count / PAGE_SIZE);
 
@@ -62,6 +63,14 @@ export default function RecruiterJobsListPage() {
   useEffect(() => {
     fetchJobs();
   }, [ordering, page, statusFilter]);
+
+  useEffect(() => {
+    const toastFromState = location.state?.toast;
+    if (!toastFromState) return;
+
+    setToast(toastFromState);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
   /* ---------------------------------------------------
      DELETE JOB
@@ -162,13 +171,6 @@ export default function RecruiterJobsListPage() {
         className="text-blue-600 text-sm hover:underline"
       >
         View
-      </button>
-
-      <button
-        onClick={() => navigate(`/recruiter/jobs/${row.id}/edit`)}
-        className="text-gray-700 text-sm hover:underline"
-      >
-        Edit
       </button>
 
       <button

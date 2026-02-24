@@ -8,26 +8,39 @@ import {
 } from "@/apis/admin/supportTickets";
 import { formatDateTime } from "@/utils/common/utils";
 
+function normalizeUsername(value) {
+  if (typeof value !== "string") return value;
+  if (!value.includes("@")) return value;
+  return value.split("@")[0] || value;
+}
+
 function resolveAuthorLabel(message) {
   if (!message) return "Unknown";
-  if (message.author_email) return message.author_email;
+  if (message.author_username) return normalizeUsername(message.author_username);
+  if (message.author?.username) return normalizeUsername(message.author.username);
+  if (message.author_email) return normalizeUsername(message.author_email);
   if (message.author_name) return message.author_name;
   if (typeof message.author === "string") return message.author;
-  if (message.author?.email) return message.author.email;
-  if (message.author?.username) return message.author.username;
+  if (typeof message.author === "number") return `User #${message.author}`;
+  if (message.author?.email) return normalizeUsername(message.author.email);
   if (message.author?.id) return `User #${message.author.id}`;
   return "Unknown";
 }
 
 function resolveTicketOwner(ticket) {
   if (!ticket) return "—";
-  if (ticket.user_email) return ticket.user_email;
-  if (ticket.user_name) return ticket.user_name;
-  if (typeof ticket.user === "string") return ticket.user;
-  if (ticket.user?.email) return ticket.user.email;
-  if (ticket.user?.username) return ticket.user.username;
+  if (ticket.user_username) return normalizeUsername(ticket.user_username);
+  if (ticket.user?.username) return normalizeUsername(ticket.user.username);
+  if (ticket.user_email) return normalizeUsername(ticket.user_email);
+  if (typeof ticket.user === "number") return `User #${ticket.user}`;
+  if (ticket.user?.email) return normalizeUsername(ticket.user.email);
   if (ticket.user?.id) return `User #${ticket.user.id}`;
   return "—";
+}
+
+function resolveTicketOwnerRole(ticket) {
+  if (!ticket) return "—";
+  return ticket.user_role || ticket.user?.role || "—";
 }
 
 export default function AdminTicketDetailPage() {
@@ -133,6 +146,7 @@ export default function AdminTicketDetailPage() {
         ...updated,
         status: updated?.status || selectedStatus,
       }));
+      window.dispatchEvent(new Event("admin-support-tickets-updated"));
       setStatusSuccess("Ticket status updated.");
     } catch (error) {
       console.error("Failed to update ticket status", error);
@@ -195,6 +209,10 @@ export default function AdminTicketDetailPage() {
           <div>
             <p className="text-gray-500">Current Status</p>
             <p className="font-medium text-gray-900">{ticket.status || "open"}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Role</p>
+            <p className="font-medium text-gray-900">{resolveTicketOwnerRole(ticket)}</p>
           </div>
         </div>
 

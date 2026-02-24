@@ -4,8 +4,6 @@ import { getRecruiterJobDetail, updateJob } from "@/apis/recruiter/apis";
 import JobForm from "../../components/recruiter/forms/JobForm";
 import Toast from "@/components/common/Toast";
 
-
-
 export default function RecruiterJobEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -61,12 +59,13 @@ export default function RecruiterJobEditPage() {
     try {
       setLoading(true);
       await updateJob(id, payload);
-
-      await fetchJob();
-
-      setToast({
-        type: "success",
-        message: "Job updated successfully",
+      navigate("/recruiter/jobs", {
+        state: {
+          toast: {
+            type: "success",
+            message: "Job updated successfully",
+          },
+        },
       });
     } catch (err) {
       console.error(err);
@@ -79,7 +78,6 @@ export default function RecruiterJobEditPage() {
     }
   }}
 />
-
       {toast && (
         <Toast
           type={toast.type}

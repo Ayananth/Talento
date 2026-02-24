@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
 import { getAdminUnreadNotificationsCount } from "@/apis/admin/notifications";
+import { getAdminOpenTicketsCount } from "@/apis/admin/supportTickets";
 import { useAdminUnread } from "@/context/AdminUnreadContext";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -9,27 +10,35 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
   const { pendingNew, Contextloading } = useAdmin();
   const { unreadNotificationsCount, setUnreadNotificationsCount } = useAdminUnread();
+  const [openTicketsCount, setOpenTicketsCount] = React.useState(0);
 
   useEffect(() => {
     let isMounted = true;
 
-    const refreshUnreadNotifications = async () => {
+    const refreshSidebarCounts = async () => {
       try {
-        const count = await getAdminUnreadNotificationsCount();
+        const [notificationsCount, openCount] = await Promise.all([
+          getAdminUnreadNotificationsCount(),
+          getAdminOpenTicketsCount(),
+        ]);
+
         if (isMounted) {
-          setUnreadNotificationsCount(count);
+          setUnreadNotificationsCount(notificationsCount);
+          setOpenTicketsCount(openCount);
         }
       } catch (error) {
-        console.error("Failed to fetch admin unread notifications count", error);
+        console.error("Failed to fetch admin sidebar counts", error);
       }
     };
 
-    refreshUnreadNotifications();
-    const intervalId = setInterval(refreshUnreadNotifications, 30000);
+    refreshSidebarCounts();
+    const intervalId = setInterval(refreshSidebarCounts, 30000);
+    window.addEventListener("admin-support-tickets-updated", refreshSidebarCounts);
 
     return () => {
       isMounted = false;
       clearInterval(intervalId);
+      window.removeEventListener("admin-support-tickets-updated", refreshSidebarCounts);
     };
   }, [location.pathname, setUnreadNotificationsCount]);
   
@@ -42,7 +51,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       count: unreadNotificationsCount,
     },
     { name: "Transactions", path: "/admin/transactions",  },
-    { name: "Support Tickets", path: "/admin/tickets" },
+    { name: "Support Tickets", path: "/admin/tickets", count: openTicketsCount },
     { name: "Approvals", path: "/admin/recruiter/approvals",count: pendingNew?.total_pending_recruiters ?? 0, },
     { name: "Job Listings", path: "/admin/jobs" },
     { name: "Users", path: "/admin/users" },

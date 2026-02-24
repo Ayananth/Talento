@@ -18,6 +18,18 @@ export const getAdminTickets = async ({
   return response.data;
 };
 
+export const getAdminOpenTicketsCount = async () => {
+  const data = await getAdminTickets({
+    page: 1,
+    status: "open",
+  });
+
+  if (Array.isArray(data)) return data.length;
+  if (typeof data?.count === "number") return data.count;
+  if (Array.isArray(data?.results)) return data.results.length;
+  return 0;
+};
+
 export const getAdminTicketDetail = async (ticketId) => {
   const response = await api.get(`${TICKETS_BASE}${ticketId}/`);
   return response.data;
