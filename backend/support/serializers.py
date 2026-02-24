@@ -4,6 +4,7 @@ from .models import SupportTicket, SupportTicketMessage
 
 
 class SupportTicketMessageSerializer(serializers.ModelSerializer):
+    author_username = serializers.CharField(source="author.username", read_only=True)
     author_email = serializers.EmailField(source="author.email", read_only=True)
     author_role = serializers.CharField(source="author.role", read_only=True)
 
@@ -12,12 +13,20 @@ class SupportTicketMessageSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "author",
+            "author_username",
             "author_email",
             "author_role",
             "message",
             "created_at",
         ]
-        read_only_fields = ["id", "author", "author_email", "author_role", "created_at"]
+        read_only_fields = [
+            "id",
+            "author",
+            "author_username",
+            "author_email",
+            "author_role",
+            "created_at",
+        ]
 
 
 class SupportTicketListSerializer(serializers.ModelSerializer):
@@ -28,12 +37,35 @@ class SupportTicketListSerializer(serializers.ModelSerializer):
 
 
 class SupportTicketDetailSerializer(serializers.ModelSerializer):
+    user_username = serializers.CharField(source="user.username", read_only=True)
+    user_email = serializers.EmailField(source="user.email", read_only=True)
+    user_role = serializers.CharField(source="user.role", read_only=True)
     messages = SupportTicketMessageSerializer(many=True, read_only=True)
 
     class Meta:
         model = SupportTicket
-        fields = ["id", "user", "subject", "status", "created_at", "updated_at", "messages"]
-        read_only_fields = ["id", "user", "created_at", "updated_at", "messages"]
+        fields = [
+            "id",
+            "user",
+            "user_username",
+            "user_email",
+            "user_role",
+            "subject",
+            "status",
+            "created_at",
+            "updated_at",
+            "messages",
+        ]
+        read_only_fields = [
+            "id",
+            "user",
+            "user_username",
+            "user_email",
+            "user_role",
+            "created_at",
+            "updated_at",
+            "messages",
+        ]
 
 
 class SupportTicketCreateSerializer(serializers.ModelSerializer):
