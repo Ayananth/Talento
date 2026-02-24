@@ -146,6 +146,7 @@ export default function AdminTicketDetailPage() {
         ...updated,
         status: updated?.status || selectedStatus,
       }));
+      window.dispatchEvent(new Event("admin-support-tickets-updated"));
       setStatusSuccess("Ticket status updated.");
     } catch (error) {
       console.error("Failed to update ticket status", error);

@@ -58,6 +58,7 @@ export default function AdminTicketsPage() {
 
       setTickets(results);
       setCount(totalCount);
+      window.dispatchEvent(new Event("admin-support-tickets-updated"));
     } catch (err) {
       console.error("Failed to load support tickets", err);
       setError("Failed to load tickets. Please try again.");
