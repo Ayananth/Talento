@@ -6,8 +6,7 @@ export const uploadChatFile = async (chatId, file) => {
 
   const res = await api.post(
     `v1/chat/conversations/${chatId}/upload/`,
-    formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
+    formData
   );
 
   console.log(res.data)
