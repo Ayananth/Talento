@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { WS_BASE_URL } from "../constants/constants";
 
 export default function useChatSocket({
   conversationId,
@@ -19,7 +20,7 @@ export default function useChatSocket({
 useEffect(() => {
   if (!conversationId || !token) return;
 
-  const wsUrl = `ws://localhost:8002/ws/chat/${conversationId}/?token=${token}`;
+  const wsUrl = `${WS_BASE_URL}/ws/chat/${conversationId}/?token=${token}`;
   const socket = new WebSocket(wsUrl);
   socketRef.current = socket;
 

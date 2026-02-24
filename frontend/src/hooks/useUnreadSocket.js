@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { WS_BASE_URL } from "../constants/constants";
 
 export default function useUnreadSocket({ token, onUnread }) {
   const socketRef = useRef(null);
@@ -7,7 +8,7 @@ export default function useUnreadSocket({ token, onUnread }) {
     if (!token) return;
 
     const ws = new WebSocket(
-      `ws://localhost:8002/ws/user/notifications/?token=${token}`
+      `${WS_BASE_URL}/ws/user/notifications/?token=${token}`
     );
 
     socketRef.current = ws;
