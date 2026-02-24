@@ -33,7 +33,7 @@ SECRET_KEY = 'django-insecure-%ht^p3+h(b&wk3@!(c4g6(--$s*$i+2^%bo&3^j9q0o-9#b+w1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["ayananth.xyz", "www.ayananth.xyz",]
 
 
 # Application definition
@@ -199,7 +199,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "https://ayananth.xyz",
     "https://talento-dun.vercel.app",
-     "https://app.ayananth.xyz",    
+     "https://talento.ayananth.xyz",   
+      
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -207,6 +208,7 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://talento.ayananth.xyz",
 ]
 
 CORS_ALLOW_HEADERS = [
