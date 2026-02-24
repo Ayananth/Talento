@@ -8,11 +8,20 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def _get_list_env(var_name, default=""):
+    raw_value = os.getenv(var_name, default)
+    return [item.strip() for item in raw_value.split(",") if item.strip()]
+
+
+def _get_bool_env(var_name, default=False):
+    return os.getenv(var_name, str(default)).lower() in {"true", "1", "yes", "on"}
+
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 DEBUG = os.getenv("DJANGO_DEBUG") == "True"
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = _get_list_env("DJANGO_ALLOWED_HOSTS")
 
 
 
@@ -80,7 +89,14 @@ ASGI_APPLICATION = "config.asgi.application"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [("redis", 6379)]},
+        "CONFIG": {
+            "hosts": [
+                (
+                    os.getenv("REDIS_HOST", "redis"),
+                    int(os.getenv("REDIS_PORT", 6379)),
+                )
+            ]
+        },
     }
 }
 
@@ -154,43 +170,21 @@ SIMPLE_JWT = {
 }
 
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://ayananth.xyz",
-    "https://talento-dun.vercel.app",
-     "https://talento.ayananth.xyz",   
-      
-]
+CORS_ALLOWED_ORIGINS = _get_list_env("DJANGO_CORS_ALLOWED_ORIGINS")
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = _get_bool_env("DJANGO_CORS_ALLOW_CREDENTIALS", True)
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://talento.ayananth.xyz",
-]
+CSRF_TRUSTED_ORIGINS = _get_list_env("DJANGO_CSRF_TRUSTED_ORIGINS")
 
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "origin",
-    "user-agent",
-    "dnt",
-    "cache-control",
-    "x-requested-with",
-]
+CORS_ALLOW_HEADERS = _get_list_env(
+    "DJANGO_CORS_ALLOW_HEADERS",
+    "accept,accept-encoding,authorization,content-type,origin,user-agent,dnt,cache-control,x-requested-with",
+)
 
-CORS_ALLOW_METHODS = [
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS",
-]
+CORS_ALLOW_METHODS = _get_list_env(
+    "DJANGO_CORS_ALLOW_METHODS",
+    "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+)
 
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
