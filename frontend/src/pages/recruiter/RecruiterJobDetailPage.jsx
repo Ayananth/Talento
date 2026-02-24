@@ -121,9 +121,14 @@ export default function RecruiterJobDetailPage() {
       };
 
       await updateJob(id, payload);
-      const refreshed = await getRecruiterJobDetail(id);
-      setJob(refreshed);
-      setEditing(false);
+      navigate("/recruiter/jobs", {
+        state: {
+          toast: {
+            type: "success",
+            message: "Job updated successfully",
+          },
+        },
+      });
     } catch (err) {
       console.error("Failed to update job", err);
       const detail = err?.response?.data?.detail;
