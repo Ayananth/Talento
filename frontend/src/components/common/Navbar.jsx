@@ -129,7 +129,7 @@ export function Navbar({ role }) {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    const intervalId = setInterval(fetchUnreadMessagesCount, 5000);
+    const intervalId = setInterval(fetchUnreadMessagesCount, 30000);
     return () => clearInterval(intervalId);
   }, [fetchUnreadMessagesCount, isAuthenticated]);
 
