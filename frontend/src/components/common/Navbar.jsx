@@ -380,42 +380,104 @@ export function Navbar({ role }) {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t px-4 py-3 space-y-2">
-          {isJobseeker && (
-            <>
-              <button onClick={() => handleNavigation("/messages")}>
-                Messages
-              </button>
-              <button onClick={() => handleNavigation("/profile/saved-jobs")}>
-                Saved Jobs
-              </button>
-            </>
-          )}
+        <div className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-sm shadow-lg">
+          <div className="px-4 py-4 space-y-2">
+            {!isAuthenticated && role !== "admin" && (
+              <div className="space-y-2">
+                <button
+                  onClick={() => handleNavigation(loginUrl)}
+                  className="w-full text-left px-4 py-3 rounded-xl border border-gray-200 text-gray-800 font-medium hover:bg-gray-50 transition"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => handleNavigation(signupUrl)}
+                  className="w-full text-left px-4 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
 
-          {isRecruiter && (
-            <button
-              onClick={() => handleNavigation("/recruiter/jobs")}
-            >
-              Posted Jobs
-            </button>
-          )}
+            {isAuthenticated && (
+              <>
+                {isJobseeker && (
+                  <>
+                    <button
+                      onClick={() => handleNavigation("/messages")}
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-gray-800 font-medium hover:bg-gray-100 transition"
+                    >
+                      <span className="inline-flex items-center gap-3">
+                        <MessageSquare size={18} />
+                        Messages
+                      </span>
+                      {totalUnread > 0 && (
+                        <span className="bg-red-600 text-white text-xs font-semibold rounded-full min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center">
+                          {totalUnread}
+                        </span>
+                      )}
+                    </button>
 
-          <button
-            onClick={() =>
-              handleNavigation(
-                isRecruiter ? "/recruiter/dashboard" : "/profile"
-              )
-            }
-          >
-            Dashboard
-          </button>
+                    <button
+                      onClick={() => handleNavigation("/profile/saved-jobs")}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-800 font-medium hover:bg-gray-100 transition"
+                    >
+                      <Bookmark size={18} />
+                      Saved Jobs
+                    </button>
 
-          <button
-            onClick={handleLogout}
-            className="text-red-600"
-          >
-            Logout
-          </button>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        openNotificationDrawer();
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-gray-800 font-medium hover:bg-gray-100 transition"
+                    >
+                      <span className="inline-flex items-center gap-3">
+                        <Bell size={18} />
+                        Notifications
+                      </span>
+                      {unreadNotificationsCount > 0 && (
+                        <span className="bg-red-600 text-white text-xs font-semibold rounded-full min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center">
+                          {formattedNotificationCount}
+                        </span>
+                      )}
+                    </button>
+                  </>
+                )}
+
+                {isRecruiter && (
+                  <button
+                    onClick={() => handleNavigation("/recruiter/jobs")}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-800 font-medium hover:bg-gray-100 transition"
+                  >
+                    <Briefcase size={18} />
+                    Posted Jobs
+                  </button>
+                )}
+
+                <button
+                  onClick={() =>
+                    handleNavigation(
+                      isRecruiter ? "/recruiter/dashboard" : "/profile"
+                    )
+                  }
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-800 font-medium hover:bg-gray-100 transition"
+                >
+                  <CircleUser size={18} />
+                  Dashboard
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 font-medium hover:bg-red-50 transition"
+                >
+                  <LogOut size={18} />
+                  Logout
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
 

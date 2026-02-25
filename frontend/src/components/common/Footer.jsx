@@ -7,10 +7,10 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6">
 
         {/* TOP SECTION */}
-        <div className="grid grid-cols-6 md:grid-cols-6 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-10">
 
           {/* LOGO */}
-          <div className="col-span-2 md:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md">
                 <div className="w-5 h-5 bg-blue-300 rounded rotate-45"></div>
@@ -70,9 +70,9 @@ export default function Footer() {
           </p>
 
           <div className="flex gap-6 text-sm">
-            <a className="text-gray-600 hover:text-blue-600 transition">Privacy Policy</a>
-            <a className="text-gray-600 hover:text-blue-600 transition">Terms & Conditions</a>
-            <a className="text-gray-600 hover:text-blue-600 transition">Security</a>
+            <span className="text-gray-600">Privacy Policy</span>
+            <span className="text-gray-600">Terms & Conditions</span>
+            <span className="text-gray-600">Security</span>
           </div>
         </div>
       </div>
@@ -98,9 +98,7 @@ function FooterColumn({ title, links }) {
       <ul className="space-y-3">
         {links.map((item) => (
           <li key={item}>
-            <a className="text-gray-600 hover:text-blue-600 text-sm transition cursor-pointer">
-              {item}
-            </a>
+            <span className="text-gray-600 text-sm">{item}</span>
           </li>
         ))}
       </ul>
