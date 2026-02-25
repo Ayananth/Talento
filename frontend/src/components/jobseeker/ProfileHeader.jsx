@@ -214,14 +214,14 @@ export default function ProfileHeader({subscription}) {
       )}
 
       <div className="relative">
-        <div className="h-20 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.35),transparent_55%)]" />
+        <div className="h-16 sm:h-20 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-16 sm:h-20 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.35),transparent_55%)]" />
 
-        <div className="relative z-10 px-6 pb-6 sm:px-8 sm:pb-8">
+        <div className="relative z-10 px-3 pb-4 sm:px-8 sm:pb-8">
           <div className="-mt-12 grid gap-8 lg:grid-cols-[1fr_280px]">
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.6)]">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.6)]">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-                <div className="relative flex-shrink-0" style={{ width: 122, height: 122 }}>
+                <div className="relative flex-shrink-0 mx-auto sm:mx-0" style={{ width: 122, height: 122 }}>
                   <div className="h-full w-full overflow-hidden rounded-2xl border-4 border-white bg-gradient-to-br from-slate-100 to-slate-200 shadow-md ring-1 ring-slate-200">
                     {uploading ? (
                       <AvatarPlaceholder size={122} />
@@ -250,13 +250,13 @@ export default function ProfileHeader({subscription}) {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="truncate text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
+                    <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-3xl break-words">
                       {getVal(profile.fullname, "User")}
                     </h1>
                     <button
                       onClick={() => setShowModal(true)}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                      className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition-colors duration-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                       title="Edit profile"
                     >
                       <Edit3 size={14} />
@@ -345,16 +345,16 @@ function InfoItem({ icon, label, text }) {
         <span className="text-slate-400">{icon}</span>
         <span>{label}</span>
       </div>
-      <p className="truncate text-sm font-medium text-slate-700">{text}</p>
+      <p className="text-sm font-medium text-slate-700 break-words sm:truncate">{text}</p>
     </div>
   );
 }
 
 function InfoChip({ icon, text }) {
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700">
+    <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700">
       <span className="text-slate-500">{icon}</span>
-      <span>{text}</span>
+      <span className="truncate max-w-[180px] sm:max-w-none">{text}</span>
     </div>
   );
 }

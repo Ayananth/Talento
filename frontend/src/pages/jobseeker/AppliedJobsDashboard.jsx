@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Briefcase, Calendar, MapPin, DollarSign, Clock, Filter, Search, IndianRupee } from 'lucide-react';
+import { Briefcase, Calendar, MapPin, Clock, Filter } from 'lucide-react';
 import { getMyApplications } from '../../apis/jobseeker/apis';
 import Pagination from "../../components/common/Pagination"
 
@@ -62,7 +62,6 @@ const ORDERING_OPTIONS = [
 
 
 const AppliedJobsDashboard = () => {
-  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [appliedJobs, setAppliedJobs] = useState([]);
 
@@ -70,11 +69,9 @@ const AppliedJobsDashboard = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [ordering, setOrdering] = useState("-applied_at");
 
-  const PAGE_SIZE = 10; 
-
 useEffect(() => {
   setPage(1);
-}, [statusFilter, searchTerm, ordering]);
+}, [statusFilter, ordering]);
 
 
 useEffect(() => {
@@ -100,21 +97,6 @@ useEffect(() => {
 
 
   
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Under Review':
-        return 'bg-blue-100 text-blue-800';
-      case 'Interview Scheduled':
-        return 'bg-purple-100 text-purple-800';
-      case 'Rejected':
-        return 'bg-red-100 text-red-800';
-      case 'Offer Received':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   // const filteredJobs = appliedJobs.filter(job => {
   //   const matchesSearch = job.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
   //                        job.company_name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -125,15 +107,15 @@ useEffect(() => {
   // const statusOptions = ['all', 'Under Review', 'Interview Scheduled', 'Offer Received', 'Rejected'];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Applied Jobs</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Applied Jobs</h1>
           <p className="text-gray-600">Track and manage your job applications</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm mb-6 p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4">
             <div className="flex-1 relative">
               {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -145,9 +127,9 @@ useEffect(() => {
               /> */}
             </div>
 
-<div className="relative">
+<div className="relative w-full md:w-auto">
   <select
-    className="pl-4 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+    className="w-full md:w-auto pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
     value={ordering}
     onChange={(e) => setOrdering(e.target.value)}
   >
@@ -159,10 +141,10 @@ useEffect(() => {
   </select>
 </div>
 
-            <div className="relative">
+            <div className="relative w-full md:w-auto">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <select
-                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
+                className="w-full md:w-auto pl-10 pr-8 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -178,7 +160,47 @@ useEffect(() => {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="md:hidden divide-y divide-gray-200">
+            {appliedJobs.map((job) => (
+              <article key={job.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-900">{job.title}</h3>
+                    <p className="text-sm text-gray-600 truncate">{job.company_name}</p>
+                    {job.type && (
+                      <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        {job.type}
+                      </span>
+                    )}
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                      STATUS_CONFIG[job.status]?.color || "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {STATUS_CONFIG[job.status]?.label || job.status}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-400" />
+                    <span>{job.location_city || "Location not specified"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-gray-400" />
+                    <span>{job.salary || "Salary not disclosed"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span>Applied {new Date(job.applied_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
