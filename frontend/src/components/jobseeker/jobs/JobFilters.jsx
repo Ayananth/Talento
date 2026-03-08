@@ -1,6 +1,14 @@
 import React from 'react'
 
-const JobFilters = ({ filters, setFilters, salaryDraft, setSalaryDraft, onApplySalary, onResetSalary }) => {
+const JobFilters = ({
+  filters,
+  setFilters,
+  salaryDraft,
+  setSalaryDraft,
+  onApplySalary,
+  onResetSalary,
+  mode = "desktop",
+}) => {
 
 
 
@@ -38,10 +46,12 @@ const EXPERIENCE_LEVELS = [
 
 
   return (
-
-
-          <aside className="lg:col-span-3">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sticky top-24">
+          <div className={mode === "desktop" ? "lg:col-span-3" : ""}>
+            <div
+              className={`bg-white border border-slate-200 rounded-2xl p-6 ${
+                mode === "desktop" ? "sticky top-24" : ""
+              }`}
+            >
               <div className="space-y-6">
 
                 {/* LOCATION */}
@@ -210,7 +220,7 @@ const EXPERIENCE_LEVELS = [
 
               </div>
             </div>
-          </aside>
+          </div>
 
 
 
