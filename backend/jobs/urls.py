@@ -14,6 +14,7 @@ from jobs.views.public import (
     UnsaveJobView,
     LandingPageStatsView,
     JobResumeSimilarityView,
+    JobResumeBatchSimilarityView,
     JobResumeInsightView,
 )
 # from jobs.views.jobseeker import JobApplyView
@@ -92,6 +93,11 @@ urlpatterns = [
         "jobs/public/similarity/",
         JobResumeSimilarityView.as_view(),
         name="job-resume-similarity",
+    ),
+    path(
+        "jobs/public/similarity/batch/",
+        JobResumeBatchSimilarityView.as_view(),
+        name="job-resume-similarity-batch",
     ),
     path(
         "jobs/public/<int:job_id>/insight/",

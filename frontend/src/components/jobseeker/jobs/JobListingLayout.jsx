@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import JobCard from "./JobCard";
-import { getJobs } from "../../../apis/jobseeker/apis";
+import { getJobs, getJobResumeSimilarityBatch } from "../../../apis/jobseeker/apis";
 import Pagination from "@/components/common/Pagination";
-import { PAGE_SIZE } from "@/constants/constants";
 import company_placeholder from '../../../assets/common/image.png' 
 import JobFilters from "./JobFilters";
 
@@ -11,8 +10,10 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
  }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [matchScoresLoading, setMatchScoresLoading] = useState(false);
   // const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
+  const fetchTokenRef = useRef(0);
   // const [ordering, setOrdering] = useState("-published_at");
 
 
@@ -22,7 +23,42 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
 
   const totalPages = Math.ceil(count / pageSize);
 
+  const fetchMatchScores = async (jobIds, fetchToken) => {
+    if (!jobIds.length) return;
+
+    try {
+      setMatchScoresLoading(true);
+      const similarityRes = await getJobResumeSimilarityBatch(jobIds);
+      if (fetchTokenRef.current !== fetchToken) return;
+
+      const scoreMap = new Map(
+        (similarityRes?.scores || []).map((item) => [
+          Number(item.job_id),
+          item.match_percent,
+        ])
+      );
+
+      setJobs((prevJobs) =>
+        prevJobs.map((job) => ({
+          ...job,
+          match_percent: scoreMap.has(job.id) ? scoreMap.get(job.id) : null,
+        }))
+      );
+    } catch (similarityErr) {
+      if (similarityErr?.response?.status !== 404) {
+        console.error("Failed to fetch job match scores", similarityErr);
+      }
+    } finally {
+      if (fetchTokenRef.current === fetchToken) {
+        setMatchScoresLoading(false);
+      }
+    }
+  };
+
   const fetchJobs = async () => {
+    const fetchToken = Date.now();
+    fetchTokenRef.current = fetchToken;
+
     try {
       setLoading(true);
 
@@ -34,6 +70,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
           pageSize,
           filters,
       });
+      if (fetchTokenRef.current !== fetchToken) return;
 
       const mapped = res.results.map((job) => ({
         id: job.id,
@@ -50,15 +87,27 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
         salary_from: job.salary_min,
         salary_to: job.salary_max,
         salary_currency: job.salary_currency,
-        has_applied: job.has_applied
+        has_applied: job.has_applied,
+        match_percent: null,
       }));
 
       setJobs(mapped);
       setCount(res.count);
-      setJobCount(res.count)
+      setJobCount(res.count);
+      setLoading(false);
+
+      const jobIds = mapped.map((job) => job.id);
+      if (jobIds.length) {
+        void fetchMatchScores(jobIds, fetchToken);
+      } else {
+        setMatchScoresLoading(false);
+      }
     } catch (err) {
       console.error("Failed to fetch jobs", err);
-    } finally {
+      setJobs([]);
+      setCount(0);
+      setJobCount(0);
+      setMatchScoresLoading(false);
       setLoading(false);
     }
   };
@@ -111,7 +160,12 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {jobs.map((job) => (
-                  <JobCard key={job.id} job={job} searchParams={searchParams} />
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    searchParams={searchParams}
+                    matchScoreLoading={matchScoresLoading}
+                  />
                 ))}
               </div>
             )}
