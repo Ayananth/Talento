@@ -4,6 +4,7 @@ import { getJobs, getJobResumeSimilarityBatch } from "../../../apis/jobseeker/ap
 import Pagination from "@/components/common/Pagination";
 import company_placeholder from '../../../assets/common/image.png' 
 import JobFilters from "./JobFilters";
+import { Link } from "react-router-dom";
 
 export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize, page, setPage, filters, setFilters, searchParams,
   salaryDraft, setSalaryDraft, onApplySalary, onResetSalary
@@ -11,6 +12,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [matchScoresLoading, setMatchScoresLoading] = useState(false);
+  const [matchScoreNotice, setMatchScoreNotice] = useState(null);
   // const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
   const fetchTokenRef = useRef(0);
@@ -30,6 +32,20 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
       setMatchScoresLoading(true);
       const similarityRes = await getJobResumeSimilarityBatch(jobIds);
       if (fetchTokenRef.current !== fetchToken) return;
+
+      if (similarityRes?.resume_required) {
+        if (similarityRes?.reason === "no_resume") {
+          setMatchScoreNotice("Upload your resume to unlock match scores for every job.");
+        } else if (similarityRes?.reason === "no_default_resume") {
+          setMatchScoreNotice("Set one resume as default to see match scores in job cards.");
+        } else if (similarityRes?.reason === "default_resume_not_ready") {
+          setMatchScoreNotice("Your default resume is being processed. Match scores will appear once it is ready.");
+        } else {
+          setMatchScoreNotice("Resume is required to calculate match scores.");
+        }
+      } else {
+        setMatchScoreNotice(null);
+      }
 
       const scoreMap = new Map(
         (similarityRes?.scores || []).map((item) => [
@@ -94,6 +110,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
       setJobs(mapped);
       setCount(res.count);
       setJobCount(res.count);
+      setMatchScoreNotice(null);
       setLoading(false);
 
       const jobIds = mapped.map((job) => job.id);
@@ -107,6 +124,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
       setJobs([]);
       setCount(0);
       setJobCount(0);
+      setMatchScoreNotice(null);
       setMatchScoresLoading(false);
       setLoading(false);
     }
@@ -158,16 +176,30 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
             ) : jobs.length === 0 ? (
               <p className="text-gray-500 text-sm">No jobs found</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {jobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    searchParams={searchParams}
-                    matchScoreLoading={matchScoresLoading}
-                  />
-                ))}
-              </div>
+              <>
+                {matchScoreNotice && (
+                  <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p>{matchScoreNotice}</p>
+                    <Link
+                      to="/profile"
+                      className="inline-flex items-center justify-center rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 transition-colors"
+                    >
+                      Upload Resume
+                    </Link>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {jobs.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      searchParams={searchParams}
+                      matchScoreLoading={matchScoresLoading}
+                    />
+                  ))}
+                </div>
+              </>
             )}
 
             {/* PAGINATION */}

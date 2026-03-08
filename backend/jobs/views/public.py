@@ -148,8 +148,30 @@ class JobResumeBatchSimilarityView(APIView):
         )
 
         if not default_resume_embedding:
+            has_resume = JobSeekerResume.objects.filter(
+                profile=request.user.jobseeker_profile,
+                is_deleted=False,
+            ).exists()
+            has_default_resume = JobSeekerResume.objects.filter(
+                profile=request.user.jobseeker_profile,
+                is_deleted=False,
+                is_default=True,
+            ).exists()
+
+            if not has_resume:
+                reason = "no_resume"
+            elif not has_default_resume:
+                reason = "no_default_resume"
+            else:
+                reason = "default_resume_not_ready"
+
             return Response(
-                {"scores": [], "missing_job_ids": unique_job_ids},
+                {
+                    "scores": [],
+                    "missing_job_ids": unique_job_ids,
+                    "resume_required": True,
+                    "reason": reason,
+                },
                 status=status.HTTP_200_OK,
             )
 
@@ -178,7 +200,12 @@ class JobResumeBatchSimilarityView(APIView):
         missing_job_ids = [job_id for job_id in unique_job_ids if job_id not in score_map]
 
         return Response(
-            {"scores": scores, "missing_job_ids": missing_job_ids},
+            {
+                "scores": scores,
+                "missing_job_ids": missing_job_ids,
+                "resume_required": False,
+                "reason": None,
+            },
             status=status.HTTP_200_OK,
         )
 
