@@ -1,6 +1,16 @@
 import { motion } from "framer-motion";
-import { Briefcase, Users, TrendingUp, CheckCircle } from "lucide-react";
+import {
+  Briefcase,
+  Users,
+  TrendingUp,
+  CheckCircle,
+  Target,
+  BellRing,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
 import React from "react";
+import { Link } from "react-router-dom";
 import heroImg1 from "@/assets/jobseeker/hero-1.png";
 import heroImg2 from "@/assets/jobseeker/hero-2.png";
 
@@ -37,6 +47,23 @@ export default function JobseekerLandingPage() {
   ];
 
   const popularSearches = ["Designer", "Web", "iOS", "Developer", "PHP", "Senior", "Engineer"];
+  const premiumFeatures = [
+    {
+      icon: Target,
+      title: "Job Match Score",
+      description: "See how closely your profile matches each role before you apply.",
+    },
+    {
+      icon: BellRing,
+      title: "Instant Job Alerts",
+      description: "Get immediate notifications when relevant jobs are posted.",
+    },
+    {
+      icon: Sparkles,
+      title: "AI-Based JD Summary",
+      description: "Get AI insights on your strengths and gaps against the job description.",
+    },
+  ];
 
   return (
     <>
@@ -201,6 +228,54 @@ export default function JobseekerLandingPage() {
               );
             })}
           </div>
+        </div>
+      </motion.section>
+
+      {/* PREMIUM FEATURES SECTION */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={containerVariants}
+        className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 text-white"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div variants={itemVariants} className="text-center max-w-3xl mx-auto mb-12">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">Premium</p>
+            <h2 className="mt-3 text-3xl md:text-4xl font-bold">Unlock Smarter Job Search Tools</h2>
+            <p className="mt-4 text-slate-200">
+              Upgrade to premium and move faster with AI-powered insights and real-time opportunities.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {premiumFeatures.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={feature.title}
+                  variants={itemVariants}
+                  className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-sm p-6"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-300/30 flex items-center justify-center mb-4">
+                    <Icon className="w-6 h-6 text-blue-200" />
+                  </div>
+                  <h3 className="text-xl font-semibold">{feature.title}</h3>
+                  <p className="mt-2 text-slate-200 text-sm leading-relaxed">{feature.description}</p>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          <motion.div variants={itemVariants} className="mt-10 text-center">
+            <Link
+              to="/premium"
+              className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 font-semibold px-6 py-3 hover:bg-blue-100 transition-colors"
+            >
+              Explore Premium
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
         </div>
       </motion.section>
 

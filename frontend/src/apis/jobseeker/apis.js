@@ -62,6 +62,17 @@ export const getJobResumeSimilarity = async ({ userId, jobId }) => {
   return res.data;
 };
 
+export const getJobResumeSimilarityBatch = async (jobIds = []) => {
+  if (!Array.isArray(jobIds) || jobIds.length === 0) {
+    return { scores: [], missing_job_ids: [] };
+  }
+
+  const res = await api.post("/v1/jobs/jobs/public/similarity/batch/", {
+    job_ids: jobIds.map(Number).filter(Number.isFinite),
+  });
+  return res.data;
+};
+
 export const getJobResumeInsight = async (jobId) => {
   const res = await api.get(`/v1/jobs/jobs/public/${Number(jobId)}/insight/`);
   return res.data;

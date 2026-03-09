@@ -20,7 +20,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -113,10 +113,101 @@ class PublicJobListView(ListAPIView):
             )
         else:
             queryset = queryset.annotate(
-                has_applied=Value(False, output_field=BooleanField())
+                has_applied=Value(False, output_field=BooleanField()),
             )
 
         return queryset
+
+
+class JobBatchSimilarityRequestSerializer(serializers.Serializer):
+    job_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=False,
+    )
+
+
+class JobResumeBatchSimilarityView(APIView):
+    permission_classes = [IsJobseeker]
+
+    def post(self, request):
+        serializer = JobBatchSimilarityRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        job_ids = serializer.validated_data["job_ids"]
+        # Preserve order while removing duplicates.
+        unique_job_ids = list(dict.fromkeys(job_ids))
+
+        default_resume_embedding = (
+            ResumeEmbedding.objects.filter(
+                resume__profile=request.user.jobseeker_profile,
+                resume__is_default=True,
+                resume__is_deleted=False,
+            )
+            .only("embedding")
+            .first()
+        )
+
+        if not default_resume_embedding:
+            has_resume = JobSeekerResume.objects.filter(
+                profile=request.user.jobseeker_profile,
+                is_deleted=False,
+            ).exists()
+            has_default_resume = JobSeekerResume.objects.filter(
+                profile=request.user.jobseeker_profile,
+                is_deleted=False,
+                is_default=True,
+            ).exists()
+
+            if not has_resume:
+                reason = "no_resume"
+            elif not has_default_resume:
+                reason = "no_default_resume"
+            else:
+                reason = "default_resume_not_ready"
+
+            return Response(
+                {
+                    "scores": [],
+                    "missing_job_ids": unique_job_ids,
+                    "resume_required": True,
+                    "reason": reason,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        embedding_rows = (
+            JobEmbedding.objects.filter(job_id__in=unique_job_ids)
+            .annotate(
+                similarity=ExpressionWrapper(
+                    1 - CosineDistance("embedding", default_resume_embedding.embedding),
+                    output_field=FloatField(),
+                )
+            )
+            .values("job_id", "similarity")
+        )
+
+        score_map = {
+            row["job_id"]: round(float(row["similarity"]) * 100, 2)
+            for row in embedding_rows
+            if row.get("similarity") is not None
+        }
+
+        scores = [
+            {"job_id": job_id, "match_percent": score_map[job_id]}
+            for job_id in unique_job_ids
+            if job_id in score_map
+        ]
+        missing_job_ids = [job_id for job_id in unique_job_ids if job_id not in score_map]
+
+        return Response(
+            {
+                "scores": scores,
+                "missing_job_ids": missing_job_ids,
+                "resume_required": False,
+                "reason": None,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 

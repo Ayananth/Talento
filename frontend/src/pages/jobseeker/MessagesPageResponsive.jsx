@@ -75,22 +75,52 @@ const { connected, sendMessage, sendRead } = useChatSocket({
 });
 
 const handleUnreadEvent = useCallback(
-  (event) => {
+  async (event) => {
     const convoId = Number(event.conversation_id);
 
     // If open chat → ignore (already seen)
     if (convoId === activeConversationId) return;
 
-    setConversations((prev) =>
-      prev.map((chat) =>
+    let hasConversation = false;
+    setConversations((prev) => {
+      hasConversation = prev.some((chat) => chat.id === convoId);
+      if (!hasConversation) return prev;
+
+      return prev.map((chat) =>
         chat.id === convoId
           ? {
               ...chat,
               unread_count: (chat.unread_count ?? 0) + 1,
             }
           : chat
-      )
-    );
+      );
+    });
+
+    if (!hasConversation) {
+      try {
+        const data = await fetchConversations();
+        const normalized = data.map((c) => ({
+          id: c.id,
+          name: c.other_user?.name ?? "Unknown",
+          jobTitle: c.other_user?.job ?? "Job",
+          lastMessage: c.last_message ?? "No messages yet",
+          timestamp: c.last_message_time
+            ? new Date(c.last_message_time).toLocaleString()
+            : "",
+          unread_count: c.unread_count,
+          isBlocked: false,
+          companyName: null,
+          companyLogo: c.other_user?.img ?? null,
+        }));
+        setConversations(normalized);
+        setTotalUnread(
+          normalized.reduce((sum, c) => sum + (c.unread_count ?? 0), 0)
+        );
+        return;
+      } catch (error) {
+        console.error("Failed to refresh conversations from unread event", error);
+      }
+    }
 
     setTotalUnread((prev) => prev + 1);
   },

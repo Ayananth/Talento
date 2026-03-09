@@ -322,7 +322,9 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-slate-700">Phone Number</label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="tel"
                       value={phone}
@@ -333,7 +335,9 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-slate-700">Current Location</label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Current Location <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       value={location}
@@ -344,7 +348,9 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-slate-700">Total Experience (years)</label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Total Experience (years) <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="number"
                       min="0"
@@ -357,7 +363,9 @@ export default function ApplyJobModal({ open, onClose, jobId, onApplied }) {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-slate-700">Current Role</label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Current Role <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       value={currentRole}

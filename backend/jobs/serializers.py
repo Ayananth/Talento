@@ -334,6 +334,7 @@ class PublicJobListSerializer(serializers.ModelSerializer):
     logo = serializers.SerializerMethodField()
     company_name = serializers.CharField(source = 'recruiter.company_name')
     has_applied = serializers.BooleanField(read_only=True)
+    match_percent = serializers.SerializerMethodField()
     class Meta:
         model = Job
         fields = [
@@ -356,9 +357,13 @@ class PublicJobListSerializer(serializers.ModelSerializer):
             "logo",
             'company_name',
             "has_applied",
+            "match_percent",
             "recruiter_id"
 
         ]
+
+    def get_match_percent(self, obj):
+        return getattr(obj, "match_percent", None)
 
     def get_logo(self, obj):
         recruiter = getattr(obj, "recruiter", None)

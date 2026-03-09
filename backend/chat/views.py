@@ -3,6 +3,8 @@ import logging
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -153,6 +155,21 @@ class StartConversationAPIView(APIView):
                 conversation=conversation,
                 sender=user,
                 content=content,
+            )
+
+        # Notify the recipient immediately when a conversation is started via REST.
+        recipient_id = recruiter.id if user.id == jobseeker.id else jobseeker.id
+        channel_layer = get_channel_layer()
+        if channel_layer is not None:
+            async_to_sync(channel_layer.group_send)(
+                f"user_{recipient_id}",
+                {
+                    "type": "unread_event",
+                    "conversation_id": conversation.id,
+                    "message_id": message.id,
+                    "sender_id": user.id,
+                    "created_at": message.created_at.isoformat(),
+                },
             )
 
         logger.info(
