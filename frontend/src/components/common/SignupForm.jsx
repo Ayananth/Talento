@@ -18,6 +18,19 @@ const resolveAuthMessage = (err, fallback) => {
   return fallback;
 };
 
+const validateUsername = (rawValue) => {
+  const value = (rawValue || "").trim();
+
+  if (value.length < 3) return "Username must be at least 3 characters long.";
+  if (value.length > 25) return "Username cannot be longer than 25 characters.";
+  if (!/^[A-Za-z0-9._ -]+$/.test(value)) {
+    return "Username can only contain letters, numbers, spaces, dots, underscores, and hyphens.";
+  }
+  if (!/[A-Za-z]/.test(value)) return "Username must contain at least one letter.";
+
+  return "";
+};
+
 useEffect(() => {
   if (!error) return;
 
@@ -54,6 +67,12 @@ const handleSubmit = async (e) => {
   setError(null);
   setFieldErrors({});
 
+  const usernameError = validateUsername(form.username);
+  if (usernameError) {
+    setFieldErrors({ username: usernameError });
+    return;
+  }
+
   if (form.password !== form.password_confirmed) {
     setFieldErrors({ password_confirmed: "Passwords do not match" });
     return;
@@ -61,7 +80,7 @@ const handleSubmit = async (e) => {
 
   try {
     setLoading(true);
-    await register({ ...form, role });
+    await register({ ...form, username: form.username.trim(), role });
     navigate("/email-verification", { state: { email: form.email, role } });
   } catch (err) {
     if (err.fields && Object.keys(err.fields).length > 0) {
