@@ -95,8 +95,8 @@ const handleSubmit = async (e) => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
-      <div className="max-w-md w-full">
+    <div className="w-full">
+      <div className="max-w-md w-full mx-auto">
 
         <h3 className="text-center text-blue-600 font-medium mb-2">Register</h3>
         <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">
