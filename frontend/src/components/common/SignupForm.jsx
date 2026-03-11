@@ -5,7 +5,7 @@ import useAuth from "@/auth/context/useAuth"
 import GoogleLoginButton from "./GoogleLoginButton";
 
 
-const SignupForm = ({role}) => {
+const SignupForm = ({ role, loginPath = "/login", showGoogleLogin = true }) => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState(null);               // General or backend error
@@ -62,7 +62,7 @@ const handleSubmit = async (e) => {
   try {
     setLoading(true);
     await register({ ...form, role });
-    navigate("/email-verification", { state: { email: form.email } });
+    navigate("/email-verification", { state: { email: form.email, role } });
   } catch (err) {
     if (err.fields && Object.keys(err.fields).length > 0) {
       setFieldErrors(err.fields);
@@ -96,7 +96,7 @@ const handleSubmit = async (e) => {
           <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
         {/* <GoogleLoginButton role={"jobseeker"} /> */}
-          {role !== "admin" && <GoogleLoginButton role={role} setAuthError={setError} />}
+          {showGoogleLogin && <GoogleLoginButton role={role} setAuthError={setError} />}
 
 
         </button>
@@ -222,7 +222,7 @@ const handleSubmit = async (e) => {
 
         <p className="text-center text-gray-600 mt-4">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to={loginPath} className="text-blue-600 hover:underline">
             Sign In
           </Link>
         </p>

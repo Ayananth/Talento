@@ -6,7 +6,12 @@ import { Eye, EyeOff } from "lucide-react";
 import GoogleLoginButton from "@/components/common/GoogleLoginButton";
 
 
-export default function     LoginForm({role, redirectAfterLogin}) {
+export default function LoginForm({
+  role,
+  redirectAfterLogin,
+  signupPath = "/signup",
+  showGoogleLogin = true,
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
@@ -75,20 +80,7 @@ const handleSubmit = async (e) => {
 
   // const handleNavigate = () => navigate("/signup");
 
-  const handleNavigate = ()=>{
-      switch (role) {
-        case "jobseeker":
-          navigate("/signup");
-          break;
-
-        case "recruiter":
-          navigate("/recruiter/signup");
-          break;
-
-        default:
-          console.warn("Unknown role:", role);
-      }
-  }
+  const handleNavigate = () => navigate(signupPath);
 
   return (
 <div className="w-full">
@@ -115,7 +107,7 @@ const handleSubmit = async (e) => {
           <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
         {/* <GoogleLoginButton role={"jobseeker"} /> */}
-          {role !== "admin" && <GoogleLoginButton role={role} setAuthError={setLoginError} />}
+          {showGoogleLogin && <GoogleLoginButton role={role} setAuthError={setLoginError} />}
 
 
         </button>
