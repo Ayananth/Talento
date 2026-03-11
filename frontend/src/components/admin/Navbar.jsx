@@ -29,7 +29,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
 
         {/* Logout */}
         <button
-          onClick={() => logout()}
+          onClick={() => logout({ redirect: false })}
           className="hover:text-blue-600 transition"
         >
           Logout

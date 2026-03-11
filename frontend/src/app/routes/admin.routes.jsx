@@ -26,7 +26,7 @@ const adminRoutes = [
   {
     path: "/admin",
     element: (
-      <RequireAuth>
+      <RequireAuth redirectTo="/admin/login">
         <AdminProvider>
           <AdminUnreadProvider>
             <AdminLayout />

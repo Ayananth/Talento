@@ -169,7 +169,7 @@ const register = async (payload) => {
   // -------------------------------------------------
   // LOGOUT
   // -------------------------------------------------
-  const logout = async () => {
+  const logout = async ({ redirect = true } = {}) => {
     const role = user?.role;
 
     clearTokens();
@@ -181,6 +181,8 @@ const register = async (payload) => {
     try {
       await api.post("/v1/auth/signout/", {}, { withCredentials: true });
     } catch (err) {}
+
+    if (!redirect) return;
 
     if (role === "recruiter") window.location.href = "/recruiter/login";
     else if (role === "admin") window.location.href = "/admin/login";
