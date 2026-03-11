@@ -6,6 +6,8 @@ export default function EmailVerificationForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
+  const role = location.state?.role === "recruiter" ? "recruiter" : "jobseeker";
+  const loginPath = role === "recruiter" ? "/recruiter/login" : "/login";
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -94,7 +96,7 @@ export default function EmailVerificationForm() {
       )}
 
       <button
-        onClick={() => navigate("/login")}
+        onClick={() => navigate(loginPath)}
         className="text-blue-600 underline mt-6 block mx-auto"
       >
         Back to Login

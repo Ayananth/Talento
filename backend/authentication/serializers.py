@@ -31,6 +31,25 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("email","username", "password", "password_confirmed", "role")
         extra_kwargs = {"password": {"write_only": True}}
 
+    def validate_username(self, value):
+        username = (value or "").strip()
+
+        if len(username) < 3:
+            raise serializers.ValidationError("Username must be at least 3 characters long.")
+
+        if len(username) > 25:
+            raise serializers.ValidationError("Username cannot be longer than 25 characters.")
+
+        if not re.fullmatch(r"[A-Za-z0-9._ -]+", username):
+            raise serializers.ValidationError(
+                "Username can only contain letters, numbers, spaces, dots, underscores, and hyphens."
+            )
+
+        if not re.search(r"[A-Za-z]", username):
+            raise serializers.ValidationError("Username must contain at least one letter.")
+
+        return username
+
     def validate(self, attrs):
 
         if attrs["password"] != attrs["password_confirmed"]:
@@ -209,5 +228,4 @@ class AdminUserDetailSerializer(serializers.ModelSerializer):
             "jobseeker_profile",
             "recruiter_profile",
         ]
-
 

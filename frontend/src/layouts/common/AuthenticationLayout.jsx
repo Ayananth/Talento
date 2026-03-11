@@ -4,10 +4,10 @@ import Footer from '../../components/common/Footer'
 import { Outlet } from 'react-router-dom'
 
 
-const AuthenticationLayout = () => {
+const AuthenticationLayout = ({ role = "jobseeker" }) => {
   return (
     <div>
-      <Navbar />
+      <Navbar role={role} />
       <Outlet/>
       <Footer/>
     </div>

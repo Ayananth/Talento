@@ -5,7 +5,7 @@ import useAuth from "@/auth/context/useAuth"
 import GoogleLoginButton from "./GoogleLoginButton";
 
 
-const SignupForm = ({role}) => {
+const SignupForm = ({ role, loginPath = "/login", showGoogleLogin = true }) => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState(null);               // General or backend error
@@ -16,6 +16,19 @@ const resolveAuthMessage = (err, fallback) => {
   const msg = typeof err?.message === "string" ? err.message.trim() : "";
   if (msg && !/^\d{3}$/.test(msg)) return msg;
   return fallback;
+};
+
+const validateUsername = (rawValue) => {
+  const value = (rawValue || "").trim();
+
+  if (value.length < 3) return "Username must be at least 3 characters long.";
+  if (value.length > 25) return "Username cannot be longer than 25 characters.";
+  if (!/^[A-Za-z0-9._ -]+$/.test(value)) {
+    return "Username can only contain letters, numbers, spaces, dots, underscores, and hyphens.";
+  }
+  if (!/[A-Za-z]/.test(value)) return "Username must contain at least one letter.";
+
+  return "";
 };
 
 useEffect(() => {
@@ -54,6 +67,12 @@ const handleSubmit = async (e) => {
   setError(null);
   setFieldErrors({});
 
+  const usernameError = validateUsername(form.username);
+  if (usernameError) {
+    setFieldErrors({ username: usernameError });
+    return;
+  }
+
   if (form.password !== form.password_confirmed) {
     setFieldErrors({ password_confirmed: "Passwords do not match" });
     return;
@@ -61,8 +80,8 @@ const handleSubmit = async (e) => {
 
   try {
     setLoading(true);
-    await register({ ...form, role });
-    navigate("/email-verification", { state: { email: form.email } });
+    await register({ ...form, username: form.username.trim(), role });
+    navigate("/email-verification", { state: { email: form.email, role } });
   } catch (err) {
     if (err.fields && Object.keys(err.fields).length > 0) {
       setFieldErrors(err.fields);
@@ -76,8 +95,8 @@ const handleSubmit = async (e) => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
-      <div className="max-w-md w-full">
+    <div className="w-full">
+      <div className="max-w-md w-full mx-auto">
 
         <h3 className="text-center text-blue-600 font-medium mb-2">Register</h3>
         <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">
@@ -96,7 +115,7 @@ const handleSubmit = async (e) => {
           <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
         {/* <GoogleLoginButton role={"jobseeker"} /> */}
-          {role !== "admin" && <GoogleLoginButton role={role} setAuthError={setError} />}
+          {showGoogleLogin && <GoogleLoginButton role={role} setAuthError={setError} />}
 
 
         </button>
@@ -222,7 +241,7 @@ const handleSubmit = async (e) => {
 
         <p className="text-center text-gray-600 mt-4">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to={loginPath} className="text-blue-600 hover:underline">
             Sign In
           </Link>
         </p>

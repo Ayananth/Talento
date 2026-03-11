@@ -3,6 +3,19 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "../../auth/useAuth";
 import { Link } from "react-router-dom";
 
+const validateUsername = (rawValue) => {
+  const value = (rawValue || "").trim();
+
+  if (value.length < 3) return "Username must be at least 3 characters long.";
+  if (value.length > 25) return "Username cannot be longer than 25 characters.";
+  if (!/^[A-Za-z0-9._ -]+$/.test(value)) {
+    return "Username can only contain letters, numbers, spaces, dots, underscores, and hyphens.";
+  }
+  if (!/[A-Za-z]/.test(value)) return "Username must contain at least one letter.";
+
+  return "";
+};
+
 
 const SignUp = ({role}) => {
   const { register } = useAuth();
@@ -37,6 +50,12 @@ const SignUp = ({role}) => {
     e.preventDefault();
     setError(null);
     setFieldErrors({});
+
+    const usernameError = validateUsername(form.username);
+    if (usernameError) {
+      setFieldErrors({ username: usernameError });
+      return;
+    }
     
     // BASIC FRONTEND VALIDATION
     if (form.password !== form.password_confirmed) {
@@ -46,6 +65,7 @@ const SignUp = ({role}) => {
 
     try {
       form.role = role
+      form.username = form.username.trim();
       setLoading(true);
 
       await register(form);
