@@ -155,7 +155,9 @@ const login = async ({ email, password, role = "jobseeker" }) => {
   // --- REGISTER ---
 const register = async (payload) => {
   try {
-    const res = await api.post("/v1/auth/sign_up", payload);
+    const requestedRole = payload?.role === "recruiter" ? "recruiter" : "jobseeker";
+    const endpoint = `/v1/auth/register/${requestedRole}`;
+    const res = await api.post(endpoint, payload);
     return res;
   } catch (err) {
     throw normalizeAuthError(err, "Signup failed. Please try again.");

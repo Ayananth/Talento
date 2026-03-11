@@ -10,8 +10,8 @@ from . import views
 app_name = "authentication"
 
 urlpatterns = [
-    path("sign_up", view=views.SignUpView.as_view(), name="sign_up"),
-    # path("sign_up", view=views.SignUpView, name="sign_up"),
+    path("register/jobseeker", view=views.JobSeekerSignUpView.as_view(), name="register_jobseeker"),
+    path("register/recruiter", view=views.RecruiterSignUpView.as_view(), name="register_recruiter"),
     # path("test", views.test, name="test"),
     # path(route="delete", view=views.DeleteUserView.as_view(), name="delete"),
     # path(route="sign_in", view=views.SignInView.as_view(), name="sign_in"),

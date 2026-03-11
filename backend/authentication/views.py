@@ -47,7 +47,14 @@ token_generator = PasswordResetTokenGenerator()
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
 logger = logging.getLogger(__name__)
-class SignUpView(APIView):
+class BaseSignUpView(APIView):
+    role = None
+
+    def _get_signup_payload(self, request):
+        payload = request.data.copy()
+        payload["role"] = self.role
+        return payload
+
     def post(self, request):
         email = request.data.get("email")
         logger.info("Signup attempt", extra={"email": email})
@@ -86,7 +93,7 @@ class SignUpView(APIView):
             )
 
         except USER.DoesNotExist:
-            serializer = UserSerializer(data=request.data)
+            serializer = UserSerializer(data=self._get_signup_payload(request))
             serializer.is_valid(raise_exception=True)
             user = serializer.save()
 
@@ -106,6 +113,15 @@ class SignUpView(APIView):
                 {"message": "User created successfully. Verification email sent."},
                 status=status.HTTP_201_CREATED,
             )
+
+
+class JobSeekerSignUpView(BaseSignUpView):
+    role = "jobseeker"
+
+
+class RecruiterSignUpView(BaseSignUpView):
+    role = "recruiter"
+
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
