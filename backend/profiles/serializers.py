@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+import re
 
 
 from .models import (
@@ -44,6 +45,19 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
         if obj.profile_image:
             return obj.profile_image.url
         return None
+
+    def validate_notice_period(self, value):
+        if value is None:
+            return value
+
+        notice_period = value.strip()
+        if not notice_period:
+            return notice_period
+
+        if re.match(r"^-\s*\d+", notice_period):
+            raise serializers.ValidationError("Notice period cannot be negative.")
+
+        return notice_period
 
 class JobSeekerSkillSerializer(serializers.ModelSerializer):
     class Meta:
