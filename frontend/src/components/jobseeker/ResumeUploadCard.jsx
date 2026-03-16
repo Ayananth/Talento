@@ -11,6 +11,11 @@ import {
 import api from "../../apis/api";
 
 const POLL_INTERVAL_MS = 5000;
+const ALLOWED_PDF_MIME_TYPES = new Set([
+  "application/pdf",
+  "application/x-pdf",
+  "application/octet-stream",
+]);
 
 const EMPTY_REVIEW_FORM = {
   role: "",
@@ -304,15 +309,12 @@ export default function ResumeUploadCard() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const allowed = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/rtf",
-    ];
+    const fileName = (file.name || "").toLowerCase();
+    const isPdfExtension = fileName.endsWith(".pdf");
+    const hasAllowedMime = !file.type || ALLOWED_PDF_MIME_TYPES.has(file.type);
 
-    if (!allowed.includes(file.type)) {
-      setError("Only PDF, DOC, DOCX, RTF files allowed.");
+    if (!isPdfExtension || !hasAllowedMime) {
+      setError("Only PDF resumes are accepted.");
       event.target.value = "";
       return;
     }
@@ -342,7 +344,11 @@ export default function ResumeUploadCard() {
       setSuccess("Resume uploaded successfully!");
     } catch (err) {
       console.error("upload failed", err);
-      setError("Failed to upload resume.");
+      const serverError =
+        err?.response?.data?.file?.[0] ||
+        err?.response?.data?.error ||
+        err?.message;
+      setError(serverError || "Failed to upload resume.");
     } finally {
       setUploading(false);
       event.target.value = "";
@@ -557,13 +563,13 @@ export default function ResumeUploadCard() {
             <input
               id="resumeInput"
               type="file"
-              accept=".pdf,.doc,.docx,.rtf"
+              accept=".pdf,application/pdf"
               className="hidden"
               onChange={handleResumeUpload}
             />
 
             <p className="text-sm text-slate-500 mt-2">
-              Supported Formats: doc, docx, rtf, pdf, upto 2 MB
+              Supported format: PDF only, up to 2 MB
             </p>
           </div>
         </div>
