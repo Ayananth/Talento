@@ -61,6 +61,8 @@ export default function ProfileEditModal({ isOpen, onClose, initialData, onSucce
 
     if (!form.notice_period.trim())
       newErr.notice_period = "Notice period required";
+    else if (/^-\s*\d+/.test(form.notice_period.trim()))
+      newErr.notice_period = "Notice period cannot be negative";
 
     if (!/^[0-9]{10}$/.test(form.phone_number))
       newErr.phone_number = "Phone number must be 10 digits";

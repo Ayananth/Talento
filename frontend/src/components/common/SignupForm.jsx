@@ -18,15 +18,18 @@ const resolveAuthMessage = (err, fallback) => {
   return fallback;
 };
 
-const validateUsername = (rawValue) => {
-  const value = (rawValue || "").trim();
+const normalizeName = (rawValue) => (rawValue || "").trim().replace(/\s+/g, " ");
 
-  if (value.length < 3) return "Username must be at least 3 characters long.";
-  if (value.length > 25) return "Username cannot be longer than 25 characters.";
-  if (!/^[A-Za-z0-9._ -]+$/.test(value)) {
-    return "Username can only contain letters, numbers, spaces, dots, underscores, and hyphens.";
+const validateUsername = (rawValue) => {
+  const value = normalizeName(rawValue);
+
+  if (value.length < 2) return "Name must be at least 2 characters long.";
+  if (value.length > 25) return "Name cannot be longer than 25 characters.";
+  if (!/^[A-Za-z]+(?:[ '.-][A-Za-z]+)*$/.test(value)) {
+    return "Name can only contain letters, single spaces, apostrophes, dots, and hyphens.";
   }
-  if (!/[A-Za-z]/.test(value)) return "Username must contain at least one letter.";
+  const letterCount = (value.match(/[A-Za-z]/g) || []).length;
+  if (letterCount < 2) return "Name must include at least 2 letters.";
 
   return "";
 };
@@ -80,7 +83,7 @@ const handleSubmit = async (e) => {
 
   try {
     setLoading(true);
-    await register({ ...form, username: form.username.trim(), role });
+    await register({ ...form, username: normalizeName(form.username), role });
     navigate("/email-verification", { state: { email: form.email, role } });
   } catch (err) {
     if (err.fields && Object.keys(err.fields).length > 0) {
@@ -107,28 +110,13 @@ const handleSubmit = async (e) => {
         </p>
 
         <button className="w-full flex items-center justify-center gap-3  border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
-          {/* <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-            className="h-5 w-5"
-          />
-          <span className="text-gray-700 font-medium">Sign in with Google</span> */}
 
-        {/* <GoogleLoginButton role={"jobseeker"} /> */}
           {showGoogleLogin && <GoogleLoginButton role={role} setAuthError={setError} />}
 
 
         </button>
 
-        {/* Google Login */}
-        {/* <button className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition">
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-            className="h-5 w-5"
-          />
-          <span className="text-gray-700 font-medium">Sign in with Google</span>
-        </button> */}
+
 
         <div className="flex items-center my-6">
           <hr className="grow border-gray-300" />

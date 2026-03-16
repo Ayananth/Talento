@@ -1,5 +1,8 @@
-from rest_framework import serializers
+import re
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
 
 
 from .models import (
@@ -13,6 +16,11 @@ from .models import (
 )
 
 User = get_user_model()
+ALLOWED_PDF_MIME_TYPES = {
+    "application/pdf",
+    "application/x-pdf",
+    "application/octet-stream",
+}
 
 
 class UserBasicSerializer(serializers.ModelSerializer):
@@ -44,6 +52,19 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
         if obj.profile_image:
             return obj.profile_image.url
         return None
+
+    def validate_notice_period(self, value):
+        if value is None:
+            return value
+
+        notice_period = value.strip()
+        if not notice_period:
+            return notice_period
+
+        if re.match(r"^-\s*\d+", notice_period):
+            raise serializers.ValidationError("Notice period cannot be negative.")
+
+        return notice_period
 
 class JobSeekerSkillSerializer(serializers.ModelSerializer):
     class Meta:
@@ -109,6 +130,27 @@ class JobSeekerResumeSerializer(serializers.ModelSerializer):
             "status",
             "parsing_error",
         ]
+
+    def validate_file(self, value):
+        if not value:
+            raise serializers.ValidationError("Resume file is required.")
+
+        file_name = (getattr(value, "name", "") or "").strip()
+        content_type = (getattr(value, "content_type", "") or "").lower()
+        extension = Path(file_name).suffix.lower()
+
+        if extension != ".pdf":
+            raise serializers.ValidationError("Only PDF resumes are accepted.")
+
+        if content_type and content_type not in ALLOWED_PDF_MIME_TYPES:
+            raise serializers.ValidationError(
+                "Invalid resume MIME type. Please upload a valid PDF file."
+            )
+
+        if value.size > 2 * 1024 * 1024:
+            raise serializers.ValidationError("Resume size should be less than 2 MB.")
+
+        return value
 
     def create(self, validated_data):
         profile = self.context["profile"]
