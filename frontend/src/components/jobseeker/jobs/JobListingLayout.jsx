@@ -6,19 +6,22 @@ import company_placeholder from '../../../assets/common/image.png'
 import JobFilters from "./JobFilters";
 import { Link } from "react-router-dom";
 import { SlidersHorizontal, X } from "lucide-react";
+import useAuth from "@/auth/context/useAuth";
 
 export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize, page, setPage, filters, setFilters, searchParams,
   salaryDraft, setSalaryDraft, onApplySalary, onResetSalary
  }) {
+  const { isAuthenticated, user } = useAuth();
+  const isAuthenticatedJobseeker =
+    Boolean(isAuthenticated) && user?.role === "jobseeker";
+
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [matchScoresLoading, setMatchScoresLoading] = useState(false);
   const [matchScoreNotice, setMatchScoreNotice] = useState(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  // const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
   const fetchTokenRef = useRef(0);
-  // const [ordering, setOrdering] = useState("-published_at");
 
 
 
@@ -116,7 +119,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
       setLoading(false);
 
       const jobIds = mapped.map((job) => job.id);
-      if (jobIds.length) {
+      if (isAuthenticatedJobseeker && jobIds.length) {
         void fetchMatchScores(jobIds, fetchToken);
       } else {
         setMatchScoresLoading(false);
@@ -138,7 +141,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
 
   useEffect(() => {
     fetchJobs();
-  }, [page, trigger, pageSize, ordering, filters]);
+  }, [page, trigger, pageSize, ordering, filters, isAuthenticatedJobseeker]);
 
   useEffect(() => {
   setPage(1);
@@ -175,10 +178,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
               </button>
             </div>
 
-            {/* TOOLBAR */}
-            {/* <div className="mb-6">
-              <div className="h-14 bg-slate-50 rounded-xl"></div>
-            </div> */}
+
 
             {/* JOB GRID */}
             {loading ? (
