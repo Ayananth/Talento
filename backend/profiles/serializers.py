@@ -21,6 +21,8 @@ ALLOWED_PDF_MIME_TYPES = {
     "application/x-pdf",
     "application/octet-stream",
 }
+MIN_NOTICE_PERIOD_DAYS = 0
+MAX_NOTICE_PERIOD_DAYS = 365
 
 
 class UserBasicSerializer(serializers.ModelSerializer):
@@ -63,6 +65,18 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
 
         if re.match(r"^-\s*\d+", notice_period):
             raise serializers.ValidationError("Notice period cannot be negative.")
+
+        match = re.search(r"\d+", notice_period)
+        if not match:
+            raise serializers.ValidationError(
+                "Notice period must include a number (for example: 30 days)."
+            )
+
+        notice_days = int(match.group())
+        if not (MIN_NOTICE_PERIOD_DAYS <= notice_days <= MAX_NOTICE_PERIOD_DAYS):
+            raise serializers.ValidationError(
+                f"Notice period must be between {MIN_NOTICE_PERIOD_DAYS} and {MAX_NOTICE_PERIOD_DAYS} days."
+            )
 
         return notice_period
 

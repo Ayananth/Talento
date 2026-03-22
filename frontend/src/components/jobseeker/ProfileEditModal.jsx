@@ -3,6 +3,9 @@ import { createPortal } from "react-dom";
 import { X, AlertCircle, Loader2 } from "lucide-react";
 import api from "../../apis/api";
 
+const MIN_NOTICE_PERIOD_DAYS = 0;
+const MAX_NOTICE_PERIOD_DAYS = 365;
+
 export default function ProfileEditModal({ isOpen, onClose, initialData, onSuccess }) {
   const [form, setForm] = useState({
     fullname: "",
@@ -63,6 +66,14 @@ export default function ProfileEditModal({ isOpen, onClose, initialData, onSucce
       newErr.notice_period = "Notice period required";
     else if (/^-\s*\d+/.test(form.notice_period.trim()))
       newErr.notice_period = "Notice period cannot be negative";
+    else if (!/\d+/.test(form.notice_period))
+      newErr.notice_period = "Notice period must include a number (e.g. 30 days)";
+    else {
+      const noticeValue = Number((form.notice_period.match(/\d+/) || [])[0]);
+      if (noticeValue < MIN_NOTICE_PERIOD_DAYS || noticeValue > MAX_NOTICE_PERIOD_DAYS) {
+        newErr.notice_period = `Notice period must be between ${MIN_NOTICE_PERIOD_DAYS} and ${MAX_NOTICE_PERIOD_DAYS} days`;
+      }
+    }
 
     if (!/^[0-9]{10}$/.test(form.phone_number))
       newErr.phone_number = "Phone number must be 10 digits";
@@ -133,7 +144,7 @@ export default function ProfileEditModal({ isOpen, onClose, initialData, onSucce
     {
       key: "notice_period",
       label: "Notice Period",
-      placeholder: "e.g. 30 days",
+      placeholder: "e.g. 30 days (0-365)",
       required: true,
       type: "text",
     },
