@@ -12,10 +12,6 @@ app_name = "authentication"
 urlpatterns = [
     path("register/jobseeker", view=views.JobSeekerSignUpView.as_view(), name="register_jobseeker"),
     path("register/recruiter", view=views.RecruiterSignUpView.as_view(), name="register_recruiter"),
-    # path("test", views.test, name="test"),
-    # path(route="delete", view=views.DeleteUserView.as_view(), name="delete"),
-    # path(route="sign_in", view=views.SignInView.as_view(), name="sign_in"),
-    # path(route="pwreset", view=views.PasswordResetView.as_view(), name="pwreset"),
 
     path('signin', views.MyTokenObtainPairView.as_view(), name='sign_in'),
     path('signout', views.LogoutView.as_view(), name='sign_out'),
