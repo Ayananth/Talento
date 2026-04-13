@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, Upload, FileText, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "@/apis/api";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
 export default function RecruiterResubmitPage() {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ export default function RecruiterResubmitPage() {
   };
 
   if (loading || !formData) {
-    return <p className="p-10 text-center">Loading...</p>;
+    return <LoadingScreen label="Loading your draft…" />;
   }
 
   /* ---------------- UI ---------------- */

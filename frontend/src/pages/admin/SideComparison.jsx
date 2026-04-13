@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
 /**
  * SAMPLE DATA (Replace with API call)
@@ -32,7 +33,7 @@ export default function SideComparison() {
   }, []);
 
   if (!existingData || !pendingData) {
-    return <p className="text-center py-10">Loading...</p>;
+    return <LoadingScreen label="Loading comparison…" />;
   }
 
   const fields = Object.keys(existingData);
