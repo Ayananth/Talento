@@ -82,12 +82,18 @@ export default MessageItem;
 const parseTimestamp = (timestamp) => {
   if (!timestamp) return null;
 
-  // Expected: "DD/MM/YYYY, HH:mm:ss"
-  const [datePart, timePart] = timestamp.split(", ");
-  if (!datePart || !timePart) return null;
+  if (timestamp instanceof Date) return timestamp;
 
+  // First try native parsing (handles ISO and many locale strings).
+  const nativeParsed = new Date(timestamp);
+  if (!Number.isNaN(nativeParsed.getTime())) return nativeParsed;
+
+  // Fallback for "DD/MM/YYYY, HH:mm:ss" style values.
+  const [datePart, timePart] = String(timestamp).split(", ");
+  if (!datePart || !timePart) return null;
   const [day, month, year] = datePart.split("/");
-  return new Date(`${year}-${month}-${day}T${timePart}`);
+  const fallbackParsed = new Date(`${year}-${month}-${day}T${timePart}`);
+  return Number.isNaN(fallbackParsed.getTime()) ? null : fallbackParsed;
 };
 
 const formatDate = (timestamp) => {
