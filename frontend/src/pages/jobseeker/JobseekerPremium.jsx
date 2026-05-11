@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
   Check,
-  Zap,
   Target,
-  FileText,
-  Eye,
-  Activity,
   Sparkles,
+  BellRing,
+  Brain,
 } from "lucide-react";
 
 import {
@@ -23,34 +21,40 @@ import useAuth from "../../auth/context/useAuth";
 
 const features = [
   {
-    icon: Zap,
-    title: "Unlimited job applications",
-    description: "Apply to as many jobs as you want without restrictions",
-  },
-  {
     icon: Target,
-    title: "Auto-apply to matching jobs",
-    description: "Automatically apply to jobs that match your profile",
+    title: "Job match score",
+    description:
+      "See your resume-to-job match score so you can prioritize roles with better fit.",
+    highlight: "Prioritize faster",
+    tone: "from-cyan-500/15 to-blue-500/10",
+    iconTone: "bg-cyan-100 text-cyan-700",
   },
   {
-    icon: FileText,
-    title: "Resume optimization & ATS score",
-    description: "Get your resume optimized for applicant tracking systems",
+    icon: Brain,
+    title: "AI JD analysis",
+    description:
+      "Get AI analysis of each job description against your resume with strengths, gaps, and summary.",
+    highlight: "Role-fit breakdown",
+    tone: "from-violet-500/15 to-indigo-500/10",
+    iconTone: "bg-violet-100 text-violet-700",
   },
   {
-    icon: Eye,
-    title: "Priority recruiter visibility",
-    description: "Stand out and get noticed by recruiters first",
-  },
-  {
-    icon: Activity,
-    title: "Application status tracking",
-    description: "Track all your applications in real-time",
+    icon: BellRing,
+    title: "Instant job alerts",
+    description:
+      "Receive instant match alerts when newly posted jobs align with your profile.",
+    highlight: "Be first to apply",
+    tone: "from-amber-500/15 to-orange-500/10",
+    iconTone: "bg-amber-100 text-amber-700",
   },
   {
     icon: Sparkles,
-    title: "AI-powered job recommendations",
-    description: "Get personalized job matches powered by AI",
+    title: "AI resume insights",
+    description:
+      "Unlock deeper AI insight blocks in job detail pages to improve application quality faster.",
+    highlight: "Sharper applications",
+    tone: "from-emerald-500/15 to-teal-500/10",
+    iconTone: "bg-emerald-100 text-emerald-700",
   },
 ];
 
@@ -198,27 +202,40 @@ if (subscriptionStatus?.is_active) {
         {/* ===== FEATURES (jobseeker only) ===== */}
         {!isRecruiter && (
           <div className="mb-16">
-            <h2 className="text-2xl font-bold text-center mb-10">
-              Premium Features
-            </h2>
+            <div className="mx-auto mb-8 max-w-2xl text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600">
+                Included in Pro
+              </p>
+              <h2 className="mt-2 text-3xl font-bold text-slate-900">
+                Premium Features
+              </h2>
+              <p className="mt-3 text-sm text-slate-600">
+                Built for faster applications, better fit decisions, and instant opportunities.
+              </p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {features.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
                   <div
                     key={index}
-                    className="bg-white rounded-lg p-6 border shadow-sm hover:shadow-md"
+                    className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br ${feature.tone} p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
                   >
-                    <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                        <Icon className="w-6 h-6 text-blue-600" />
+                    <div className="absolute right-0 top-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-white/30 blur-2xl" />
+
+                    <div className="relative flex items-start gap-4">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${feature.iconTone} shadow-sm`}>
+                        <Icon className="h-6 w-6" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900">
+                      <div className="flex-1">
+                        <span className="inline-flex rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                          {feature.highlight}
+                        </span>
+                        <h3 className="mt-2 text-lg font-semibold text-slate-900">
                           {feature.title}
                         </h3>
-                        <p className="text-sm text-slate-600">
+                        <p className="mt-1 text-sm leading-relaxed text-slate-700">
                           {feature.description}
                         </p>
                       </div>
