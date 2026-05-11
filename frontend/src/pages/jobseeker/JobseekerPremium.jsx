@@ -61,7 +61,9 @@ export default function JobseekerPremium({navigateTo="/profile?payment=success"}
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
-  const {fetchSubscription} = useAuth();
+  const { user, fetchSubscription } = useAuth();
+  const isRecruiter = user?.role === "recruiter";
+  const proRedirectPath = isRecruiter ? "/recruiter/dashboard" : "/profile";
 
 
 
@@ -157,10 +159,10 @@ if (subscriptionStatus?.is_active) {
         </strong>
       </p>
       <button
-        onClick={() => navigate("/profile")}
+        onClick={() => navigate(proRedirectPath)}
         className="bg-blue-600 text-white px-6 py-2 rounded-lg"
       >
-        Go to Profile
+        {isRecruiter ? "Go to Dashboard" : "Go to Profile"}
       </button>
     </div>
   );
@@ -193,38 +195,40 @@ if (subscriptionStatus?.is_active) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* ===== FEATURES ===== */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-10">
-            Premium Features
-          </h2>
+        {/* ===== FEATURES (jobseeker only) ===== */}
+        {!isRecruiter && (
+          <div className="mb-16">
+            <h2 className="text-2xl font-bold text-center mb-10">
+              Premium Features
+            </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={index}
-                  className="bg-white rounded-lg p-6 border shadow-sm hover:shadow-md"
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900">
-                        {feature.title}
-                      </h3>
-                      <p className="text-sm text-slate-600">
-                        {feature.description}
-                      </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {features.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div
+                    key={index}
+                    className="bg-white rounded-lg p-6 border shadow-sm hover:shadow-md"
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <Icon className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900">
+                          {feature.title}
+                        </h3>
+                        <p className="text-sm text-slate-600">
+                          {feature.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ===== PLANS ===== */}
         <div className="mb-12">
@@ -336,4 +340,3 @@ const getPlanBadge = (plan) => {
 
   return null;
 };
-
