@@ -42,7 +42,21 @@ const MessagesPageResponsive = () => {
 const accessToken = useMemo(() => getAccessToken(), []);
 const navigate = useNavigate();
 
+const toTimestampMs = (value) => {
+  if (!value) return 0;
+  const parsed = new Date(value);
+  const time = parsed.getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+
+const sortConversationsByLatest = (items) =>
+  [...items].sort(
+    (a, b) => toTimestampMs(b.lastMessageAt || b.timestamp) - toTimestampMs(a.lastMessageAt || a.timestamp)
+  );
+
 const handleWsMessage = useCallback((msg) => {
+  const createdAt = msg.created_at ? new Date(msg.created_at).toLocaleString() : "";
+
   setMessages((prev) => [
     ...prev,
     {
@@ -51,11 +65,26 @@ const handleWsMessage = useCallback((msg) => {
       senderName: msg.sender_name,
       text: msg.content,
       attachment: msg.attachment ?? null,
-      timestamp: new Date(msg.created_at).toLocaleString(),
+      timestamp: createdAt,
       isRead: false,
     },
   ]);
-}, []);
+
+  setConversations((prev) => {
+    const convoId = Number(msg.conversation_id ?? activeConversationId);
+    const updated = prev.map((chat) =>
+      chat.id === convoId
+        ? {
+            ...chat,
+            lastMessage: msg.content ?? chat.lastMessage,
+            timestamp: createdAt || chat.timestamp,
+            lastMessageAt: msg.created_at ?? chat.lastMessageAt,
+          }
+        : chat
+    );
+    return sortConversationsByLatest(updated);
+  });
+}, [activeConversationId]);
 
 
 const handleReadAck = useCallback((messageId) => {
@@ -81,47 +110,43 @@ const handleUnreadEvent = useCallback(
     // If open chat → ignore (already seen)
     if (convoId === activeConversationId) return;
 
-    let hasConversation = false;
-    setConversations((prev) => {
-      hasConversation = prev.some((chat) => chat.id === convoId);
-      if (!hasConversation) return prev;
-
-      return prev.map((chat) =>
-        chat.id === convoId
-          ? {
-              ...chat,
-              unread_count: (chat.unread_count ?? 0) + 1,
-            }
-          : chat
+    try {
+      const data = await fetchConversations();
+      const normalized = data.map((c) => ({
+        id: c.id,
+        name: c.other_user?.name ?? "Unknown",
+        jobTitle: c.other_user?.job ?? "Job",
+        lastMessage: c.last_message ?? "No messages yet",
+        timestamp: c.last_message_time
+          ? new Date(c.last_message_time).toLocaleString()
+          : "",
+        lastMessageAt: c.last_message_time ?? null,
+        unread_count: c.unread_count,
+        isBlocked: false,
+        companyName: null,
+        companyLogo: c.other_user?.img ?? null,
+      }));
+      setConversations(normalized);
+      setTotalUnread(
+        normalized.reduce((sum, c) => sum + (c.unread_count ?? 0), 0)
       );
-    });
-
-    if (!hasConversation) {
-      try {
-        const data = await fetchConversations();
-        const normalized = data.map((c) => ({
-          id: c.id,
-          name: c.other_user?.name ?? "Unknown",
-          jobTitle: c.other_user?.job ?? "Job",
-          lastMessage: c.last_message ?? "No messages yet",
-          timestamp: c.last_message_time
-            ? new Date(c.last_message_time).toLocaleString()
-            : "",
-          unread_count: c.unread_count,
-          isBlocked: false,
-          companyName: null,
-          companyLogo: c.other_user?.img ?? null,
-        }));
-        setConversations(normalized);
-        setTotalUnread(
-          normalized.reduce((sum, c) => sum + (c.unread_count ?? 0), 0)
-        );
-        return;
-      } catch (error) {
-        console.error("Failed to refresh conversations from unread event", error);
-      }
+      return;
+    } catch (error) {
+      console.error("Failed to refresh conversations from unread event", error);
     }
 
+    setConversations((prev) =>
+      sortConversationsByLatest(
+        prev.map((chat) =>
+          chat.id === convoId
+            ? {
+                ...chat,
+                unread_count: (chat.unread_count ?? 0) + 1,
+              }
+            : chat
+        )
+      )
+    );
     setTotalUnread((prev) => prev + 1);
   },
   [activeConversationId, setTotalUnread]
@@ -214,9 +239,10 @@ const handleSendMessage = async (payload) => {
       id: conversation_id,
       lastMessage: message.content,
       timestamp: new Date(message.created_at).toLocaleString(),
+      lastMessageAt: message.created_at,
     };
 
-    setConversations((prev) => [newChat, ...prev]);
+    setConversations((prev) => sortConversationsByLatest([newChat, ...prev]));
     setSelectedChat(newChat);
     setActiveConversationId(conversation_id);
 
@@ -246,8 +272,6 @@ const handleSendMessage = async (payload) => {
     async function loadConversations() {
       try {
         const data = await fetchConversations();
-        console.log("Fetched conversations:", data);
-
 
         const normalized = data.map((c) => ({
           id: c.id,
@@ -257,6 +281,7 @@ const handleSendMessage = async (payload) => {
           timestamp: c.last_message_time
             ? new Date(c.last_message_time).toLocaleString()
             : "",
+          lastMessageAt: c.last_message_time ?? null,
           unread_count: c.unread_count,
           isBlocked: false,
           companyName: null,

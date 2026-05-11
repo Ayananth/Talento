@@ -1,7 +1,7 @@
 import logging
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Max, Q
 from django.shortcuts import get_object_or_404
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -34,13 +34,15 @@ class ConversationListAPIView(APIView):
 
         conversations = Conversation.objects.filter(
             Q(jobseeker=request.user) | Q(recruiter=request.user)
+        ).annotate(
+            latest_message_at=Max("messages__created_at")
         ).select_related(
             "job",
             "jobseeker",
             "recruiter",
         ).prefetch_related(
             "messages"
-        ).order_by("-created_at")
+        ).order_by("-latest_message_at", "-created_at")
 
         serializer = ConversationListSerializer(
             conversations,
