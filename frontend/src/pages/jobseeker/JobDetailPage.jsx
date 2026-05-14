@@ -221,7 +221,7 @@ export default function JobDetailPage() {
               foundedYear="2020"
               email="contact@company.com"
               phone="+91 98765 43210"
-              openJobs={3}
+              openJobs={job.open_jobs_count ?? 0}
             />
 
             <SimilarJobs

@@ -373,6 +373,7 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
     company_website = serializers.URLField(source = 'recruiter.website')
     has_applied = serializers.BooleanField(read_only=True)
     is_saved = serializers.BooleanField(read_only=True)
+    open_jobs_count = serializers.SerializerMethodField()
 
 
     class Meta:
@@ -402,6 +403,7 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
             "company_about",
             "company_size",
             "company_website",
+            "open_jobs_count",
             "has_applied",
             "recruiter_id",
             "is_saved",
@@ -417,6 +419,17 @@ class PublicJobDetailSerializer(serializers.ModelSerializer):
 
     def get_skills(self, obj):
         return [skill.name for skill in obj.skills.all()]
+
+    def get_open_jobs_count(self, obj):
+        return (
+            Job.objects.filter(
+                recruiter=obj.recruiter,
+                status=Job.Status.PUBLISHED,
+                is_active=True,
+            )
+            .exclude(expires_at__isnull=False, expires_at__lte=timezone.now())
+            .count()
+        )
 
 class SavedJobListSerializer(serializers.ModelSerializer):
     job = PublicJobListSerializer(read_only=True)

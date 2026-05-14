@@ -23,7 +23,7 @@ export default function CompanyInfoCard({
   foundedYear = "2020",
   email = "contact@company.com",
   phone = "+91 98765 43210",
-  openJobs = 3,
+  openJobs = 0,
 }) {
   return (
     <div className="border border-slate-200 rounded-2xl p-6 bg-white space-y-6">
