@@ -35,6 +35,54 @@ export default function RecruiterProfileForm({
 
   if (!formData) return null;
 
+  const validateField = (name, rawValue, currentForm = formData) => {
+    const value = typeof rawValue === "string" ? rawValue.trim() : rawValue;
+
+    switch (name) {
+      case "company_name":
+        if (!value) return "Company name is required";
+        if (value.length < 2) return "Company name must be at least 2 characters";
+        return null;
+      case "support_email":
+        if (!value) return "Support email is required";
+        if (!isValidEmail(value)) return "Enter a valid email address";
+        return null;
+      case "website":
+        if (!value) return null;
+        if (!isValidURL(value)) return "Enter a valid website URL";
+        return null;
+      case "phone":
+        if (!value) return null;
+        if (!/^[0-9+\-\s()]{7,20}$/.test(value)) return "Enter a valid phone number";
+        return null;
+      case "industry":
+        if (!value) return "Industry is required";
+        return null;
+      case "company_size":
+        if (!value) return "Company size is required";
+        return null;
+      case "address":
+        if (!value) return "Address is required";
+        return null;
+      case "about_company":
+        if (!value) return "About company is required";
+        if (value.length < 20) return "Please add at least 20 characters";
+        return null;
+      case "linkedin":
+      case "facebook":
+      case "twitter":
+        if (!value) return null;
+        if (!isValidURL(value)) return "Enter a valid URL";
+        return null;
+      case "draft_business_registration_doc":
+        if (!currentForm.draft_business_registration_doc && !currentForm.existing_doc) {
+          return "Business registration document is required";
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -65,7 +113,12 @@ export default function RecruiterProfileForm({
       return;
     }
 
-    setFormData((p) => ({ ...p, [name]: value }));
+    setFormData((p) => {
+      const next = { ...p, [name]: value };
+      const fieldError = validateField(name, value, next);
+      setErrors((prev) => ({ ...prev, [name]: fieldError }));
+      return next;
+    });
   };
 
   /* ---------------- Submit ---------------- */
@@ -76,12 +129,24 @@ export default function RecruiterProfileForm({
 
     const errs = {};
 
-    if (!formData.company_name) errs.company_name = "Required";
-    if (!formData.support_email || !isValidEmail(formData.support_email))
-      errs.support_email = "Invalid email";
-
-    if (!formData.draft_business_registration_doc && !formData.existing_doc)
-      errs.draft_business_registration_doc = "Required";
+    const fieldsToValidate = [
+      "company_name",
+      "support_email",
+      "website",
+      "phone",
+      "industry",
+      "company_size",
+      "address",
+      "about_company",
+      "linkedin",
+      "facebook",
+      "twitter",
+      "draft_business_registration_doc",
+    ];
+    fieldsToValidate.forEach((field) => {
+      const fieldError = validateField(field, formData[field], formData);
+      if (fieldError) errs[field] = fieldError;
+    });
 
     if (Object.keys(errs).length) {
       setErrors(errs);
@@ -98,30 +163,30 @@ export default function RecruiterProfileForm({
         <Section title="Company Information">
           <Grid>
             <Input name="company_name" value={formData.company_name} onChange={handleChange} error={errors.company_name} placeholder="Company Name *" />
-            <Input name="website" value={formData.website} onChange={handleChange} placeholder="Website" />
-            <Input name="industry" value={formData.industry} onChange={handleChange} placeholder="Industry" />
-            <Input name="company_size" value={formData.company_size} onChange={handleChange} placeholder="Company Size" />
+            <Input name="website" value={formData.website} onChange={handleChange} error={errors.website} placeholder="Website (https://example.com)" />
+            <Input name="industry" value={formData.industry} onChange={handleChange} error={errors.industry} placeholder="Industry *" />
+            <Input name="company_size" value={formData.company_size} onChange={handleChange} error={errors.company_size} placeholder="Company Size *" />
           </Grid>
 
-          <Textarea name="about_company" value={formData.about_company} onChange={handleChange} placeholder="About company" />
+          <Textarea name="about_company" value={formData.about_company} onChange={handleChange} error={errors.about_company} placeholder="About company *" />
         </Section>
 
         <Section title="Contact">
           <Grid>
             <Input name="support_email" value={formData.support_email} onChange={handleChange} error={errors.support_email} placeholder="Support Email *" />
-            <Input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" />
+            <Input name="phone" value={formData.phone} onChange={handleChange} error={errors.phone} placeholder="Phone" />
           </Grid>
         </Section>
 
         <Section title="Address">
-          <Textarea name="address" value={formData.address} onChange={handleChange} placeholder="Address" />
+          <Textarea name="address" value={formData.address} onChange={handleChange} error={errors.address} placeholder="Address *" />
         </Section>
 
         <Section title="Social Links">
           <Grid>
-            <Input name="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="LinkedIn" />
-            <Input name="facebook" value={formData.facebook} onChange={handleChange} placeholder="Facebook" />
-            <Input name="twitter" value={formData.twitter} onChange={handleChange} placeholder="Twitter / X" />
+            <Input name="linkedin" value={formData.linkedin} onChange={handleChange} error={errors.linkedin} placeholder="LinkedIn" />
+            <Input name="facebook" value={formData.facebook} onChange={handleChange} error={errors.facebook} placeholder="Facebook" />
+            <Input name="twitter" value={formData.twitter} onChange={handleChange} error={errors.twitter} placeholder="Twitter / X" />
           </Grid>
         </Section>
 
@@ -185,8 +250,11 @@ const Input = ({ error, ...props }) => (
   </div>
 );
 
-const Textarea = (props) => (
-  <textarea {...props} rows="4" className="input mt-2" />
+const Textarea = ({ error, ...props }) => (
+  <div>
+    <textarea {...props} rows="4" className="input mt-2" />
+    {error && <p className="text-red-500 text-xs">{error}</p>}
+  </div>
 );
 
 const FileUploadField = ({
