@@ -11,15 +11,23 @@ export default function LoginForm({
   redirectAfterLogin,
   signupPath = "/signup",
   showGoogleLogin = true,
+  defaultEmail = "",
+  defaultPassword = "",
+  lockCredentials = false,
 }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(defaultEmail);
+  const [password, setPassword] = useState(defaultPassword);
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+useEffect(() => {
+  setEmail(defaultEmail);
+  setPassword(defaultPassword);
+}, [defaultEmail, defaultPassword]);
 
 const resolveAuthMessage = (err, fallback) => {
   const msg = typeof err?.message === "string" ? err.message.trim() : "";
@@ -138,9 +146,10 @@ const handleSubmit = async (e) => {
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            readOnly={lockCredentials}
             className={`w-full border rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
               errors.email ? "border-red-500" : "border-gray-300"
-            }`}
+            } ${lockCredentials ? "bg-gray-100 cursor-not-allowed" : ""}`}
           />
 
           {errors.email && (
@@ -160,9 +169,10 @@ const handleSubmit = async (e) => {
               value={password}
               placeholder="************"
               onChange={(e) => setPassword(e.target.value)}
+              readOnly={lockCredentials}
               className={`w-full border rounded-lg px-4 py-3 pr-12 text-gray-700 focus:ring-2 focus:outline-none ${
                 errors.password ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-blue-500"
-              }`}
+              } ${lockCredentials ? "bg-gray-100 cursor-not-allowed" : ""}`}
             />
 
             {/* Toggle Button */}

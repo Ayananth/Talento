@@ -24,6 +24,8 @@ const JobseekerLoginPage = () => {
             redirectAfterLogin="/"
             signupPath="/signup"
             showGoogleLogin={true}
+            defaultEmail="pirowit734@gcervera.com"
+            defaultPassword="Aa123!@#"
           />
         </div>
       </div>
