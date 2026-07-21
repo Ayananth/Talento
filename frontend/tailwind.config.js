@@ -7,7 +7,12 @@ export default {
     "node_modules/flowbite/**/*.js",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        display: ["'Plus Jakarta Sans'", "ui-sans-serif", "sans-serif"],
+        sans: ["Figtree", "ui-sans-serif", "sans-serif"],
+      },
+    },
   },
   plugins: [
     require("flowbite/plugin")

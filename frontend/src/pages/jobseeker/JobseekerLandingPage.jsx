@@ -1,289 +1,405 @@
 import { motion } from "framer-motion";
 import {
-  Briefcase,
-  Users,
-  TrendingUp,
-  CheckCircle,
+  Search,
+  FileText,
+  MessageSquare,
+  Bookmark,
   Target,
   BellRing,
   Sparkles,
   ArrowRight,
+  Filter,
+  ShieldCheck,
+  Briefcase,
 } from "lucide-react";
-import React from "react";
 import { Link } from "react-router-dom";
-import heroImg1 from "@/assets/jobseeker/hero-1.png";
-import heroImg2 from "@/assets/jobseeker/hero-2.png";
+import heroImg from "@/assets/jobseeker/hero-1.png";
 
-import SearchBox from "../../components/jobseeker/home/SearchBox";
 import JobsOfTheDay from "../../components/jobseeker/jobs/JobsOfTheDay";
 import TopRecruiters from "../../components/jobseeker/recruiters/TopRecruiters";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
   },
 };
 
+const stagger = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.08 },
+  },
+};
+
+const platformFeatures = [
+  {
+    icon: Search,
+    title: "Smart job discovery",
+    description:
+      "Search by role, city, work mode, experience, and salary — then open roles that actually fit you.",
+  },
+  {
+    icon: Filter,
+    title: "Filters that stay with you",
+    description:
+      "Narrow listings by job type, posted date, and more so you spend time on the right openings.",
+  },
+  {
+    icon: FileText,
+    title: "Profile & resume ready",
+    description:
+      "Upload your resume once, keep your profile current, and apply without starting from scratch.",
+  },
+  {
+    icon: Bookmark,
+    title: "Saved & applied tracking",
+    description:
+      "Bookmark roles to revisit later and follow every application from one place.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Direct recruiter chat",
+    description:
+      "Message hiring teams, get updates, and keep conversations tied to the jobs you care about.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Verified hiring companies",
+    description:
+      "Browse openings from recruiters on Talento — including top companies actively hiring now.",
+  },
+];
+
+const proFeatures = [
+  {
+    icon: Target,
+    title: "Job match score",
+    description:
+      "See how closely your resume aligns with each role before you apply.",
+  },
+  {
+    icon: Sparkles,
+    title: "AI job insights",
+    description:
+      "Get a clear summary of your strengths and gaps against the job description.",
+  },
+  {
+    icon: BellRing,
+    title: "Instant job alerts",
+    description:
+      "Hear about strong matches as soon as relevant roles go live.",
+  },
+];
+
+const steps = [
+  {
+    step: "01",
+    title: "Discover",
+    description: "Explore live openings and companies hiring on Talento.",
+  },
+  {
+    step: "02",
+    title: "Match",
+    description: "Use filters — and Pro insights — to focus on roles that fit.",
+  },
+  {
+    step: "03",
+    title: "Apply",
+    description: "Submit with your resume, track status, and chat with recruiters.",
+  },
+];
+
 export default function JobseekerLandingPage() {
-  const stats = [
-    { icon: Briefcase, label: "Active Jobs", value: "50K+" },
-    { icon: Users, label: "Companies", value: "10K+" },
-    { icon: TrendingUp, label: "Success Rate", value: "95%" },
-    { icon: CheckCircle, label: "Placements", value: "100K+" },
-  ];
-
-  const popularSearches = ["Designer", "Web", "iOS", "Developer", "PHP", "Senior", "Engineer"];
-  const premiumFeatures = [
-    {
-      icon: Target,
-      title: "Job Match Score",
-      description: "See how closely your profile matches each role before you apply.",
-    },
-    {
-      icon: BellRing,
-      title: "Instant Job Alerts",
-      description: "Get immediate notifications when relevant jobs are posted.",
-    },
-    {
-      icon: Sparkles,
-      title: "AI-Based JD Summary",
-      description: "Get AI insights on your strengths and gaps against the job description.",
-    },
-  ];
-
   return (
-    <>
-      {/* HERO SECTION */}
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div className="bg-white">
+      {/* HERO — full-bleed visual plane */}
+      <section className="relative min-h-[min(92vh,880px)] overflow-hidden">
+        <img
+          src={heroImg}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/70 to-blue-950/45" />
+        <div
+          className="absolute inset-0 opacity-[0.12]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+            backgroundSize: "28px 28px",
+          }}
+        />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* LEFT CONTENT */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="space-y-8"
+        <div className="relative mx-auto flex min-h-[min(92vh,880px)] max-w-7xl flex-col justify-center px-4 py-24 sm:px-6 lg:px-8">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={stagger}
+            className="max-w-2xl"
+          >
+            <motion.p
+              variants={fadeUp}
+              className="font-display text-5xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl"
             >
-              <div className="space-y-4">
-                <motion.h1
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                  className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight"
-                >
-                  The <span className="bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">Easiest Way</span>
-                  <br /> to Get Your <span className="bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">Dream Job</span>
-                </motion.h1>
+              Talento
+            </motion.p>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-lg md:text-xl text-slate-600 max-w-xl leading-relaxed"
-                >
-                  Each month, more than 3 million job seekers turn to our platform, making over 140,000 applications every single day.
-                </motion.p>
-              </div>
-
-              {/* SEARCH BOX */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                <SearchBox />
-              </motion.div>
-
-              {/* POPULAR SEARCHES */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="flex flex-wrap items-center gap-2 text-sm"
-              >
-                <span className="text-slate-600 font-medium">Popular Searches:</span>
-                <div className="flex flex-wrap gap-2">
-                  {popularSearches.map((item) => (
-                    <motion.button
-                      key={item}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-3 py-1 bg-white border border-slate-200 rounded-full text-slate-600 hover:border-blue-400 hover:text-blue-600 transition-colors"
-                    >
-                      {item}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* RIGHT IMAGES */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative hidden lg:block h-96"
+            <motion.h1
+              variants={fadeUp}
+              className="mt-5 font-display text-3xl font-bold leading-tight text-white sm:text-4xl md:text-[2.75rem]"
             >
-              {/* IMAGE 1 */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                  y: [0, -15, 0],
-                }}
-                transition={{
-                  opacity: { duration: 0.7 },
-                  x: { duration: 0.7 },
-                  y: {
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                }}
-                className="absolute right-0 top-0 rounded-3xl overflow-hidden shadow-2xl w-72 h-80"
-              >
-                <img
-                  src={heroImg1}
-                  alt="Team success"
-                  className="w-full h-full object-cover"
-                />
-              </motion.div>
+              Find work that fits — and apply with clarity.
+            </motion.h1>
 
-              {/* IMAGE 2 */}
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                  y: [0, 15, 0],
-                }}
-                transition={{
-                  opacity: { duration: 0.8, delay: 0.2 },
-                  x: { duration: 0.8, delay: 0.2 },
-                  y: {
-                    duration: 6,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                }}
-                className="absolute left-0 bottom-0 rounded-3xl overflow-hidden shadow-2xl w-72 h-80 border-8 border-blue-600"
+            <motion.p
+              variants={fadeUp}
+              className="mt-5 max-w-xl text-lg leading-relaxed text-slate-200"
+            >
+              Search live roles, showcase your resume, and move faster with AI
+              match scores and insights when you need them.
+            </motion.p>
+
+            <motion.div
+              variants={fadeUp}
+              className="mt-9 flex flex-wrap items-center gap-3"
+            >
+              <Link
+                to="/jobsearch"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-500"
               >
-                <img
-                  src={heroImg2}
-                  alt="Hiring discussion"
-                  className="w-full h-full object-cover"
-                />
-              </motion.div>
+                Explore jobs
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/signup"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/35 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+              >
+                Create free account
+              </Link>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* STATS SECTION */}
-      <motion.section
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={containerVariants}
-        className="py-16 bg-white border-y border-slate-200"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  className="text-center"
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 text-blue-600 mb-3 mx-auto"
-                  >
-                    <Icon size={24} />
-                  </motion.div>
-                  <p className="text-2xl md:text-3xl font-bold text-slate-900">{stat.value}</p>
-                  <p className="text-sm text-slate-600 mt-1">{stat.label}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </motion.section>
-
-      {/* PREMIUM FEATURES SECTION */}
-      <motion.section
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={containerVariants}
-        className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 text-white"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div variants={itemVariants} className="text-center max-w-3xl mx-auto mb-12">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">Premium</p>
-            <h2 className="mt-3 text-3xl md:text-4xl font-bold">Unlock Smarter Job Search Tools</h2>
-            <p className="mt-4 text-slate-200">
-              Upgrade to premium and move faster with AI-powered insights and real-time opportunities.
+      {/* HOW IT WORKS */}
+      <section className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={fadeUp}
+            className="max-w-2xl"
+          >
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+              How it works
+            </p>
+            <h2 className="mt-3 font-display text-3xl font-bold text-slate-900 md:text-4xl">
+              From search to offer, in three steps
+            </h2>
+            <p className="mt-4 text-lg text-slate-600">
+              A focused path for job seekers — discover roles, decide with
+              confidence, and stay organized while you apply.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {premiumFeatures.map((feature) => {
+          <motion.ol
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={stagger}
+            className="mt-14 grid gap-10 md:grid-cols-3"
+          >
+            {steps.map((item) => (
+              <motion.li key={item.step} variants={fadeUp} className="relative">
+                <span className="font-display text-5xl font-extrabold text-blue-100">
+                  {item.step}
+                </span>
+                <h3 className="mt-2 font-display text-xl font-bold text-slate-900">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-slate-600 leading-relaxed">
+                  {item.description}
+                </p>
+              </motion.li>
+            ))}
+          </motion.ol>
+        </div>
+      </section>
+
+      {/* PLATFORM FEATURES */}
+      <section className="py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={fadeUp}
+            className="mx-auto max-w-2xl text-center"
+          >
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+              Platform
+            </p>
+            <h2 className="mt-3 font-display text-3xl font-bold text-slate-900 md:text-4xl">
+              Everything you need to run your job search
+            </h2>
+            <p className="mt-4 text-lg text-slate-600">
+              Built for the full journey — not just browsing listings.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={stagger}
+            className="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {platformFeatures.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div key={feature.title} variants={fadeUp}>
+                  <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                    <Icon className="h-5 w-5" strokeWidth={2} />
+                  </div>
+                  <h3 className="font-display text-lg font-bold text-slate-900">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                    {feature.description}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* TALENTO PRO */}
+      <section className="relative overflow-hidden border-y border-blue-100 bg-gradient-to-br from-blue-50 via-white to-sky-50 py-20">
+        <div className="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -left-16 bottom-0 h-64 w-64 rounded-full bg-sky-200/50 blur-3xl" />
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={fadeUp}
+            className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"
+          >
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                Talento Pro
+              </p>
+              <h2 className="mt-3 font-display text-3xl font-bold text-slate-900 md:text-4xl">
+                AI tools that sharpen every application
+              </h2>
+              <p className="mt-4 text-lg text-slate-600">
+                Upgrade when you want match scores, JD insights, and alerts —
+                so you apply where you have the strongest fit.
+              </p>
+            </div>
+            <Link
+              to="/premium"
+              className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 lg:self-auto"
+            >
+              Explore Pro
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={stagger}
+            className="mt-12 grid gap-8 md:grid-cols-3"
+          >
+            {proFeatures.map((feature) => {
               const Icon = feature.icon;
               return (
                 <motion.div
                   key={feature.title}
-                  variants={itemVariants}
-                  className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-sm p-6"
+                  variants={fadeUp}
+                  className="border-t border-blue-200/80 pt-6"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-300/30 flex items-center justify-center mb-4">
-                    <Icon className="w-6 h-6 text-blue-200" />
-                  </div>
-                  <h3 className="text-xl font-semibold">{feature.title}</h3>
-                  <p className="mt-2 text-slate-200 text-sm leading-relaxed">{feature.description}</p>
+                  <Icon className="h-6 w-6 text-blue-600" strokeWidth={1.75} />
+                  <h3 className="mt-4 font-display text-xl font-bold text-slate-900">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                    {feature.description}
+                  </p>
                 </motion.div>
               );
             })}
-          </div>
-
-          <motion.div variants={itemVariants} className="mt-10 text-center">
-            <Link
-              to="/premium"
-              className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 font-semibold px-6 py-3 hover:bg-blue-100 transition-colors"
-            >
-              Explore Premium
-              <ArrowRight className="w-4 h-4" />
-            </Link>
           </motion.div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* TOP RECRUITERS SECTION */}
+      {/* LIVE SOCIAL PROOF */}
       <TopRecruiters />
-
-      {/* JOBS OF THE DAY SECTION */}
       <JobsOfTheDay />
-    </>
+
+      {/* CLOSING CTA */}
+      <section className="relative overflow-hidden bg-slate-900 py-20">
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 20% 20%, #60a5fa 0%, transparent 45%), radial-gradient(circle at 80% 70%, #38bdf8 0%, transparent 40%)",
+          }}
+        />
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={stagger}
+          className="relative mx-auto max-w-3xl px-4 text-center sm:px-6"
+        >
+          <motion.div
+            variants={fadeUp}
+            className="mx-auto mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20 text-blue-300"
+          >
+            <Briefcase className="h-6 w-6" />
+          </motion.div>
+          <motion.h2
+            variants={fadeUp}
+            className="font-display text-3xl font-bold text-white md:text-4xl"
+          >
+            Ready to start your next role?
+          </motion.h2>
+          <motion.p
+            variants={fadeUp}
+            className="mt-4 text-lg text-slate-300"
+          >
+            Join Talento, set up your profile, and browse openings from
+            companies hiring now.
+          </motion.p>
+          <motion.div
+            variants={fadeUp}
+            className="mt-8 flex flex-wrap items-center justify-center gap-3"
+          >
+            <Link
+              to="/signup"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-500"
+            >
+              Get started
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/jobsearch"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/25 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              Browse jobs
+            </Link>
+          </motion.div>
+        </motion.div>
+      </section>
+    </div>
   );
 }
