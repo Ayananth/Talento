@@ -181,6 +181,7 @@ export default function JobDetailPage() {
             />
 
             <AIInsightCard
+              isLoginLocked={!user}
               isPremiumLocked={insightLocked}
               loading={insightLoading}
               insight={insight}

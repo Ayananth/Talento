@@ -16,6 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "../../apis/api";
 import useAuth from "../../auth/context/useAuth";
+import LoginPromptModal from "@/components/common/LoginPromptModal";
 
 
 
@@ -66,6 +67,7 @@ export default function JobseekerPremium({navigateTo="/profile?payment=success"}
   const [error, setError] = useState(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const { user, fetchSubscription } = useAuth();
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const isRecruiter = user?.role === "recruiter";
   const proRedirectPath = isRecruiter ? "/recruiter/dashboard" : "/profile";
 
@@ -105,6 +107,11 @@ useEffect(() => {
    */
 const handleCheckout = async () => {
   if (!selectedPlan || loading) return;
+
+  if (!user) {
+    setLoginPromptOpen(true);
+    return;
+  }
 
   try {
     setError(null);
@@ -336,6 +343,13 @@ if (subscriptionStatus?.is_active) {
           Contact us at support@talento.com
         </p>
       </div>
+
+      <LoginPromptModal
+        open={loginPromptOpen}
+        onClose={() => setLoginPromptOpen(false)}
+        title="Log in to subscribe to Talento Pro"
+        message="Create your free account first, then upgrade to unlock match scores, AI insights, and instant job alerts."
+      />
     </div>
   );
 }

@@ -1,9 +1,16 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Clock, Zap, ArrowRight } from "lucide-react";
+import { MapPin, Clock, Zap, ArrowRight, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import useAuth from "@/auth/context/useAuth";
+import LoginPromptModal from "@/components/common/LoginPromptModal";
 
 export default function JobCard({ job, searchParams, matchScoreLoading = false }) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
+
+  const isGuest = !isAuthenticated;
 
   const goToJobDetail = () => {
     navigate(`/jobs/${job.id}?${searchParams?.toString() || ""}`);
@@ -12,6 +19,11 @@ export default function JobCard({ job, searchParams, matchScoreLoading = false }
   const handleApply = (e) => {
     e.stopPropagation();
     navigate(`/jobs/${job.id}`);
+  };
+
+  const handleLockedScoreClick = (e) => {
+    e.stopPropagation();
+    setLoginPromptOpen(true);
   };
 
   return (
@@ -65,7 +77,23 @@ export default function JobCard({ job, searchParams, matchScoreLoading = false }
         {job.title}
       </motion.h3>
 
-      {matchScoreLoading ? (
+      {isGuest ? (
+        <div className="relative mb-3 w-fit group/lock">
+          <button
+            onClick={handleLockedScoreClick}
+            className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200 transition hover:bg-amber-100"
+          >
+            <Lock size={11} />
+            Match Score
+          </button>
+
+          {/* Tooltip */}
+          <div className="pointer-events-none absolute bottom-full left-0 z-20 mb-2 w-52 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/lock:opacity-100">
+            Log in to see how well your resume matches this job.
+            <span className="absolute -bottom-1 left-5 h-2 w-2 rotate-45 bg-slate-900" />
+          </div>
+        </div>
+      ) : matchScoreLoading ? (
         <div className="mb-3">
           <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-slate-200 animate-pulse">
             Calculating match score...
@@ -150,6 +178,13 @@ export default function JobCard({ job, searchParams, matchScoreLoading = false }
           {!job.has_applied && <ArrowRight size={14} />}
         </motion.button>
       </div>
+
+      <LoginPromptModal
+        open={loginPromptOpen}
+        onClose={() => setLoginPromptOpen(false)}
+        title="Log in to see your match score"
+        message="Create a profile and upload your resume to see how well you match every job — plus AI insights and instant alerts with Talento Pro."
+      />
     </motion.div>
   );
 }
