@@ -37,6 +37,13 @@ const JobSearchPage = () => {
     salaryMax: searchParams.get("salary_max") || "",
   }));
 
+  const [recruiterId, setRecruiterId] = useState(
+    () => searchParams.get("recruiter_id") || ""
+  );
+  const [companyName, setCompanyName] = useState(
+    () => searchParams.get("company") || ""
+  );
+
 const [salaryDraft, setSalaryDraft] = useState({
   min: "",
   max: "",
@@ -63,13 +70,23 @@ useEffect(() => {
   if (filters.postedWithin) params.posted_within = filters.postedWithin;
   if (filters.salaryMin) params.salary_min = filters.salaryMin;
   if (filters.salaryMax) params.salary_max = filters.salaryMax;
+  if (recruiterId) params.recruiter_id = recruiterId;
+  if (companyName) params.company = companyName;
 
   setSearchParams(params, { replace: true });
-}, [filters]);
+}, [filters, recruiterId, companyName]);
+
+const clearCompanyFilter = () => {
+  setRecruiterId("");
+  setCompanyName("");
+  setPage(1);
+};
 
 const resetAllFilters = () => {
   setFilters(INITIAL_FILTERS);
   setSalaryDraft({ min: "", max: "" });
+  setRecruiterId("");
+  setCompanyName("");
   setPage(1);
   setSearchParams({}, { replace: true });
 };
@@ -108,6 +125,9 @@ const resetAllFilters = () => {
         filters={filters}
         setFilters={setFilters}
         searchParams={searchParams}
+        recruiterId={recruiterId}
+        companyName={companyName}
+        onClearCompanyFilter={clearCompanyFilter}
 
   salaryDraft={salaryDraft}
   setSalaryDraft={setSalaryDraft}

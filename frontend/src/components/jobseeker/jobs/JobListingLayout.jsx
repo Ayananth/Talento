@@ -9,7 +9,8 @@ import { SlidersHorizontal, X } from "lucide-react";
 import useAuth from "@/auth/context/useAuth";
 
 export default function JobListingLayout({ search, trigger, setJobCount, location, ordering, pageSize, page, setPage, filters, setFilters, searchParams,
-  salaryDraft, setSalaryDraft, onApplySalary, onResetSalary
+  salaryDraft, setSalaryDraft, onApplySalary, onResetSalary,
+  recruiterId = "", companyName = "", onClearCompanyFilter,
  }) {
   const { isAuthenticated, user } = useAuth();
   const isAuthenticatedJobseeker =
@@ -90,6 +91,7 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
           location,
           pageSize,
           filters,
+          recruiterId,
       });
       if (fetchTokenRef.current !== fetchToken) return;
 
@@ -137,15 +139,15 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
 
   useEffect(() => {
     setPage(1);
-  }, [pageSize, ordering, search, location]);
+  }, [pageSize, ordering, search, location, recruiterId]);
 
   useEffect(() => {
     fetchJobs();
-  }, [page, trigger, pageSize, ordering, filters, isAuthenticatedJobseeker]);
+  }, [page, trigger, pageSize, ordering, filters, recruiterId, isAuthenticatedJobseeker]);
 
   useEffect(() => {
   setPage(1);
-}, [trigger, filters]);
+}, [trigger, filters, recruiterId]);
 
 
 
@@ -180,11 +182,50 @@ export default function JobListingLayout({ search, trigger, setJobCount, locatio
 
 
 
+            {recruiterId && (
+              <div className="mb-5 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm text-blue-800">
+                  Jobs at {companyName || "selected company"}
+                  {onClearCompanyFilter && (
+                    <button
+                      type="button"
+                      onClick={onClearCompanyFilter}
+                      className="rounded-full p-0.5 text-blue-600 hover:bg-blue-100"
+                      aria-label="Clear company filter"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </span>
+              </div>
+            )}
+
             {/* JOB GRID */}
             {loading ? (
               <p className="text-gray-500 text-sm">Loading jobs…</p>
             ) : jobs.length === 0 ? (
-              <p className="text-gray-500 text-sm">No jobs found</p>
+              recruiterId ? (
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                  <p className="text-base font-semibold text-slate-800">
+                    No active jobs from {companyName || "this company"}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Openings from this company may have expired or been closed.
+                    Check back later or browse other roles.
+                  </p>
+                  {onClearCompanyFilter && (
+                    <button
+                      type="button"
+                      onClick={onClearCompanyFilter}
+                      className="mt-5 inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+                    >
+                      Clear company filter
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No jobs found</p>
+              )
             ) : (
               <>
                 {matchScoreNotice && (

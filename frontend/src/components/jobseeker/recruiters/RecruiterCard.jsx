@@ -1,14 +1,40 @@
 import { motion } from "framer-motion";
 import { MapPin, Briefcase, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import company_placeholder from '../../../assets/common/image.png' 
 
 
 export default function RecruiterCard({ recruiter }) {
+  const navigate = useNavigate();
+
+  const handleViewJobs = () => {
+    if (!recruiter?.id) return;
+
+    const params = new URLSearchParams({
+      recruiter_id: String(recruiter.id),
+    });
+
+    if (recruiter.company_name) {
+      params.set("company", recruiter.company_name);
+    }
+
+    navigate(`/jobsearch?${params.toString()}`);
+  };
+
   return (
     <motion.div
+      role="button"
+      tabIndex={0}
+      onClick={handleViewJobs}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleViewJobs();
+        }
+      }}
       whileHover={{ y: -8, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
       transition={{ duration: 0.3 }}
-      className="group relative bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 overflow-hidden"
+      className="group relative bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 overflow-hidden cursor-pointer"
     >
       {/* Gradient background on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
@@ -54,15 +80,13 @@ export default function RecruiterCard({ recruiter }) {
         </div>
       </motion.div>
 
-      {/* View Profile Button */}
-      {/* <motion.button
+      <motion.div
         whileHover={{ x: 4 }}
-        whileTap={{ scale: 0.95 }}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium text-sm hover:shadow-lg transition-shadow"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium text-sm group-hover:shadow-lg transition-shadow"
       >
-        View Profile
+        View Jobs
         <ArrowRight size={16} />
-      </motion.button> */}
+      </motion.div>
     </motion.div>
   );
 }
